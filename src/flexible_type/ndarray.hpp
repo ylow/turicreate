@@ -228,10 +228,15 @@ class ndarray {
     return num_elem() <= m_elem.size() && last_index() <= m_elem.size();
   }
 
-  /// Returns true if the stride is ordered canonically
+  /** 
+   * Returns true if the stride is ordered canonically.
+   * The strides must be non-decreasing and non-zero.
+  */
   bool has_canonical_stride() const {
+    if (m_stride.size() == 0) return true;
+    if (m_stride[0] == 0) return false;
     for (size_t i = 1; i < m_stride.size(); ++i) {
-      if (m_stride[i] < m_stride[i - 1]) {
+      if (m_stride[i] == 0 || m_stride[i - 1] > m_stride[i]) {
         return false;
       }
     }
@@ -268,7 +273,7 @@ class ndarray {
    * Returns an ndarray ordered canonically.
    *
    * The canonical ordering is full (\ref is_full()) and the stride array
-   * is strictly ascending.
+   * is non-descending.
    *
    * Raises an exception if the array is not valid.
    */
