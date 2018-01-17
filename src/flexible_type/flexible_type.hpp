@@ -2391,6 +2391,13 @@ inline FLEX_ALWAYS_INLINE void flexible_type::save(oarchive& oarc) const {
 
 inline FLEX_ALWAYS_INLINE void flexible_type::load(iarchive& iarc) {
   unsigned char c;
+  // in earlier versions of the serializer, a 4 byte tag value was saved 
+  // together with the flexible_type. This has now been changed.
+  // However, to continue correctly deserializing previously saved 
+  // flexible_types we identify it by shifting the type values by 128
+  //
+  // 12 Jan 2018: I suspect we can disable the old deserialization
+  // code path now. "Earlier version" I think is at least 4 years old now.
   iarc >> c;
   if (c < 128) {
     int32_t tag_value;

@@ -332,8 +332,13 @@ enum class flex_type_enum: char {
   DICT = 5,     /**< Recursive Dictionary type. Stored type is the \ref flex_dict */
   DATETIME = 6, /**< Date-Time type. Stored type is the \ref flex_date_time */
   UNDEFINED = 7,/**< Undefined / Missing Value type. Stored type is the \ref flex_undefined */
-  IMAGE= 8      /**< Image type. Stored type is the \ref flex_image */
-  // types above 127 are reserved
+  IMAGE = 8,    /**< Image type. Stored type is the \ref flex_image */
+  ND_VECTOR = 64 + VECTOR,/**< Numeric ND-Array type. Store type is \ref flex_nd_vec */
+  ND_LIST = 64 + LIST  /**< Recursive ND-List type. Store type is \ref flex_nd_list */
+  // types >= 128 are reserved. 
+  // (Or rather more accurately, they should not be used without a lot of
+  //  thought and care.)
+  // See flexible_type::save / load for the reason why.
 };
 
 /**
