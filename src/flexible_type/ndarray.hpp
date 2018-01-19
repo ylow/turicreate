@@ -14,6 +14,7 @@ namespace flexible_type_impl {
  * 
  * The basic layout is simple.
  *  - elems: is a flattened array of all the elements
+ *  - start: The offset of the 0th element in elems.
  *  - shape: is the dimensions of the ndarray. The product of all the values in
  *    shape should equal elems.length()
  *  - stride: is used to convert between ND-indices and element indices. stride
@@ -21,18 +22,6 @@ namespace flexible_type_impl {
  *    linear index is \f$ \prod_i x_i \times stride_i \f$. There are no 
  *    constraints on stride (i.e. with appropriate stride values, C, fortran, 
  *    or sub-matrix layouts on elements can be constructed).
- * 
- * Design Considerations
- * ---------------------
- * ndarray* must be 8 bytes.
- *  - This allows ndarray* to fit inside of a \ref flexible_type while
- *    maintaining that sizeof(flexible_type) is 8 bytes.
- *  - This basically prohibits the use of virtual methods + inheritance.
- *
- * Storage
- *  - Currently elements, shape, stride is a separate std::vector 
- *  allocation which prevents the implementation of array slicing without
- *  incuring a memcpy. This can be changed to a shared_ptr in the future.
  **/
 template <typename T>
 class ndarray {
@@ -43,39 +32,73 @@ class ndarray {
   typedef std::vector<T> container_type;
 
  private:
-  container_type m_elem;
+  std::shared_ptr<container_type> m_elem;
   index_range_type m_shape;
   index_range_type m_stride;
+  index_type m_start = 0;
 
  public:
 
-  /// default constructor.
-  ndarray() {}
+  /// construct with custom stride ordering
+  ndarray(const container_type& elements = container_type(), 
+          const index_range_type& shape = index_range_type(),
+          const index_range_type& stride = index_range_type(),
+          const index_type start = 0):
+              ndarray(std::make_shared<container_type>(elements), shape, stride, start) {}
 
-  /// construct 1-D array
-  ndarray(const container_type& elements):
-      // yes... I could use initializer list and it will look nicer. But 
-      // that starts to have odd issues with some compiler versions between
-      // the std vector initializer_list overload and the single argument
-      // constructor overload.
-      m_elem(elements), m_shape(1,elements.size()), m_stride(1,1) { }
-
-  /// construct with canonical stride ordering
-  ndarray(const container_type& elements, 
-          const index_range_type& m_shape):m_elem(elements),m_shape(m_shape) {
-    if (m_shape.size() > 0) {
+  /// construct with custom stride ordering
+  ndarray(const std::shared_ptr<container_type>& elements, 
+          const index_range_type& shape = index_range_type(),
+          const index_range_type& stride = index_range_type(),
+          const index_type start = 0): 
+              m_elem(elements), m_shape(shape), m_stride(stride), m_start(start) { 
+    if (m_shape.size() == 0 && elements->size() - m_start > 0) {
+      m_shape.push_back(elements->size() - m_start);
+    }
+    if (m_stride.size() == 0 && m_shape.size() > 0) {
       m_stride.resize(m_shape.size());
       m_stride[0] = 1;
       for (size_t i = 1;i < m_shape.size(); ++i) {
         m_stride[i] = m_stride[i - 1] * m_shape[i - 1];     
       }
     }
+    ASSERT_TRUE(is_valid());
   }
 
-  /// construct with custom stride ordering
-  ndarray(const container_type& elements, 
-          const index_range_type& m_shape,
-          const index_range_type& m_stride):m_elem(elements),m_shape(m_shape), m_stride(m_stride) { }
+  /// resizes the array only if the shape is 1D
+  void resize(size_t size) {
+    if (m_shape.size() == 0) {
+      m_start = 0;
+      m_shape.push_back(1);
+      m_elem->resize(1);
+    } else {
+      ASSERT_EQ(m_start, 0);
+      ASSERT_EQ(m_shape.size(), 1);
+      ASSERT_EQ(m_shape[0], m_elem->size());
+      m_elem->resize(size);
+      m_shape[0] = size;
+    }
+  }
+
+
+  /// push back only if the shape is 1D
+  void push_back(const T& elem) {
+    if (m_shape.size() == 0) {
+      m_start = 0;
+      m_shape.push_back(1);
+      m_elem->push_back(elem);
+    } else {
+      ASSERT_EQ(m_start, 0);
+      ASSERT_EQ(m_shape.size(), 1);
+      ASSERT_EQ(m_shape[0], m_elem->size());
+      m_elem->push_back(elem);
+      m_shape[0] = m_elem->size();
+    }
+  }
+
+  bool empty() const {
+    return m_elem->empty();
+  }
 
   /**
    * Returns the linear index given an N-d index
@@ -125,7 +148,7 @@ class ndarray {
    * checking is performed.
    */
   value_type& operator[](size_t elem_index) {
-    return m_elem[elem_index];
+    return (*m_elem)[m_start + elem_index];
   }
 
   /**
@@ -133,7 +156,7 @@ class ndarray {
    * checking is performed.
    */
   const value_type& operator[](size_t elem_index) const {
-    return m_elem[elem_index];
+    return (*m_elem)[m_start + elem_index];
   }
 
   /**
@@ -141,8 +164,8 @@ class ndarray {
    * checking on the index range.
    */
   value_type& at(size_t elem_index) {
-    ASSERT_LT(elem_index, m_elem.size());
-    return m_elem[elem_index];
+    ASSERT_LT(m_start + elem_index, m_elem->size());
+    return (*m_elem)[m_start + elem_index];
   }
 
   /**
@@ -150,29 +173,23 @@ class ndarray {
    * checking on the index range.
    */
   const value_type& at(size_t elem_index) const {
-    ASSERT_LT(elem_index, m_elem.size());
-    return m_elem[elem_index];
+    ASSERT_LT(m_start + elem_index, m_elem->size());
+    return (*m_elem)[m_start + elem_index];
   }
 
   /**
    * Returns a reference to all the elements in a linear layout.
    */
   container_type& elements() {
-    return m_elem;
+    return *m_elem;
   }
   /**
    * Returns a const reference to all the elements in a linear layout.
    */
   const container_type& elements() const {
-    return m_elem;
+    return *m_elem;
   }
 
-  /**
-   * Returns a reference to shape.
-   */
-  index_range_type& shape() {
-    return m_shape;
-  }
   /**
    * Returns a const reference to the shape.
    */
@@ -181,17 +198,17 @@ class ndarray {
   }
 
   /**
-   * Returns a reference to stride.
+   * Returns a const reference to the stride.
    */
-  index_range_type& stride() {
+  const index_range_type& stride() const {
     return m_stride;
   }
 
   /**
    * Returns a const reference to the stride.
    */
-  const index_range_type& stride() const {
-    return m_stride;
+  index_type start() const {
+    return m_start;
   }
 
   /**
@@ -214,7 +231,7 @@ class ndarray {
    * N-d index.
    */
   bool is_full() const {
-    return num_elem() == elements().size() && last_index() == m_elem.size();
+    return m_start == 0 && num_elem() == m_elem->size() && last_index() == m_elem->size();
   }
 
   /**
@@ -225,7 +242,7 @@ class ndarray {
    * or if the shape is larger than the total number of elements.
    */
   bool is_valid() const {
-    return num_elem() <= m_elem.size() && last_index() <= m_elem.size();
+    return num_elem() + m_start <= m_elem->size() && last_index() + m_start <= m_elem->size();
   }
 
   /** 
@@ -276,14 +293,17 @@ class ndarray {
    * is non-descending.
    *
    * Raises an exception if the array is not valid.
+   *
+   * \note The performance of this algorithm can probably be improved.
    */
   ndarray<T> canonicalize() const {
     if (is_canonical()) return (*this);
     ASSERT_TRUE(is_valid());
 
     ndarray<T> ret;
+    ret.m_start = 0;
     ret.m_shape = m_shape;
-    ret.m_elem.resize(num_elem());
+    ret.m_elem->resize(num_elem());
     ret.m_stride.resize(m_shape.size());
 
     // empty array
@@ -300,8 +320,54 @@ class ndarray {
     std::vector<size_t> idx(m_shape.size(), 0);
     size_t ctr = 0;
     do {
-      ret.m_elem[ctr] = (*this)[fast_index(idx)];
+      (*ret.m_elem)[ctr] = (*this)[fast_index(idx)];
       ++ctr;
+    } while(increment_index(idx));
+
+    return ret;
+  }
+
+  /**
+   * Returns a compacted ndarray.
+   * 
+   * A compacted NDArray has the same stride ordering as the original array,
+   * but enforces that the array is full. This essentially means that the
+   * elements array has the same order of elements, but skipped elements are
+   * removed.
+   *
+   * Raises an exception if the array is not valid.
+   *
+   * \note The performance of this algorithm can probably be improved.
+   */
+  ndarray<T> compact() const {
+    ASSERT_TRUE(is_valid());
+    if (is_full()) return (*this);
+
+    ndarray<T> ret;
+    ret.m_start = 0;
+    ret.m_shape = m_shape;
+    ret.m_elem->resize(num_elem());
+    ret.m_stride.resize(m_shape.size());
+
+    // empty array
+    if (ret.m_shape.size() == 0) {
+      return ret;
+    }
+
+    std::vector<std::pair<size_t, size_t>> stride_ordering(m_stride.size());
+    for (size_t i = 0;i < m_stride.size(); ++i) stride_ordering[i] = {m_stride[i], i};
+    std::sort(stride_ordering.begin(), stride_ordering.end());
+
+    // compute the stride
+    ret.m_stride[stride_ordering[0].second] = 1;
+    for (size_t i = 1;i < m_stride.size(); ++i) {
+      ret.m_stride[stride_ordering[i].second] = 
+          ret.m_stride[stride_ordering[i - 1].second] * ret.m_shape[stride_ordering[i - 1].second];
+    }
+
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      (*ret.m_elem)[ret.fast_index(idx)] = (*this)[fast_index(idx)];
     } while(increment_index(idx));
 
     return ret;
@@ -314,13 +380,13 @@ class ndarray {
     if (is_full()) {
       oarc << m_shape;
       oarc << m_stride;
-      oarc << m_elem;
+      oarc << *m_elem;
     } else {
-      ndarray<T> canonical = canonicalize();
-      ASSERT_TRUE(canonical.is_full());
-      oarc << canonical.m_shape;
-      oarc << canonical.m_stride;
-      oarc << canonical.m_elem;
+      ndarray<T> c = compact();
+      ASSERT_TRUE(c.is_full());
+      oarc << c.m_shape;
+      oarc << c.m_stride;
+      oarc << *(c.m_elem);
     }
   }
 
@@ -329,9 +395,11 @@ class ndarray {
     char c;
     iarc >> c;
     ASSERT_TRUE(c == 0);
+    m_start = 0;
     iarc >> m_shape;
     iarc >> m_stride;
-    iarc >> m_elem;
+    m_elem = std::make_shared<container_type>();
+    iarc >> *m_elem;
   }
  private:
   /**

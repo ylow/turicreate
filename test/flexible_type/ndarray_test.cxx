@@ -97,28 +97,53 @@ BOOST_AUTO_TEST_CASE(test_subarray) {
  test_save_load(c);
 }
 
-BOOST_AUTO_TEST_CASE(test_invalid) {
- ndarray<int> a({0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
-                {2,3},
-                {2,8});
- BOOST_TEST(a.is_valid() == false);
 
- ndarray<int> b({0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
-                {3,8},
-                {1,1});
- BOOST_TEST(b.is_valid() == false);
+BOOST_AUTO_TEST_CASE(test_subarray2) {
+ ndarray<int> subarray({0,1,2,3,
+                        4,5,6,7,
+                        8,9,10,11,
+                        12,13,14,15,16},
+                      {2,2},
+                      {1,4},
+                      2); // top right corner of array
+ BOOST_TEST(subarray.is_valid());
+ BOOST_TEST(subarray.is_full() == false);
+ BOOST_TEST(subarray.is_canonical() == false);
+ ndarray<int> c = subarray.canonicalize();
+
+ std::vector<size_t> desired_elements{2,3,6,7};
+ std::vector<size_t> desired_shape{2,2};
+ std::vector<size_t> desired_stride{1,2};
+ BOOST_TEST(c.elements() == desired_elements, tt::per_element());
+ BOOST_TEST(c.shape() == desired_shape, tt::per_element());
+ BOOST_TEST(c.stride() == desired_stride, tt::per_element());
+ BOOST_TEST(c.is_valid() == true);
+ BOOST_TEST(c.is_full() == true);
+ BOOST_TEST(c.is_canonical() == true);
+ nd_assert_equal(c, subarray);
+
+ test_save_load(subarray);
+ test_save_load(c);
+}
+
+BOOST_AUTO_TEST_CASE(test_invalid) {
+ TS_ASSERT_THROWS(ndarray<int>({0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
+                               {2,3},
+                               {2,8}), std::string);
+
+ TS_ASSERT_THROWS(ndarray<int>({0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
+                               {3,8},
+                               {1,1}), std::string);
 }
 
 
 BOOST_AUTO_TEST_CASE(test_bad_shapes) {
- ndarray<int> bad_shape({0,1,2,3,4,5,6,7,8,9},
+ TS_ASSERT_THROWS(ndarray<int>({0,1,2,3,4,5,6,7,8,9},
                         {0,0},
-                        {1,5});
- BOOST_TEST(bad_shape.is_valid() == false);
- ndarray<int> bad_shape2({0,1,2,3,4,5,6,7,8,9},
-                        {1,0},
-                        {1,5});
- BOOST_TEST(bad_shape2.is_valid() == false);
+                        {1,5}), std::string);
+ TS_ASSERT_THROWS(ndarray<int>({0,1,2,3,4,5,6,7,8,9},
+                               {1,0},
+                               {1,5}), std::string);
 }
 
 BOOST_AUTO_TEST_CASE(test_odd_stride) {
@@ -143,7 +168,7 @@ BOOST_AUTO_TEST_CASE(test_odd_stride) {
 
  // test dim 1
  {
-   ndarray<int> dim1({0,1,2},
+   ndarray<int> dim1(std::vector<int>{0,1,2},
                      {1,1,3},
                      {0,0,1}); 
    BOOST_TEST(dim1.is_valid() == true);
