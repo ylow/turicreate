@@ -80,6 +80,12 @@ flex_string get_string_visitor::operator()(const flex_vec& vec) const {
   return strm.str();
 }
 
+flex_string get_string_visitor::operator()(const flex_nd_vec& vec) const {
+  std::stringstream strm;
+  strm << vec;
+  return strm.str();
+}
+
 flex_string get_string_visitor::operator()(const flex_date_time& i) const {
   return date_time_to_string(i);
 }

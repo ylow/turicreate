@@ -47,7 +47,7 @@ namespace turi {
  *  - \ref flex_int
  *  - \ref flex_float
  *  - \ref flex_string
- *  - \ref flex_vec
+ *  - \ref flex_nd_vec
  *  - \ref flex_list
  *  - \ref flex_dict
  *  - \ref flex_image 
@@ -1227,6 +1227,7 @@ class flexible_type {
     flex_float dblval;
     std::pair<atomic<size_t>, flex_string>* strval;
     std::pair<atomic<size_t>, flex_vec>* vecval;
+    std::pair<atomic<size_t>, flex_nd_vec>* ndvecval;
     std::pair<atomic<size_t>, flex_list>* recval;
     std::pair<atomic<size_t>, flex_dict>* dictval;
     std::pair<atomic<size_t>, flex_image>* imgval;
@@ -1257,6 +1258,16 @@ class flexible_type {
          prev = val;
          val.vecval = new std::pair<atomic<size_t>, flex_vec>(*(val.vecval));
          val.vecval->first.value = 1;
+         decref(prev, flex_type_enum::VECTOR);
+       }
+       break;
+     case flex_type_enum::ND_VECTOR:
+       if (val.ndvecval->first.value == 1) return;
+       else {
+         union_type prev;
+         prev = val;
+         val.ndvecval = new std::pair<atomic<size_t>, flex_nd_vec>(*(val.ndvecval));
+         val.ndvecval->first.value = 1;
          decref(prev, flex_type_enum::VECTOR);
        }
        break;
@@ -1310,6 +1321,12 @@ class flexible_type {
          v.vecval = NULL;
        }
        break;
+     case flex_type_enum::ND_VECTOR:
+       if (v.ndvecval->first.dec() == 0) {
+         delete v.ndvecval;
+         v.ndvecval = NULL;
+       }
+       break;
      case flex_type_enum::LIST:
        if (v.recval->first.dec() == 0) {
          delete v.recval;
@@ -1341,6 +1358,9 @@ class flexible_type {
        break;
      case flex_type_enum::VECTOR:
        v.vecval->first.inc();
+       break;
+     case flex_type_enum::ND_VECTOR:
+       v.ndvecval->first.inc();
        break;
      case flex_type_enum::LIST:
        v.recval->first.inc();
@@ -1521,16 +1541,42 @@ inline FLEX_ALWAYS_INLINE const flex_string& flexible_type::get<flex_string>() c
 // VECTOR
 template <>
 inline FLEX_ALWAYS_INLINE flex_vec& flexible_type::mutable_get<flex_vec>() {
-  DFLEX_TYPE_ASSERT(get_type() == flex_type_enum::VECTOR);
+  DFLEX_TYPE_ASSERT(get_type() == flex_type_enum::VECTOR || get_type() == flex_type_enum::ND_VECTOR);
   ensure_unique();
-  return val.vecval->second;
+  if (get_type() == flex_type_enum::VECTOR) {
+    return val.vecval->second;
+  } else {
+    FLEX_TYPE_ASSERT(val.ndvecval->second.is_full());
+    return val.ndvecval->second.elements();
+  }
 }
 
 
 template <>
 inline FLEX_ALWAYS_INLINE const flex_vec& flexible_type::get<flex_vec>() const {
+  DFLEX_TYPE_ASSERT(get_type() == flex_type_enum::VECTOR || get_type() == flex_type_enum::ND_VECTOR);
+  if (get_type() == flex_type_enum::VECTOR) {
+    return val.vecval->second;
+  } else {
+    FLEX_TYPE_ASSERT(val.ndvecval->second.is_full());
+    return val.ndvecval->second.elements();
+  }
+}
+
+
+// ND_VECTOR
+template <>
+inline FLEX_ALWAYS_INLINE flex_nd_vec& flexible_type::mutable_get<flex_nd_vec>() {
+  DFLEX_TYPE_ASSERT(get_type() == flex_type_enum::ND_VECTOR);
+  ensure_unique();
+  return val.ndvecval->second;
+}
+
+
+template <>
+inline FLEX_ALWAYS_INLINE const flex_nd_vec& flexible_type::get<flex_nd_vec>() const {
   DFLEX_TYPE_ASSERT(get_type() == flex_type_enum::VECTOR);
-  return val.vecval->second;
+  return val.ndvecval->second;
 }
 
 
@@ -1734,6 +1780,10 @@ inline FLEX_ALWAYS_INLINE_FLATTEN void flexible_type::reset(flex_type_enum targe
      val.vecval = new std::pair<atomic<size_t>, flex_vec>;
      val.vecval->first.value = 1;
      break;
+   case flex_type_enum::ND_VECTOR:
+     val.ndvecval = new std::pair<atomic<size_t>, flex_nd_vec>;
+     val.ndvecval->first.value = 1;
+     break;
    case flex_type_enum::LIST:
      val.recval = new std::pair<atomic<size_t>, flex_list>;
      val.recval->first.value = 1;
@@ -1832,6 +1882,8 @@ inline FLEX_ALWAYS_INLINE_FLATTEN auto flexible_type::apply_mutating_visitor(Vis
      return visitor(mutable_get<flex_string>());
    case flex_type_enum::VECTOR:
      return visitor(mutable_get<flex_vec>());
+   case flex_type_enum::ND_VECTOR:
+     return visitor(mutable_get<flex_nd_vec>());
    case flex_type_enum::LIST:
      return visitor(mutable_get<flex_list>());
    case flex_type_enum::DICT:
@@ -1862,6 +1914,8 @@ inline FLEX_ALWAYS_INLINE_FLATTEN auto flexible_type::apply_visitor(Visitor visi
      return visitor(get<flex_string>());
    case flex_type_enum::VECTOR:
      return visitor(get<flex_vec>());
+   case flex_type_enum::ND_VECTOR:
+     return visitor(get<flex_nd_vec>());
    case flex_type_enum::LIST:
      return visitor(get<flex_list>());
    case flex_type_enum::DICT:
@@ -1896,6 +1950,9 @@ inline FLEX_ALWAYS_INLINE_FLATTEN auto flexible_type::apply_mutating_visitor(Vis
    case flex_type_enum::VECTOR:
      return apply_mutating_visitor(const_visitor_wrapper<Visitor,
                                          flex_vec>{visitor, other.get<flex_vec>()});
+   case flex_type_enum::ND_VECTOR:
+     return apply_mutating_visitor(const_visitor_wrapper<Visitor,
+                                         flex_nd_vec>{visitor, other.get<flex_nd_vec>()});
    case flex_type_enum::LIST:
      return apply_mutating_visitor(const_visitor_wrapper<Visitor,
                                          flex_list>{visitor, other.get<flex_list>()});
@@ -1936,6 +1993,9 @@ inline FLEX_ALWAYS_INLINE_FLATTEN auto flexible_type::apply_visitor(Visitor visi
    case flex_type_enum::VECTOR:
      return apply_visitor(const_visitor_wrapper<Visitor,
                                          flex_vec>{visitor, other.get<flex_vec>()});
+   case flex_type_enum::ND_VECTOR:
+     return apply_visitor(const_visitor_wrapper<Visitor,
+                                         flex_nd_vec>{visitor, other.get<flex_nd_vec>()});
    case flex_type_enum::LIST:
      return apply_visitor(const_visitor_wrapper<Visitor,
                                          flex_list>{visitor, other.get<flex_list>()});
@@ -2205,6 +2265,8 @@ inline FLEX_ALWAYS_INLINE_FLATTEN flex_float& flexible_type::operator[](size_t i
   switch(get_type()) {
    case flex_type_enum::VECTOR:
      return val.vecval->second[index];
+   case flex_type_enum::ND_VECTOR:
+     return val.ndvecval->second[index];
    case flex_type_enum::FLOAT:
      if (index == 0) return val.dblval;
    default:
@@ -2217,6 +2279,8 @@ inline FLEX_ALWAYS_INLINE_FLATTEN const flex_float& flexible_type::operator[](si
   switch(get_type()) {
    case flex_type_enum::VECTOR:
      return val.vecval->second[index];
+   case flex_type_enum::ND_VECTOR:
+     return val.ndvecval->second[index];
    case flex_type_enum::FLOAT:
      if (index == 0) return val.dblval;
    default:
@@ -2313,6 +2377,8 @@ inline FLEX_ALWAYS_INLINE_FLATTEN size_t flexible_type::size() const {
   switch(get_type()) {
    case flex_type_enum::VECTOR:
      return val.vecval->second.size();
+   case flex_type_enum::ND_VECTOR:
+     return val.ndvecval->second.num_elem();
    case flex_type_enum::LIST:
      return val.recval->second.size();
    case flex_type_enum::DICT:
@@ -2328,6 +2394,9 @@ inline FLEX_ALWAYS_INLINE_FLATTEN void flexible_type::resize(size_t s) {
    case flex_type_enum::VECTOR:
      val.vecval->second.resize(s);
      return;
+   case flex_type_enum::ND_VECTOR:
+     val.ndvecval->second.resize(s);
+     return;
    case flex_type_enum::LIST:
      val.recval->second.resize(s);
      return;
@@ -2339,6 +2408,7 @@ inline FLEX_ALWAYS_INLINE_FLATTEN void flexible_type::resize(size_t s) {
 inline FLEX_ALWAYS_INLINE_FLATTEN void flexible_type::clear() {
   switch(get_type()) {
    case flex_type_enum::VECTOR:
+   case flex_type_enum::ND_VECTOR:
    case flex_type_enum::LIST:
    case flex_type_enum::DICT:
      reset(get_type());
@@ -2354,6 +2424,9 @@ inline FLEX_ALWAYS_INLINE_FLATTEN void flexible_type::push_back(flex_float i) {
    case flex_type_enum::VECTOR:
      val.vecval->second.push_back(i);
      return;
+   case flex_type_enum::ND_VECTOR:
+     val.ndvecval->second.push_back(i);
+     return;
    case flex_type_enum::LIST:
      val.recval->second.push_back(flexible_type(i));
      return;
@@ -2368,6 +2441,9 @@ inline FLEX_ALWAYS_INLINE_FLATTEN void flexible_type::push_back(const flexible_t
   switch(get_type()) {
    case flex_type_enum::VECTOR:
      val.vecval->second.push_back((flex_float)i);
+     return;
+   case flex_type_enum::ND_VECTOR:
+     val.ndvecval->second.push_back((flex_float)i);
      return;
    case flex_type_enum::LIST:
      val.recval->second.push_back(i);

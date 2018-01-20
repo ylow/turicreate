@@ -1,6 +1,7 @@
 #ifndef TURI_FLEXIBLE_TYPE_NDARRAY
 #define TURI_FLEXIBLE_TYPE_NDARRAY
 #include <tuple>
+#include <iostream>
 #include <logger/assertions.hpp>
 #include <serialization/serialization_includes.hpp>
 namespace turi {
@@ -22,6 +23,11 @@ namespace flexible_type_impl {
  *    linear index is \f$ \prod_i x_i \times stride_i \f$. There are no 
  *    constraints on stride (i.e. with appropriate stride values, C, fortran, 
  *    or sub-matrix layouts on elements can be constructed).
+ *
+ * Note
+ * ----
+ * The performance of the ndarray operators is probably not particularly 
+ * optimized.
  **/
 template <typename T>
 class ndarray {
@@ -65,8 +71,18 @@ class ndarray {
     ASSERT_TRUE(is_valid());
   }
 
+  /**
+   * Ensures that m_elem is a unique copy.
+   */
+  void ensure_unique() {
+    if (m_elem.use_count() > 1) {
+      m_elem = std::make_shared<container_type>(*m_elem);
+    }
+  }
+
   /// resizes the array only if the shape is 1D
   void resize(size_t size) {
+    ensure_unique();
     if (m_shape.size() == 0) {
       m_start = 0;
       m_shape.push_back(1);
@@ -83,6 +99,7 @@ class ndarray {
 
   /// push back only if the shape is 1D
   void push_back(const T& elem) {
+    ensure_unique();
     if (m_shape.size() == 0) {
       m_start = 0;
       m_shape.push_back(1);
@@ -146,6 +163,9 @@ class ndarray {
   /**
    * Returns a reference to an element given the linear index, no bounds
    * checking is performed.
+   *
+   * Note that if the memory used by this array is shared, this may have
+   * unintentional side effects (changing other arrays).
    */
   value_type& operator[](size_t elem_index) {
     return (*m_elem)[m_start + elem_index];
@@ -162,6 +182,9 @@ class ndarray {
   /**
    * Returns a reference to an element given the linear index, performing bounds
    * checking on the index range.
+   *
+   * Note that if the memory used by this array is shared, this may have
+   * unintentional side effects (changing other arrays).
    */
   value_type& at(size_t elem_index) {
     ASSERT_LT(m_start + elem_index, m_elem->size());
@@ -178,15 +201,41 @@ class ndarray {
   }
 
   /**
-   * Returns a reference to all the elements in a linear layout.
+   * Returns a reference to all the elements in a linear layout; if is_full()
+   * is false, this will include unindexable elements.
+   *
+   * Note that if the memory used by this array is shared, this may have
+   * unintentional side effects (changing other arrays).
+   */
+  container_type& raw_elements() {
+    return *m_elem;
+  }
+
+  /**
+   * Returns a reference to all the elements in a linear layout; if is_full()
+   * is false, this will include unindexable elements.
+   */
+  const container_type& raw_elements() const {
+    return *m_elem;
+  }
+
+  /**
+   * Returns a reference to all the elements in a linear layout, is_full()
+   * must be true.
+   *
+   * Note that if the memory used by this array is shared, this may have
+   * unintentional side effects (changing other arrays).
    */
   container_type& elements() {
+    ASSERT_TRUE(is_full());
     return *m_elem;
   }
   /**
-   * Returns a const reference to all the elements in a linear layout.
+   * Returns a const reference to all the elements in a linear layout, is_full()
+   * must be true.
    */
   const container_type& elements() const {
+    ASSERT_TRUE(is_full());
     return *m_elem;
   }
 
@@ -269,11 +318,12 @@ class ndarray {
    * Increments a vector representing an N-D index.
    *
    * Assumes that the index is valid to begin with.
-   * Returns true while we have not reached the end of the index. Returns false
-   * if we will increment past the end of the array.
+   * Returns 1 + [the index position we incremented] while we have not reached
+   * the end of the array. Returns 0 once we increment past the end of the
+   * array.
    */
   template <typename U>
-  bool inline increment_index(std::vector<U>& idx) const {
+  size_t inline increment_index(std::vector<U>& idx) const {
     DASSERT_TRUE(idx.size() == m_shape.size());
     size_t i = 0;
     for (;i < idx.size(); ++i) {
@@ -282,8 +332,8 @@ class ndarray {
       // we hit counter limit we need to advance the next counter;
       idx[i] = 0;
     }
-
-    return i != idx.size();
+    if (i == idx.size()) return 0;
+    else return i + 1;
   }
 
   /**
@@ -307,7 +357,7 @@ class ndarray {
     ret.m_stride.resize(m_shape.size());
 
     // empty array
-    if (ret.m_shape.size() == 0) {
+    if (ret.m_shape.size() == 0 || ret.m_elem->size() == 0) {
       return ret;
     }
 
@@ -320,11 +370,21 @@ class ndarray {
     std::vector<size_t> idx(m_shape.size(), 0);
     size_t ctr = 0;
     do {
+      // directly referencing ret.m_elem is ok here because ret.m_start is 0
       (*ret.m_elem)[ctr] = (*this)[fast_index(idx)];
       ++ctr;
     } while(increment_index(idx));
 
     return ret;
+  }
+
+  /**
+   * Forces this ndarray to be full by compacting if necessary.
+   */
+  void ensure_full() {
+    if (!is_full()) {
+      (*this) = compact();
+    }
   }
 
   /**
@@ -350,7 +410,7 @@ class ndarray {
     ret.m_stride.resize(m_shape.size());
 
     // empty array
-    if (ret.m_shape.size() == 0) {
+    if (ret.m_shape.size() == 0 || ret.m_elem->size() == 0) {
       return ret;
     }
 
@@ -367,6 +427,7 @@ class ndarray {
 
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
+      // directly referencing ret.m_elem is ok here because ret.m_start is 0
       (*ret.m_elem)[ret.fast_index(idx)] = (*this)[fast_index(idx)];
     } while(increment_index(idx));
 
@@ -401,6 +462,167 @@ class ndarray {
     m_elem = std::make_shared<container_type>();
     iarc >> *m_elem;
   }
+
+  /**
+   * Return true if this ndarray has the same shape as another ndarray.
+   */
+  bool same_shape(const ndarray<T>& other) const {
+    if (m_shape.size() != other.m_shape.size()) return false;
+    for (size_t i = 0;i < m_shape.size(); ++i) {
+      if (m_shape[i] != other.m_shape[i]) return false;
+    }
+    return true;
+  }
+
+  /// element-wise addition. The other array must have the same shape.
+  ndarray<T>& operator+=(const ndarray<T>& other) {
+    ASSERT_TRUE(same_shape(other));
+    if (num_elem() == 0) return *this;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      (*m_elem)[fast_index(idx)] += other[fast_index(idx)];
+    } while(increment_index(idx));
+    return *this;
+  }
+
+  /// scalar addition. 
+  ndarray<T>& operator+=(T other) {
+    if (num_elem() == 0) return *this;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      (*m_elem)[fast_index(idx)] += other;
+    } while(increment_index(idx));
+    return *this;
+  }
+
+  /// element-wise subtraction. The other array must have the same shape.
+  ndarray<T>& operator-=(const ndarray<T>& other) {
+    ASSERT_TRUE(same_shape(other));
+    if (num_elem() == 0) return *this;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      (*m_elem)[fast_index(idx)] -= other[fast_index(idx)];
+    } while(increment_index(idx));
+    return *this;
+  }
+
+  /// scalar subtraction. 
+  ndarray<T>& operator-=(T other) {
+    if (num_elem() == 0) return *this;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      (*m_elem)[fast_index(idx)] -= other;
+    } while(increment_index(idx));
+    return *this;
+  }
+
+  /// element-wise multiplication. The other array must have the same shape.
+  ndarray<T>& operator*=(const ndarray<T>& other) {
+    ASSERT_TRUE(same_shape(other));
+    if (num_elem() == 0) return *this;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      (*m_elem)[fast_index(idx)] *= other[fast_index(idx)];
+    } while(increment_index(idx));
+    return *this;
+  }
+
+  /// scalar multiplication 
+  ndarray<T>& operator*=(T other) {
+    if (num_elem() == 0) return *this;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      (*m_elem)[fast_index(idx)] *= other;
+    } while(increment_index(idx));
+    return *this;
+  }
+
+
+  /// element-wise division. The other array must have the same shape.
+  ndarray<T>& operator/=(const ndarray<T>& other) {
+    ASSERT_TRUE(same_shape(other));
+    if (num_elem() == 0) return *this;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      (*m_elem)[fast_index(idx)] /= other[fast_index(idx)];
+    } while(increment_index(idx));
+    return *this;
+  }
+
+  /// scalar division
+  ndarray<T>& operator/=(T other) {
+    if (num_elem() == 0) return *this;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      (*m_elem)[fast_index(idx)] /= other;
+    } while(increment_index(idx));
+    return *this;
+  }
+
+  /// element-wise modulo. The other array must have the same shape.
+  ndarray<T>& operator%=(const ndarray<T>& other) {
+    ASSERT_TRUE(same_shape(other));
+    if (num_elem() == 0) return *this;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      T& left = (*m_elem)[fast_index(idx)];
+      left = fmod(left, other[fast_index(idx)]);
+    } while(increment_index(idx));
+    return *this;
+  }
+
+  /// scalar modulo. 
+  ndarray<T>& operator%=(T other) {
+    if (num_elem() == 0) return *this;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      T& left = (*m_elem)[fast_index(idx)];
+      left = fmod(left, other);
+    } while(increment_index(idx));
+    return *this;
+  }
+
+  /// negation
+  ndarray<T>& negate() {
+    if (num_elem() == 0) return *this;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      T& v = (*m_elem)[fast_index(idx)];
+      v = -v;
+    } while(increment_index(idx));
+    return *this;
+  }
+
+
+  /// element-wise division. The other array must have the same shape.
+  bool operator==(const ndarray<T>& other) const {
+    if (!same_shape(other)) return false;
+    if (num_elem() == 0) return true;
+    std::vector<size_t> idx(m_shape.size(), 0);
+    do {
+      if ((*m_elem)[fast_index(idx)] != other[fast_index(idx)]) return false;
+    } while(increment_index(idx));
+    return true;
+  }
+
+  void print(std::ostream& os) const {
+    std::vector<size_t> idx(m_shape.size(), 0);
+    if (num_elem() == 0) std::cout << "[]";
+
+    // print all the open square brackets
+    for (size_t i = 0;i < idx.size(); ++i) std::cout << "[";
+    size_t next_bracket_depth;
+    do {
+      std::cout << (*m_elem)[fast_index(idx)];
+      next_bracket_depth = increment_index(idx);
+      if (next_bracket_depth == 0) break;
+      else if (next_bracket_depth == 1) std::cout << " ";
+      for (size_t i = 0;i < next_bracket_depth - 1; ++i) std::cout << "]";
+      for (size_t i = 0;i < next_bracket_depth - 1; ++i) std::cout << "[";
+    }while(1);
+    for (size_t i = 0;i < idx.size(); ++i) std::cout << "]";
+  }
+  
  private:
   /**
    * Returns one past the last valid linear index of the array according to the
@@ -420,6 +642,12 @@ class ndarray {
 // pointer to ndarray is constrained to pointer size
 // to enforce that it will always fit in a flexible_type.
 static_assert(sizeof(ndarray<int>*) == sizeof(size_t));
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const ndarray<T>& n) {
+  n.print(os);
+  return os;
+}
 
 } // flexible_type_impl
 } // namespace turi

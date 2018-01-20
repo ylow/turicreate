@@ -53,6 +53,7 @@ BOOST_AUTO_TEST_CASE(test_canonical) {
  ndarray<int> fortran({0,1,2,3,4,5,6,7,8,9},
                       {2,5},
                       {5,1});
+ std::cout << fortran << "\n";
  BOOST_TEST(fortran.is_valid());
  BOOST_TEST(fortran.is_full());
  ndarray<int> c = fortran.canonicalize();
@@ -77,6 +78,7 @@ BOOST_AUTO_TEST_CASE(test_subarray) {
  ndarray<int> subarray({0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
                       {2,2},
                       {1,4}); // top left corner of array
+ std::cout << subarray << "\n";
  BOOST_TEST(subarray.is_valid());
  BOOST_TEST(subarray.is_full() == false);
  BOOST_TEST(subarray.is_canonical() == false);
@@ -188,6 +190,7 @@ BOOST_AUTO_TEST_CASE(test_odd_stride) {
    ndarray<int> dim1({0,1,2,3,4,5},
                      {3,1,1,2},
                      {1,0,0,3}); 
+   std::cout << dim1 << "\n";
    BOOST_TEST(dim1.is_valid() == true);
    BOOST_TEST(dim1.is_full() == true);
    BOOST_TEST(dim1.is_canonical() == false);
