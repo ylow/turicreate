@@ -6,6 +6,7 @@
 #include <typeinfo>       // operator typeid
 
 
+#include <flexible_type/flexible_type.hpp>
 #include <flexible_type/ndarray.hpp>
 
 using namespace turi;
@@ -60,7 +61,7 @@ BOOST_AUTO_TEST_CASE(test_canonical) {
 
  std::vector<size_t> desired_stride{1,2};
  std::vector<size_t> desired_shape{2,5};
- std::vector<size_t> desired_elements{0,5,1,6,2,7,3,8,4,9};
+ std::vector<int> desired_elements{0,5,1,6,2,7,3,8,4,9};
  BOOST_TEST(c.stride() == desired_stride, tt::per_element());
  BOOST_TEST(c.shape() == desired_shape, tt::per_element());
  BOOST_TEST(c.elements() == desired_elements, tt::per_element());
@@ -84,7 +85,7 @@ BOOST_AUTO_TEST_CASE(test_subarray) {
  BOOST_TEST(subarray.is_canonical() == false);
  ndarray<int> c = subarray.canonicalize();
 
- std::vector<size_t> desired_elements{0,1,4,5};
+ std::vector<int> desired_elements{0,1,4,5};
  std::vector<size_t> desired_shape{2,2};
  std::vector<size_t> desired_stride{1,2};
  BOOST_TEST(c.elements() == desired_elements, tt::per_element());
@@ -113,7 +114,7 @@ BOOST_AUTO_TEST_CASE(test_subarray2) {
  BOOST_TEST(subarray.is_canonical() == false);
  ndarray<int> c = subarray.canonicalize();
 
- std::vector<size_t> desired_elements{2,3,6,7};
+ std::vector<int> desired_elements{2,3,6,7};
  std::vector<size_t> desired_shape{2,2};
  std::vector<size_t> desired_stride{1,2};
  BOOST_TEST(c.elements() == desired_elements, tt::per_element());
@@ -159,7 +160,7 @@ BOOST_AUTO_TEST_CASE(test_odd_stride) {
    BOOST_TEST(zero_stride.is_full() == false);
    BOOST_TEST(zero_stride.is_canonical() == false);
    ndarray<int> zero_stride_c = zero_stride.canonicalize();
-   std::vector<size_t> desired_elements{0,1,0,1,0,1,0,1,0,1};
+   std::vector<int> desired_elements{0,1,0,1,0,1,0,1,0,1};
    std::vector<size_t> desired_shape{2,5};
    std::vector<size_t> desired_stride{1,2};
    BOOST_TEST(zero_stride_c.elements() == desired_elements, tt::per_element());
@@ -177,7 +178,7 @@ BOOST_AUTO_TEST_CASE(test_odd_stride) {
    BOOST_TEST(dim1.is_full() == true);
    BOOST_TEST(dim1.is_canonical() == false);
    ndarray<int> dim1_c = dim1.canonicalize();
-   std::vector<size_t> desired_elements{0,1,2};
+   std::vector<int> desired_elements{0,1,2};
    std::vector<size_t> desired_shape{1,1,3};
    std::vector<size_t> desired_stride{1,1,1};
    BOOST_TEST(dim1_c.elements() == desired_elements, tt::per_element());
@@ -195,7 +196,7 @@ BOOST_AUTO_TEST_CASE(test_odd_stride) {
    BOOST_TEST(dim1.is_full() == true);
    BOOST_TEST(dim1.is_canonical() == false);
    ndarray<int> dim1_c = dim1.canonicalize();
-   std::vector<size_t> desired_elements{0,1,2,3,4,5};
+   std::vector<int> desired_elements{0,1,2,3,4,5};
    std::vector<size_t> desired_shape{3,1,1,2};
    std::vector<size_t> desired_stride{1,3,3,3};
    BOOST_TEST(dim1_c.elements() == desired_elements, tt::per_element());
@@ -205,3 +206,294 @@ BOOST_AUTO_TEST_CASE(test_odd_stride) {
    test_save_load(dim1_c);
  }
 }
+
+
+BOOST_AUTO_TEST_CASE(test_add) {
+ ndarray<int> array1({1,1,2,3,
+                      4,5,6,7},
+                      {2,4},
+                      {4,1});
+ ndarray<int> array2({1,4,
+                      1,5,
+                      2,6,
+                      3,7},
+                      {2,4},
+                      {1,2});
+ std::cout << array1 << "\n";
+ std::cout << array2 << "\n";
+ array1 += array2;
+ std::vector<int> desired_elements{1+1,1+1,2+2,3+3,4+4,5+5,6+6,7+7};
+ std::vector<size_t> desired_shape{2,4};
+ std::vector<size_t> desired_stride{4,1};
+ BOOST_TEST(array1.elements() == desired_elements, tt::per_element());
+ BOOST_TEST(array1.shape() == desired_shape, tt::per_element());
+ BOOST_TEST(array1.stride() == desired_stride, tt::per_element());
+
+ array2 += 5;
+ std::vector<int> desired_elements2{1+5,4+5, 1+5,5+5, 2+5,6+5,3+5,7+5} ;
+ BOOST_TEST(array2.elements() == desired_elements2, tt::per_element());
+}
+
+BOOST_AUTO_TEST_CASE(test_sub) {
+ ndarray<int> array1({1,1,2,3,
+                      4,5,6,7},
+                      {2,4},
+                      {4,1});
+ ndarray<int> array2({1,4,
+                      1,5,
+                      2,6,
+                      3,7},
+                      {2,4},
+                      {1,2});
+ std::cout << array1 << "\n";
+ std::cout << array2 << "\n";
+ array1 -= array2;
+ std::vector<int> desired_elements{1-1,1-1,2-2,3-3,4-4,5-5,6-6,7-7};
+ std::vector<size_t> desired_shape{2,4};
+ std::vector<size_t> desired_stride{4,1};
+ BOOST_TEST(array1.elements() == desired_elements, tt::per_element());
+ BOOST_TEST(array1.shape() == desired_shape, tt::per_element());
+ BOOST_TEST(array1.stride() == desired_stride, tt::per_element());
+
+ array2 -= 5;
+ std::vector<int> desired_elements2{1-5,4-5, 1-5,5-5, 2-5,6-5,3-5,7-5} ;
+ BOOST_TEST(array2.elements() == desired_elements2, tt::per_element());
+}
+
+BOOST_AUTO_TEST_CASE(test_multiply) {
+ ndarray<int> array1({1,1,2,3,
+                      4,5,6,7},
+                      {2,4},
+                      {4,1});
+ ndarray<int> array2({1,4,
+                      1,5,
+                      2,6,
+                      3,7},
+                      {2,4},
+                      {1,2});
+ array1 *= array2;
+ std::vector<int> desired_elements{1*1,1*1,2*2,3*3,4*4,5*5,6*6,7*7};
+ std::vector<size_t> desired_shape{2,4};
+ std::vector<size_t> desired_stride{4,1};
+ BOOST_TEST(array1.elements() == desired_elements, tt::per_element());
+ BOOST_TEST(array1.shape() == desired_shape, tt::per_element());
+ BOOST_TEST(array1.stride() == desired_stride, tt::per_element());
+
+ array2 *= 5;
+ std::vector<int> desired_elements2{1*5,4*5, 1*5,5*5, 2*5,6*5,3*5,7*5} ;
+ BOOST_TEST(array2.elements() == desired_elements2, tt::per_element());
+}
+
+
+BOOST_AUTO_TEST_CASE(test_divide) {
+ ndarray<int> array1({1,1,2,3,
+                      4,5,6,7},
+                      {2,4},
+                      {4,1});
+ ndarray<int> array2({1,4,
+                      1,5,
+                      2,6,
+                      3,7},
+                      {2,4},
+                      {1,2});
+ array1 /= array2;
+ std::vector<int> desired_elements{1/1,1/1,2/2,3/3,4/4,5/5,6/6,7/7};
+ std::vector<size_t> desired_shape{2,4};
+ std::vector<size_t> desired_stride{4,1};
+ BOOST_TEST(array1.elements() == desired_elements, tt::per_element());
+ BOOST_TEST(array1.shape() == desired_shape, tt::per_element());
+ BOOST_TEST(array1.stride() == desired_stride, tt::per_element());
+
+ array2 /= 5;
+ std::vector<int> desired_elements2{1/5,4/5, 1/5,5/5, 2/5,6/5,3/5,7/5} ;
+ BOOST_TEST(array2.elements() == desired_elements2, tt::per_element());
+}
+
+
+BOOST_AUTO_TEST_CASE(test_mod) {
+ ndarray<int> array1({1,1,2,3,
+                      4,5,6,7},
+                      {2,4},
+                      {4,1});
+ ndarray<int> array2({1,4,
+                      1,5,
+                      2,6,
+                      3,7},
+                      {2,4},
+                      {1,2});
+ array1 %= array2;
+ std::vector<int> desired_elements{1%1,1%1,2%2,3%3,4%4,5%5,6%6,7%7};
+ std::vector<size_t> desired_shape{2,4};
+ std::vector<size_t> desired_stride{4,1};
+ BOOST_TEST(array1.elements() == desired_elements, tt::per_element());
+ BOOST_TEST(array1.shape() == desired_shape, tt::per_element());
+ BOOST_TEST(array1.stride() == desired_stride, tt::per_element());
+
+ array2 %= 5;
+ std::vector<int> desired_elements2{1%5,4%5, 1%5,5%5, 2%5,6%5,3%5,7%5} ;
+ BOOST_TEST(array2.elements() == desired_elements2, tt::per_element());
+}
+
+BOOST_AUTO_TEST_CASE(test_mod_float) {
+ ndarray<double> array1({1,1,2,3,
+                      4,5,6,7},
+                      {2,4},
+                      {4,1});
+ double c = 0.6;
+ array1 %= c;
+ std::vector<double> desired_elements{fmod(1,c),fmod(1,c),fmod(2,c),fmod(3,c),
+                                      fmod(4,c),fmod(5,c),fmod(6,c),fmod(7,c)};
+ std::vector<size_t> desired_shape{2,4};
+ std::vector<size_t> desired_stride{4,1};
+ BOOST_TEST(array1.elements() == desired_elements, tt::per_element());
+ BOOST_TEST(array1.shape() == desired_shape, tt::per_element());
+ BOOST_TEST(array1.stride() == desired_stride, tt::per_element());
+}
+
+
+BOOST_AUTO_TEST_CASE(test_flexible_type_conversions1) {
+ flex_list array1{flexible_type(flex_vec{1,1,1,1}),
+                  flexible_type(flex_vec{2,2,2,2}),
+                  flexible_type(flex_vec{3,3,3,3}),
+                  flexible_type(flex_vec{4,4,4,4})};
+ flexible_type f1(array1);
+ flex_nd_vec target1({1,1,1,1,
+                      2,2,2,2,
+                      3,3,3,3,
+                      4,4,4,4},
+                      {4,4});
+ flex_nd_vec fconv1 = f1.to<flex_nd_vec>();
+
+ BOOST_TEST(fconv1.elements() == target1.elements(), tt::per_element());
+ BOOST_TEST(fconv1.shape() == target1.shape(), tt::per_element());
+ BOOST_TEST(fconv1.stride() == target1.stride(), tt::per_element());
+}
+
+BOOST_AUTO_TEST_CASE(test_flexible_type_conversions2) {
+ flexible_type two(2.0);
+ flexible_type four(4);
+ flex_list array1{flexible_type(flex_vec{1,1,1,1}),
+                  flexible_type(flex_list{two,two,two,two}),
+                  flexible_type(flex_nd_vec({3,3,3,3})),
+                  flexible_type(flex_list{four,four,four,four})};
+ flexible_type f1(array1);
+ flex_nd_vec target1({1,1,1,1,
+                      2,2,2,2,
+                      3,3,3,3,
+                      4,4,4,4},
+                      {4,4});
+ flex_nd_vec fconv1 = f1.to<flex_nd_vec>();
+
+ BOOST_TEST(fconv1.elements() == target1.elements(), tt::per_element());
+ BOOST_TEST(fconv1.shape() == target1.shape(), tt::per_element());
+ BOOST_TEST(fconv1.stride() == target1.stride(), tt::per_element());
+}
+
+
+BOOST_AUTO_TEST_CASE(test_flexible_type_conversions_3d) {
+ flex_nd_vec nd1({1,1,1,1,
+                  2,2,2,2,
+                  3,3,3,3},
+                  {3,4});
+ flex_list array1{flexible_type(nd1),
+                  flexible_type(nd1),
+                  flexible_type(nd1),
+                  flexible_type(nd1)};
+ flexible_type f1(array1);
+
+ flex_nd_vec target1({1,1,1,1,
+                      2,2,2,2,
+                      3,3,3,3,
+                      1,1,1,1,
+                      2,2,2,2,
+                      3,3,3,3,
+                      1,1,1,1,
+                      2,2,2,2,
+                      3,3,3,3,
+                      1,1,1,1,
+                      2,2,2,2,
+                      3,3,3,3},
+                      {4,3,4});
+ flex_nd_vec fconv1 = f1.to<flex_nd_vec>();
+
+ BOOST_TEST(fconv1.elements() == target1.elements(), tt::per_element());
+ BOOST_TEST(fconv1.shape() == target1.shape(), tt::per_element());
+ BOOST_TEST(fconv1.stride() == target1.stride(), tt::per_element());
+}
+
+
+BOOST_AUTO_TEST_CASE(test_flexible_type_conversions_fail1) {
+ flexible_type two(2.0);
+ flexible_type four(4);
+ flex_list array1{flexible_type(flex_vec{1,1,1,1}),
+                  flexible_type(flex_list{two,two,two,two}),
+                  flexible_type(flex_vec{3,3,3}),
+                  flexible_type(flex_list{four,four,four,four})};
+ flexible_type f1(array1);
+ TS_ASSERT_THROWS(f1.to<flex_nd_vec>(), std::string);
+
+ flex_list array2{flexible_type(flex_vec{1,1,1,1}),
+                  flexible_type(flex_list{two,two,two,two, two})};
+ flexible_type f2(array2);
+ TS_ASSERT_THROWS(f2.to<flex_nd_vec>(), std::string);
+
+ flex_list array3{flexible_type(flex_list{two,two,two,two, two}),
+                  flexible_type(flex_vec{1,1,1,1})};
+ flexible_type f3(array3);
+ TS_ASSERT_THROWS(f3.to<flex_nd_vec>(), std::string);
+
+ flex_list array4{flexible_type(flex_list{two,two,two,two, two}),
+                  flexible_type(1)};
+ flexible_type f4(array4);
+ TS_ASSERT_THROWS(f4.to<flex_nd_vec>(), std::string);
+}
+
+
+BOOST_AUTO_TEST_CASE(test_image_conversion) {
+ flex_nd_vec nd1({1,1,1,1,
+                 2,2,2,2,
+                 3,3,3,3,
+                 1,1,1,1,
+                 2,2,2,2,
+                 3,3,3,3,
+                 1,1,1,1,
+                 2,2,2,2,
+                 3,3,3,3,
+                 1,1,1,1,
+                 2,2,2,2,
+                 3,3,3,3},
+                 {4,3,4});
+ auto rt1 = flexible_type(flexible_type(nd1).to<flex_image>()).to<flex_nd_vec>();
+ BOOST_TEST(nd1.elements() == rt1.elements(), tt::per_element());
+ BOOST_TEST(nd1.shape() == rt1.shape(), tt::per_element());
+ BOOST_TEST(nd1.stride() == rt1.stride(), tt::per_element());
+
+ flex_nd_vec nd2({1,1,1,
+                 2,2,2,
+                 3,3,3,
+                 1,1,1,
+                 2,2,2,
+                 3,3,3,
+                 1,1,1,
+                 2,2,2,
+                 3,3,3,
+                 1,1,1,
+                 2,2,2,
+                 3,3,3,},
+                 {4,3,3});
+ auto rt2 = flexible_type(flexible_type(nd2).to<flex_image>()).to<flex_nd_vec>();
+ BOOST_TEST(nd2.elements() == rt2.elements(), tt::per_element());
+ BOOST_TEST(nd2.shape() == rt2.shape(), tt::per_element());
+ BOOST_TEST(nd2.stride() == rt2.stride(), tt::per_element());
+
+ flex_nd_vec nd3({1, 2, 3, 
+                 1, 2, 3,
+                 1, 2, 3,
+                 1, 2, 3,},
+                 {4,3});
+ auto rt3 = flexible_type(flexible_type(nd3).to<flex_image>()).to<flex_nd_vec>();
+ BOOST_TEST(nd3.elements() == rt3.elements(), tt::per_element());
+ BOOST_TEST(nd3.shape() == rt3.shape(), tt::per_element());
+ BOOST_TEST(nd3.stride() == rt3.stride(), tt::per_element());
+}
+

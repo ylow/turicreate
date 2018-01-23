@@ -7,6 +7,17 @@
 namespace turi {
 namespace flexible_type_impl {
 
+
+template <typename T>
+static void mod_helper(T& a, const T& b, 
+                       typename std::enable_if<std::is_floating_point<T>::value>::type* = 0) {
+  a = fmod(a,b);
+}
+template <typename T>
+static void mod_helper(T& a, const T& b,
+                       typename std::enable_if<!std::is_floating_point<T>::value>::type* = 0) {
+  a %= b;
+}
 /**
  * A generic dense multidimensional array.
  *
@@ -27,7 +38,8 @@ namespace flexible_type_impl {
  * Note
  * ----
  * The performance of the ndarray operators is probably not particularly 
- * optimized.
+ * optimized. Really, the \ref increment_index() system should be replaced
+ * with an iterator.
  **/
 template <typename T>
 class ndarray {
@@ -480,7 +492,7 @@ class ndarray {
     if (num_elem() == 0) return *this;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      (*m_elem)[fast_index(idx)] += other[fast_index(idx)];
+      (*this)[fast_index(idx)] += other[other.fast_index(idx)];
     } while(increment_index(idx));
     return *this;
   }
@@ -490,7 +502,7 @@ class ndarray {
     if (num_elem() == 0) return *this;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      (*m_elem)[fast_index(idx)] += other;
+      (*this)[fast_index(idx)] += other;
     } while(increment_index(idx));
     return *this;
   }
@@ -501,7 +513,7 @@ class ndarray {
     if (num_elem() == 0) return *this;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      (*m_elem)[fast_index(idx)] -= other[fast_index(idx)];
+      (*this)[fast_index(idx)] -= other[other.fast_index(idx)];
     } while(increment_index(idx));
     return *this;
   }
@@ -511,7 +523,7 @@ class ndarray {
     if (num_elem() == 0) return *this;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      (*m_elem)[fast_index(idx)] -= other;
+      (*this)[fast_index(idx)] -= other;
     } while(increment_index(idx));
     return *this;
   }
@@ -522,7 +534,7 @@ class ndarray {
     if (num_elem() == 0) return *this;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      (*m_elem)[fast_index(idx)] *= other[fast_index(idx)];
+      (*this)[fast_index(idx)] *= other[other.fast_index(idx)];
     } while(increment_index(idx));
     return *this;
   }
@@ -532,7 +544,7 @@ class ndarray {
     if (num_elem() == 0) return *this;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      (*m_elem)[fast_index(idx)] *= other;
+      (*this)[fast_index(idx)] *= other;
     } while(increment_index(idx));
     return *this;
   }
@@ -544,7 +556,7 @@ class ndarray {
     if (num_elem() == 0) return *this;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      (*m_elem)[fast_index(idx)] /= other[fast_index(idx)];
+      (*this)[fast_index(idx)] /= other[other.fast_index(idx)];
     } while(increment_index(idx));
     return *this;
   }
@@ -554,7 +566,7 @@ class ndarray {
     if (num_elem() == 0) return *this;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      (*m_elem)[fast_index(idx)] /= other;
+      (*this)[fast_index(idx)] /= other;
     } while(increment_index(idx));
     return *this;
   }
@@ -565,8 +577,8 @@ class ndarray {
     if (num_elem() == 0) return *this;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      T& left = (*m_elem)[fast_index(idx)];
-      left = fmod(left, other[fast_index(idx)]);
+      T& left = (*this)[fast_index(idx)];
+      mod_helper(left, other[other.fast_index(idx)]);
     } while(increment_index(idx));
     return *this;
   }
@@ -576,8 +588,8 @@ class ndarray {
     if (num_elem() == 0) return *this;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      T& left = (*m_elem)[fast_index(idx)];
-      left = fmod(left, other);
+      T& left = (*this)[fast_index(idx)];
+      mod_helper(left, other);
     } while(increment_index(idx));
     return *this;
   }
@@ -587,7 +599,7 @@ class ndarray {
     if (num_elem() == 0) return *this;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      T& v = (*m_elem)[fast_index(idx)];
+      T& v = (*this)[fast_index(idx)];
       v = -v;
     } while(increment_index(idx));
     return *this;
@@ -600,7 +612,7 @@ class ndarray {
     if (num_elem() == 0) return true;
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
-      if ((*m_elem)[fast_index(idx)] != other[fast_index(idx)]) return false;
+      if ((*this)[fast_index(idx)] != other[other.fast_index(idx)]) return false;
     } while(increment_index(idx));
     return true;
   }

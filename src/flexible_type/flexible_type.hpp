@@ -741,6 +741,11 @@ class flexible_type {
   operator flex_vec() const;
 
   /**
+   * Implicit cast to ndarray<double>
+   */
+  operator flex_nd_vec() const;
+
+  /**
    * Implicit cast to vector<flexible_type>
    */
   operator flex_list() const;
@@ -1575,7 +1580,7 @@ inline FLEX_ALWAYS_INLINE flex_nd_vec& flexible_type::mutable_get<flex_nd_vec>()
 
 template <>
 inline FLEX_ALWAYS_INLINE const flex_nd_vec& flexible_type::get<flex_nd_vec>() const {
-  DFLEX_TYPE_ASSERT(get_type() == flex_type_enum::VECTOR);
+  DFLEX_TYPE_ASSERT(get_type() == flex_type_enum::ND_VECTOR);
   return val.ndvecval->second;
 }
 
@@ -2047,6 +2052,11 @@ inline FLEX_ALWAYS_INLINE_FLATTEN flex_vec flexible_type::to<flex_vec>() const {
 }
 
 template <>
+inline FLEX_ALWAYS_INLINE_FLATTEN flex_nd_vec flexible_type::to<flex_nd_vec>() const {
+  return apply_visitor(flexible_type_impl::get_ndvec_visitor());
+}
+
+template <>
 inline FLEX_ALWAYS_INLINE_FLATTEN flex_list flexible_type::to<flex_list>() const {
   return apply_visitor(flexible_type_impl::get_recursive_visitor());
 }
@@ -2078,6 +2088,10 @@ inline FLEX_ALWAYS_INLINE_FLATTEN flexible_type::operator flex_string() const {
 
 inline FLEX_ALWAYS_INLINE_FLATTEN flexible_type::operator flex_vec() const {
   return to<flex_vec>();
+}
+
+inline FLEX_ALWAYS_INLINE_FLATTEN flexible_type::operator flex_nd_vec() const {
+  return to<flex_nd_vec>();
 }
 
 inline FLEX_ALWAYS_INLINE_FLATTEN flexible_type::operator flex_list() const {

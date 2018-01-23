@@ -602,6 +602,25 @@ struct get_vec_visitor {
   flex_vec operator()(const flex_image& img) const;
 };
 
+
+/**
+ * \ingroup group_gl_flexible_type
+ * \internal
+ * Converts the stored value to a flex_nd_vec
+ */
+struct get_ndvec_visitor {
+  template <typename T>
+  inline FLEX_ALWAYS_INLINE_FLATTEN flex_nd_vec operator()(T t) const { FLEX_TYPE_ASSERT(false); return flex_vec(); }
+  inline FLEX_ALWAYS_INLINE_FLATTEN flex_nd_vec operator()(flex_undefined t) const { return flex_vec(); }
+  inline FLEX_ALWAYS_INLINE_FLATTEN flex_nd_vec operator()(flex_int i) const {return flex_nd_vec({(double)i}); }
+  inline FLEX_ALWAYS_INLINE_FLATTEN flex_nd_vec operator()(flex_float i) const {return flex_nd_vec({i}); }
+  inline FLEX_ALWAYS_INLINE_FLATTEN flex_nd_vec operator()(const flex_vec& i) const {return flex_nd_vec(i); }
+  inline FLEX_ALWAYS_INLINE_FLATTEN flex_nd_vec operator()(flex_date_time i) const {return flex_nd_vec({get_float_visitor()(i)}); }
+  inline FLEX_ALWAYS_INLINE_FLATTEN flex_nd_vec operator()(const flex_nd_vec& i) const { return i; }
+  flex_nd_vec operator()(flex_list i) const;
+  flex_nd_vec operator()(const flex_image& img) const;
+};
+
 /**
  * \ingroup group_gl_flexible_type
  * \internal
@@ -652,6 +671,7 @@ struct get_img_visitor {
   inline FLEX_ALWAYS_INLINE_FLATTEN flex_image operator()(T t) const { FLEX_TYPE_ASSERT(false); return flex_image(); }
   inline FLEX_ALWAYS_INLINE_FLATTEN flex_image operator()(flex_undefined t) const { return flex_image(); }
   inline FLEX_ALWAYS_INLINE_FLATTEN flex_image operator()(const flex_image& v) const { return v; }
+  flex_image operator()(const flex_nd_vec& v) const;
 
 };
 
@@ -692,7 +712,10 @@ struct soft_assignment_visitor {
   inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_float& t, const flex_undefined& u) const { t = NAN; }
   inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_vec& t, const flex_image& u) const { t = get_vec_visitor()(u); }
   inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_nd_vec& t, const flex_nd_vec& u) const { t = u; }
-  inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_nd_vec& t, const flex_vec& u) const { t = flex_nd_vec(u); }
+  inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_nd_vec& t, const flex_vec& u) const { t = get_ndvec_visitor()(u); }
+  FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_nd_vec& t, const flex_list& u) const { t= get_ndvec_visitor()(u); }
+  FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_nd_vec& t, const flex_image& u) const { t= get_ndvec_visitor()(u); }
+  FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_image& t, const flex_nd_vec& u) const { t= get_img_visitor()(u); }
   inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_vec& t, const flex_nd_vec& u) const { 
     if (u.is_full()) {
       t = u.elements();
