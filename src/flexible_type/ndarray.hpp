@@ -75,9 +75,11 @@ class ndarray {
     }
     if (m_stride.size() == 0 && m_shape.size() > 0) {
       m_stride.resize(m_shape.size());
-      m_stride[0] = 1;
-      for (size_t i = 1;i < m_shape.size(); ++i) {
-        m_stride[i] = m_stride[i - 1] * m_shape[i - 1];     
+      int i = m_shape.size() - 1;
+      m_stride[i] = 1;
+      --i;
+      for (;i >= 0; --i) {
+        m_stride[i] = m_stride[i + 1] * m_shape[i + 1];
       }
     }
     ASSERT_TRUE(is_valid());
@@ -316,13 +318,13 @@ class ndarray {
 
   /** 
    * Returns true if the stride is ordered canonically.
-   * The strides must be non-decreasing and non-zero.
+   * The strides must be non-increasing and non-zero.
   */
   bool has_canonical_stride() const {
     if (m_stride.size() == 0) return true;
     if (m_stride[0] == 0) return false;
     for (size_t i = 1; i < m_stride.size(); ++i) {
-      if (m_stride[i] == 0 || m_stride[i - 1] > m_stride[i]) {
+      if (m_stride[i] == 0 || m_stride[i - 1] < m_stride[i]) {
         return false;
       }
     }
@@ -345,14 +347,14 @@ class ndarray {
   template <typename U>
   size_t inline increment_index(std::vector<U>& idx) const {
     DASSERT_TRUE(idx.size() == m_shape.size());
-    size_t i = 0;
-    for (;i < idx.size(); ++i) {
+    int i = idx.size() - 1;
+    for (;i >= 0 ; --i) {
       ++idx[i];
       if (idx[i] < m_shape[i]) break;
       // we hit counter limit we need to advance the next counter;
       idx[i] = 0;
     }
-    if (i == idx.size()) return 0;
+    if (i < 0) return 0;
     else return i + 1;
   }
 
@@ -382,9 +384,11 @@ class ndarray {
     }
 
     // compute the stride
-    ret.m_stride[0] = 1;
-    for (size_t i = 1;i < ret.m_shape.size(); ++i) {
-      ret.m_stride[i] = ret.m_stride[i - 1] * ret.m_shape[i - 1];
+    int i = ret.m_shape.size() - 1;
+    ret.m_stride[i] = 1;
+    --i;
+    for (;i >= 0; --i) {
+      ret.m_stride[i] = ret.m_stride[i + 1] * ret.m_shape[i + 1];
     }
 
     std::vector<size_t> idx(m_shape.size(), 0);
@@ -436,7 +440,7 @@ class ndarray {
 
     std::vector<std::pair<size_t, size_t>> stride_ordering(m_stride.size());
     for (size_t i = 0;i < m_stride.size(); ++i) stride_ordering[i] = {m_stride[i], i};
-    std::sort(stride_ordering.begin(), stride_ordering.end());
+    std::sort(stride_ordering.rbegin(), stride_ordering.rend());
 
     // compute the stride
     ret.m_stride[stride_ordering[0].second] = 1;
@@ -639,11 +643,10 @@ class ndarray {
       is_first_element = false;
       next_bracket_depth = increment_index(idx);
       if (next_bracket_depth == 0) break;
-      else if (next_bracket_depth == 1) os << " ";
-      for (size_t i = 0;i < next_bracket_depth - 1; ++i) os << "]";
-      if (next_bracket_depth > 1) os << ",";
-      for (size_t i = 0;i < next_bracket_depth - 1; ++i) os << "[";
-      if (next_bracket_depth > 1) is_first_element = true;
+      for (size_t i = next_bracket_depth ;i < idx.size(); ++i) os << "]";
+      if (next_bracket_depth + 1 < idx.size()) os << ",";
+      for (size_t i = next_bracket_depth;i < idx.size(); ++i) os << "[";
+      if (next_bracket_depth + 1 < idx.size()) is_first_element = true;
     }while(1);
     for (size_t i = 0;i < idx.size(); ++i) os << "]";
   }

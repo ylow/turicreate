@@ -51,17 +51,17 @@ BOOST_AUTO_TEST_CASE(test_empty) {
 }
 
 BOOST_AUTO_TEST_CASE(test_canonical) {
- ndarray<int> fortran({0,1,2,3,4,5,6,7,8,9},
+ ndarray<int> fortran({0,5,1,6,2,7,3,8,4,9},
                       {2,5},
-                      {5,1});
+                      {1,2});
  std::cout << fortran << "\n";
  BOOST_TEST(fortran.is_valid());
  BOOST_TEST(fortran.is_full());
  ndarray<int> c = fortran.canonicalize();
 
- std::vector<size_t> desired_stride{1,2};
+ std::vector<size_t> desired_stride{5,1};
  std::vector<size_t> desired_shape{2,5};
- std::vector<int> desired_elements{0,5,1,6,2,7,3,8,4,9};
+ std::vector<int> desired_elements{0,1,2,3,4,5,6,7,8,9};
  BOOST_TEST(c.stride() == desired_stride, tt::per_element());
  BOOST_TEST(c.shape() == desired_shape, tt::per_element());
  BOOST_TEST(c.elements() == desired_elements, tt::per_element());
@@ -85,9 +85,9 @@ BOOST_AUTO_TEST_CASE(test_subarray) {
  BOOST_TEST(subarray.is_canonical() == false);
  ndarray<int> c = subarray.canonicalize();
 
- std::vector<int> desired_elements{0,1,4,5};
+ std::vector<int> desired_elements{0,4,1,5};
  std::vector<size_t> desired_shape{2,2};
- std::vector<size_t> desired_stride{1,2};
+ std::vector<size_t> desired_stride{2,1};
  BOOST_TEST(c.elements() == desired_elements, tt::per_element());
  BOOST_TEST(c.shape() == desired_shape, tt::per_element());
  BOOST_TEST(c.stride() == desired_stride, tt::per_element());
@@ -98,6 +98,13 @@ BOOST_AUTO_TEST_CASE(test_subarray) {
 
  test_save_load(subarray);
  test_save_load(c);
+}
+
+BOOST_AUTO_TEST_CASE(test_print) {
+ ndarray<int> array({0,1,2,3,4,5},
+                      {2,3},
+                      {3,1}); // top left corner of array
+ std::cout << "print test " << array << "\n";
 }
 
 
@@ -114,9 +121,9 @@ BOOST_AUTO_TEST_CASE(test_subarray2) {
  BOOST_TEST(subarray.is_canonical() == false);
  ndarray<int> c = subarray.canonicalize();
 
- std::vector<int> desired_elements{2,3,6,7};
+ std::vector<int> desired_elements{2,6,3,7};
  std::vector<size_t> desired_shape{2,2};
- std::vector<size_t> desired_stride{1,2};
+ std::vector<size_t> desired_stride{2,1};
  BOOST_TEST(c.elements() == desired_elements, tt::per_element());
  BOOST_TEST(c.shape() == desired_shape, tt::per_element());
  BOOST_TEST(c.stride() == desired_stride, tt::per_element());
@@ -160,9 +167,9 @@ BOOST_AUTO_TEST_CASE(test_odd_stride) {
    BOOST_TEST(zero_stride.is_full() == false);
    BOOST_TEST(zero_stride.is_canonical() == false);
    ndarray<int> zero_stride_c = zero_stride.canonicalize();
-   std::vector<int> desired_elements{0,1,0,1,0,1,0,1,0,1};
+   std::vector<int> desired_elements{0,0,0,0,0,1,1,1,1,1};
    std::vector<size_t> desired_shape{2,5};
-   std::vector<size_t> desired_stride{1,2};
+   std::vector<size_t> desired_stride{5,1};
    BOOST_TEST(zero_stride_c.elements() == desired_elements, tt::per_element());
    BOOST_TEST(zero_stride_c.shape() == desired_shape, tt::per_element());
    BOOST_TEST(zero_stride_c.stride() == desired_stride, tt::per_element());
@@ -180,7 +187,7 @@ BOOST_AUTO_TEST_CASE(test_odd_stride) {
    ndarray<int> dim1_c = dim1.canonicalize();
    std::vector<int> desired_elements{0,1,2};
    std::vector<size_t> desired_shape{1,1,3};
-   std::vector<size_t> desired_stride{1,1,1};
+   std::vector<size_t> desired_stride{3,3,1};
    BOOST_TEST(dim1_c.elements() == desired_elements, tt::per_element());
    BOOST_TEST(dim1_c.shape() == desired_shape, tt::per_element());
    BOOST_TEST(dim1_c.stride() == desired_stride, tt::per_element());
@@ -188,7 +195,7 @@ BOOST_AUTO_TEST_CASE(test_odd_stride) {
  }
  // another test dim 1
  {
-   ndarray<int> dim1({0,1,2,3,4,5},
+   ndarray<int> dim1({0,2,4,1,3,5},
                      {3,1,1,2},
                      {1,0,0,3}); 
    std::cout << dim1 << "\n";
@@ -198,7 +205,7 @@ BOOST_AUTO_TEST_CASE(test_odd_stride) {
    ndarray<int> dim1_c = dim1.canonicalize();
    std::vector<int> desired_elements{0,1,2,3,4,5};
    std::vector<size_t> desired_shape{3,1,1,2};
-   std::vector<size_t> desired_stride{1,3,3,3};
+   std::vector<size_t> desired_stride{2,2,2,1};
    BOOST_TEST(dim1_c.elements() == desired_elements, tt::per_element());
    BOOST_TEST(dim1_c.shape() == desired_shape, tt::per_element());
    BOOST_TEST(dim1_c.stride() == desired_stride, tt::per_element());
