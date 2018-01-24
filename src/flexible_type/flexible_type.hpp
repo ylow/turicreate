@@ -1546,26 +1546,16 @@ inline FLEX_ALWAYS_INLINE const flex_string& flexible_type::get<flex_string>() c
 // VECTOR
 template <>
 inline FLEX_ALWAYS_INLINE flex_vec& flexible_type::mutable_get<flex_vec>() {
-  DFLEX_TYPE_ASSERT(get_type() == flex_type_enum::VECTOR || get_type() == flex_type_enum::ND_VECTOR);
+  DFLEX_TYPE_ASSERT(get_type() == flex_type_enum::VECTOR);
   ensure_unique();
-  if (get_type() == flex_type_enum::VECTOR) {
-    return val.vecval->second;
-  } else {
-    FLEX_TYPE_ASSERT(val.ndvecval->second.is_full());
-    return val.ndvecval->second.elements();
-  }
+  return val.vecval->second;
 }
 
 
 template <>
 inline FLEX_ALWAYS_INLINE const flex_vec& flexible_type::get<flex_vec>() const {
-  DFLEX_TYPE_ASSERT(get_type() == flex_type_enum::VECTOR || get_type() == flex_type_enum::ND_VECTOR);
-  if (get_type() == flex_type_enum::VECTOR) {
-    return val.vecval->second;
-  } else {
-    FLEX_TYPE_ASSERT(val.ndvecval->second.is_full());
-    return val.ndvecval->second.elements();
-  }
+  DFLEX_TYPE_ASSERT(get_type() == flex_type_enum::VECTOR);
+  return val.vecval->second;
 }
 
 

@@ -97,12 +97,14 @@ class ndarray {
     ensure_unique();
     if (m_shape.size() == 0) {
       m_start = 0;
-      m_shape.push_back(1);
+      m_shape = {size};
+      m_stride = {1};
       m_elem->resize(1);
     } else {
       ASSERT_EQ(m_start, 0);
       ASSERT_EQ(m_shape.size(), 1);
       ASSERT_EQ(m_shape[0], m_elem->size());
+      DASSERT_EQ(m_shape.size(), m_stride.size());
       m_elem->resize(size);
       m_shape[0] = size;
     }
@@ -114,12 +116,14 @@ class ndarray {
     ensure_unique();
     if (m_shape.size() == 0) {
       m_start = 0;
-      m_shape.push_back(1);
+      m_shape = {1};
+      m_stride = {1};
       m_elem->push_back(elem);
     } else {
       ASSERT_EQ(m_start, 0);
       ASSERT_EQ(m_shape.size(), 1);
       ASSERT_EQ(m_shape[0], m_elem->size());
+      DASSERT_EQ(m_shape.size(), m_stride.size());
       m_elem->push_back(elem);
       m_shape[0] = m_elem->size();
     }
@@ -292,7 +296,9 @@ class ndarray {
    * N-d index.
    */
   bool is_full() const {
-    return m_start == 0 && num_elem() == m_elem->size() && last_index() == m_elem->size();
+    return m_start == 0 && 
+        num_elem() == m_elem->size() && 
+        last_index() == m_elem->size();
   }
 
   /**
@@ -303,7 +309,9 @@ class ndarray {
    * or if the shape is larger than the total number of elements.
    */
   bool is_valid() const {
-    return num_elem() + m_start <= m_elem->size() && last_index() + m_start <= m_elem->size();
+    return m_shape.size() == m_stride.size() &&   // shape and stride line up
+        num_elem() + m_start <= m_elem->size() &&  // num_elements (as computed by shape) is in m_elem
+        last_index() + m_start <= m_elem->size();  // max index (as computed by stride( is in m_elem
   }
 
   /** 
@@ -624,13 +632,18 @@ class ndarray {
     // print all the open square brackets
     for (size_t i = 0;i < idx.size(); ++i) os << "[";
     size_t next_bracket_depth;
+    bool is_first_element = true;
     do {
+      if (is_first_element == false) os << ",";
       os << (*m_elem)[fast_index(idx)];
+      is_first_element = false;
       next_bracket_depth = increment_index(idx);
       if (next_bracket_depth == 0) break;
       else if (next_bracket_depth == 1) os << " ";
       for (size_t i = 0;i < next_bracket_depth - 1; ++i) os << "]";
+      if (next_bracket_depth > 1) os << ",";
       for (size_t i = 0;i < next_bracket_depth - 1; ++i) os << "[";
+      if (next_bracket_depth > 1) is_first_element = true;
     }while(1);
     for (size_t i = 0;i < idx.size(); ++i) os << "]";
   }

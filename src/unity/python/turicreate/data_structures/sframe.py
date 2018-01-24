@@ -4086,10 +4086,10 @@ class SFrame(object):
                   val = operation[key]
                   if type(val) is tuple:
                     (op, column) = val
-                    if (op == '__builtin__avg__' and self[column[0]].dtype is array.array):
+                    if (op == '__builtin__avg__' and self[column[0]].dtype in [array.array, numpy.ndarray]):
                         op = '__builtin__vector__avg__'
 
-                    if (op == '__builtin__sum__' and self[column[0]].dtype is array.array):
+                    if (op == '__builtin__sum__' and self[column[0]].dtype in [array.array, numpy.ndarray]):
                         op = '__builtin__vector__sum__'
 
                     if (op == '__builtin__argmax__' or op == '__builtin__argmin__') and ((type(column[0]) is tuple) != (type(key) is tuple)):

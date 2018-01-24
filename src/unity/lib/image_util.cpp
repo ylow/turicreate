@@ -301,7 +301,7 @@ flexible_type decode_image(const flexible_type& image) {
   }
   flexible_type ret = image;
   flex_image& img = ret.mutable_get<flex_image>();
-  encode_image(img);
+  turi::decode_image_inplace(img);
   return ret;
 };
 
@@ -314,7 +314,7 @@ flexible_type encode_image(const flexible_type& image) {
   }
   flexible_type ret = image;
   flex_image& img = ret.mutable_get<flex_image>();
-  encode_image(img);
+  turi::encode_image_inplace(img);
   return ret;
 };
 
