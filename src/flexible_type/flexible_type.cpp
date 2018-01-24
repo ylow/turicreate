@@ -7,6 +7,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <flexible_type/flexible_type.hpp>
 #include <logger/assertions.hpp>
+#include <image/image_util_impl.hpp>
 
 // contains some of the bigger functions I do not want to inline
 namespace turi {
@@ -136,9 +137,18 @@ flex_string get_string_visitor::operator() (const flex_image& img) const {
 
 flex_vec get_vec_visitor::operator() (const flex_image& img) const {
   flex_vec vec;
-  ASSERT_MSG(img.m_format == Format::RAW_ARRAY, "Cannot convert encoded image to array");
-  for (size_t i = 0 ; i < img.m_image_data_size; ++i){
-    vec.push_back(static_cast<double>(static_cast<unsigned char>(img.m_image_data[i])));
+  if(img.m_format == Format::RAW_ARRAY) {
+    for (size_t i = 0 ; i < img.m_image_data_size; ++i){
+      vec.push_back(static_cast<double>(static_cast<unsigned char>(img.m_image_data[i])));
+    }
+  } else {
+    // pay the price to decode
+    flex_image newimg = img;
+    decode_image_inplace(newimg);
+    ASSERT_TRUE(newimg.m_format == Format::RAW_ARRAY);
+    for (size_t i = 0 ; i < newimg.m_image_data_size; ++i){
+      vec.push_back(static_cast<double>(static_cast<unsigned char>(newimg.m_image_data[i])));
+    }
   }
   return vec;
 }

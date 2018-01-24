@@ -23,7 +23,7 @@ from ..util import get_module_from_object, pytype_to_printf
 from .sarray import SArray, _create_sequential_sarray
 from .. import aggregate
 from .image import Image as _Image
-from ..deps import pandas, HAS_PANDAS, HAS_NUMPY
+from ..deps import pandas, numpy, HAS_PANDAS, HAS_NUMPY
 from .grouped_sframe import GroupedSFrame
 
 import array
@@ -2012,6 +2012,8 @@ class SFrame(object):
         def _value_to_str(value):
             if (type(value) is array.array):
                 return str(list(value))
+            elif (type(value) is numpy.ndarray):
+                return str(value).replace('\n',' ')
             elif (type(value) is list):
                 return '[' + ", ".join(_value_to_str(x) for x in value) + ']'
             else:
