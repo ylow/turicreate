@@ -1324,37 +1324,15 @@ std::shared_ptr<unity_sarray_base> unity_sarray::lazy_astype(flex_type_enum dtyp
                                 0 /*random seed*/);
     return ret;
 
-  } else if (current_type == flex_type_enum::LIST && dtype == flex_type_enum::VECTOR) {
-    // a lambda that converts list to vector, one element at a time
-    auto transform_fn = [undefined_on_failure](const flexible_type& f)->flexible_type {
-      if (f.get_type() == flex_type_enum::UNDEFINED) return f;
-      // input
-      const flex_list& src = f.get<flex_list>();
-      // output
-      flex_vec ret;
-      ret.resize(src.size());
-
-      for (size_t i = 0;i < src.size(); ++i) {
-        auto src_type = src[i].get_type();
-        if (src_type == flex_type_enum::INTEGER || src_type == flex_type_enum::FLOAT) {
-          ret[i] = (flex_float)(src[i]);
-        } else {
-          // not convertible.
-          if (undefined_on_failure) return FLEX_UNDEFINED;
-          else log_and_throw("Unable to interpret " + flex_string(f) + " as a numeric array");
-        }
-      }
-      return ret;
-    };
-    auto ret = transform_lambda(transform_fn,
-                                dtype,
-                                true /*skip undefined*/,
-                                0 /*random seed*/);
-    return ret;
   } else {
-    auto ret = transform_lambda([dtype](const flexible_type& f)->flexible_type {
+    auto ret = transform_lambda([dtype, undefined_on_failure](const flexible_type& f)->flexible_type {
                                   flexible_type ret(dtype);
-                                  ret.soft_assign(f);
+                                  try {
+                                    ret.soft_assign(f);
+                                  } catch (...) {
+                                    if (undefined_on_failure) return FLEX_UNDEFINED;
+                                    else throw;
+                                  }
                                   return ret;
                                 },
                                 dtype,

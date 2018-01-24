@@ -170,8 +170,8 @@ cdef extern from "Python.h":
 cdef extern from "math.h":
     double NAN
 
+DEF _NUM_FLEX_TYPES = 10
 ###### Date time stuff
-DEF _NUM_FLEX_TYPES = 9
 
 from datetime import tzinfo
 from datetime import timedelta
@@ -229,6 +229,25 @@ timedelta_type = datetime.timedelta
 cdef object _image_type
 cdef bint have_imagetype
 
+cdef bint HAS_NUMPY = False
+cdef bint HAS_PANDAS = False
+
+try:
+    import numpy as np
+    HAS_NUMPY = True
+except ImportError:
+    HAS_NUMPY = False
+
+try:
+    import pandas as pd
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+
+cdef type np_ndarray
+assert(HAS_NUMPY)
+np_ndarray = np.ndarray
+
 class __bad_image(object):
     def __init__(*args, **kwargs):
         raise TypeError("Image type not supported outside of full sframe/turicreate package.")
@@ -256,11 +275,12 @@ DEF FT_ARRAY_TYPE     = 8
 DEF FT_NONE_TYPE      = 9
 DEF FT_DATETIME_TYPE  = 10
 DEF FT_IMAGE_TYPE     = 11
+DEF FT_NDARRAY_TYPE   = 12
 
 # The robust versions of the previous ones, which perform extra checks
 # and possible casting.  The robust versions of the above are FT_SAFE
 # plus the previous value.
-DEF FT_SAFE = 12
+DEF FT_SAFE = 13
 DEF FT_LARGEST = 2*FT_SAFE
 DEF FT_FAILURE = 2*FT_LARGEST + 1
 
@@ -282,6 +302,7 @@ _code_by_type_lookup[<object_ptr>(array_type)]          = FT_ARRAY_TYPE
 _code_by_type_lookup[<object_ptr>(xrange_type)]         = FT_LIST_TYPE + FT_SAFE
 _code_by_type_lookup[<object_ptr>(datetime_type)]       = FT_DATETIME_TYPE
 _code_by_type_lookup[<object_ptr>(_image_type)]         = FT_IMAGE_TYPE
+_code_by_type_lookup[<object_ptr>(np_ndarray)]          = FT_NDARRAY_TYPE
 
 cdef map[object_ptr, int] _code_by_map_force = map[object_ptr, int]()
 
@@ -295,6 +316,7 @@ _code_by_map_force[<object_ptr>(dict)]          = FT_DICT_TYPE      + FT_SAFE
 _code_by_map_force[<object_ptr>(datetime_type)] = FT_DATETIME_TYPE  + FT_SAFE
 _code_by_map_force[<object_ptr>(none_type)]     = FT_NONE_TYPE
 _code_by_map_force[<object_ptr>(_image_type)]   = FT_IMAGE_TYPE     + FT_SAFE
+_code_by_map_force[<object_ptr>(np_ndarray)]    = FT_NDARRAY_TYPE
 
 cdef dict _code_by_name_lookup = {
     'str'      : FT_STR_TYPE     + FT_SAFE,
@@ -405,6 +427,7 @@ _code_by_forced_type[<object_ptr>(none_type)]      = FT_NONE_TYPE     + FT_SAFE
 _code_by_forced_type[<object_ptr>(datetime_type)]  = FT_DATETIME_TYPE + FT_SAFE
 _code_by_forced_type[<object_ptr>(array_type)]     = FT_BUFFER_TYPE
 _code_by_forced_type[<object_ptr>(str)]            = FT_STR_TYPE      + FT_SAFE
+_code_by_forced_type[<object_ptr>(np_ndarray)]     = FT_NDARRAY_TYPE
 
 ################################################################################
 # Enum type only.
@@ -419,6 +442,7 @@ _type_lookup_by_type_enum[<int>DICT]      = dict
 _type_lookup_by_type_enum[<int>DATETIME]  = datetime_type
 _type_lookup_by_type_enum[<int>UNDEFINED] = none_type
 _type_lookup_by_type_enum[<int>IMAGE]     = _image_type
+_type_lookup_by_type_enum[<int>ND_VECTOR] = np_ndarray
 
 cdef type pytype_from_flex_type_enum(flex_type_enum e):
     return _type_lookup_by_type_enum[<int> e]
@@ -465,6 +489,7 @@ _enum_tr_codes[FT_TUPLE_TYPE]              = LIST
 _enum_tr_codes[FT_DICT_TYPE]               = DICT
 _enum_tr_codes[FT_BUFFER_TYPE]             = VECTOR
 _enum_tr_codes[FT_ARRAY_TYPE]              = VECTOR
+_enum_tr_codes[FT_NDARRAY_TYPE]            = ND_VECTOR
 _enum_tr_codes[FT_NONE_TYPE]               = UNDEFINED
 _enum_tr_codes[FT_DATETIME_TYPE]           = DATETIME
 _enum_tr_codes[FT_IMAGE_TYPE]              = IMAGE
@@ -480,6 +505,7 @@ _enum_tr_codes[FT_SAFE + FT_ARRAY_TYPE]    = VECTOR
 _enum_tr_codes[FT_SAFE + FT_NONE_TYPE]     = UNDEFINED
 _enum_tr_codes[FT_SAFE + FT_DATETIME_TYPE] = DATETIME
 _enum_tr_codes[FT_SAFE + FT_IMAGE_TYPE]    = IMAGE
+_enum_tr_codes[FT_SAFE + FT_NDARRAY_TYPE]            = ND_VECTOR
 _enum_tr_codes[FT_FAILURE]                 = UNDEFINED
 
 cdef inline flex_type_enum flex_type_from_tr_code(int tr_code):
@@ -507,22 +533,9 @@ cdef inline bint flex_type_is_vector_implicit_castable(flex_type_enum ft_type):
 
 ################################################################################
 
-cdef bint HAS_NUMPY = False
-cdef bint HAS_PANDAS = False
-
-try:
-    import numpy as np
-    HAS_NUMPY = True
-except ImportError:
-    HAS_NUMPY = False
-
-try:
-    import pandas as pd
-    HAS_PANDAS = True
-except ImportError:
-    HAS_PANDAS = False
 
 cdef vector[flex_type_enum] _dtype_to_flex_enum_lookup = vector[flex_type_enum](128, UNDEFINED)
+__fill_numpy_info()
 
 cdef __fill_numpy_info():
     cdef dict __typecodes = np.typecodes
@@ -534,10 +547,6 @@ cdef __fill_numpy_info():
     for c in <str>(__typecodes.get("Character", "") + "SU"):
         _dtype_to_flex_enum_lookup[<int>(ord(c))] = STRING
 
-cdef type np_ndarray
-if HAS_NUMPY:
-    np_ndarray = np.ndarray
-    __fill_numpy_info()
 
 cdef flex_type_enum flex_type_from_dtype(object dt):
     cdef flex_type_enum ft_type
@@ -698,10 +707,11 @@ DEF FTI_DICT           = 32
 DEF FTI_DATETIME       = 64
 DEF FTI_NONE           = 128
 DEF FTI_IMAGE          = 256
+DEF FTI_NDARRAY        = 512
 
 # additional things that are handled specially
-DEF FTI_NUMERIC_LIST   = 512
-DEF FTI_EMPTY_LIST     = 1024
+DEF FTI_NUMERIC_LIST   = 1024
+DEF FTI_EMPTY_LIST     = 2048
 
 cdef map[size_t, flex_type_enum] _common_type_inference_rules = map[size_t, flex_type_enum]()
 
@@ -720,6 +730,7 @@ _common_type_inference_rules[FTI_NONE]         = INTEGER
 _common_type_inference_rules[FTI_IMAGE]        = IMAGE
 _common_type_inference_rules[FTI_NUMERIC_LIST] = VECTOR
 _common_type_inference_rules[FTI_EMPTY_LIST]   = LIST
+_common_type_inference_rules[FTI_NDARRAY]      = ND_VECTOR
 
 # Upgrade rules:
 
@@ -753,6 +764,10 @@ while _it != _common_type_inference_rules.end():
         _common_type_inference_rules[_k | FTI_LIST] = LIST
     inc(_it)
 
+# ndarray and array makes nd vector
+_common_type_inference_rules[FTI_NDARRAY] = ND_VECTOR
+_common_type_inference_rules[FTI_NDARRAY | FTI_VECTOR] = ND_VECTOR
+
 
 ################################################################################
 #
@@ -775,6 +790,7 @@ _inference_code_from_tr_code[FT_ARRAY_TYPE]              = FTI_VECTOR
 _inference_code_from_tr_code[FT_NONE_TYPE]               = FTI_NONE
 _inference_code_from_tr_code[FT_DATETIME_TYPE]           = FTI_DATETIME
 _inference_code_from_tr_code[FT_IMAGE_TYPE]              = FTI_IMAGE
+_inference_code_from_tr_code[FT_NDARRAY_TYPE]            = FTI_NDARRAY
 _inference_code_from_tr_code[FT_SAFE + FT_INT_TYPE]      = 0
 _inference_code_from_tr_code[FT_SAFE + FT_FLOAT_TYPE]    = FTI_FLOAT
 _inference_code_from_tr_code[FT_SAFE + FT_STR_TYPE]      = FTI_STRING
@@ -787,6 +803,7 @@ _inference_code_from_tr_code[FT_SAFE + FT_ARRAY_TYPE]    = FTI_VECTOR
 _inference_code_from_tr_code[FT_SAFE + FT_NONE_TYPE]     = FTI_NONE
 _inference_code_from_tr_code[FT_SAFE + FT_DATETIME_TYPE] = FTI_DATETIME
 _inference_code_from_tr_code[FT_SAFE + FT_IMAGE_TYPE]    = FTI_IMAGE
+_inference_code_from_tr_code[FT_SAFE + FT_NDARRAY_TYPE]  = FTI_NDARRAY
 _inference_code_from_tr_code[FT_FAILURE]                 = <size_t>(-1)
 
 # Choosing it from the flexible type code
@@ -801,6 +818,7 @@ _inference_code_from_flex_type_enum[<int>DICT]      = FTI_DICT
 _inference_code_from_flex_type_enum[<int>IMAGE]     = FTI_IMAGE
 _inference_code_from_flex_type_enum[<int>DATETIME]  = FTI_DATETIME
 _inference_code_from_flex_type_enum[<int>UNDEFINED] = FTI_NONE
+_inference_code_from_flex_type_enum[<int>ND_VECTOR] = FTI_NDARRAY
 
 cdef size_t _choose_inference_code(int tr_code, object v) except -2:
 
@@ -844,6 +862,8 @@ cdef size_t _choose_inference_code(int tr_code, object v) except -2:
             return FTI_NUMERIC_LIST
         else:
             return FTI_LIST
+    elif tr_code == FT_NDARRAY_TYPE or tr_code == FT_NDARRAY_TYPE + FT_SAFE:
+        return FTI_NDARRAY
     elif tr_code == FT_BUFFER_TYPE or (tr_code == FT_BUFFER_TYPE + FT_SAFE):
         ft_type = _infer_buffer_element_type(v, False, False, &is_object_buffer)
         if is_object_buffer:
@@ -903,6 +923,9 @@ cdef inline flex_type_enum infer_common_type(size_t present_types, bint undefine
             if (present_types & FTI_VECTOR) != 0:
                 types.append(flex_type_enum_to_name(VECTOR))
                 present_types -= FTI_VECTOR
+            if (present_types & FTI_NDARRAY) != 0:
+                types.append(flex_type_enum_to_name(ND_VECTOR))
+                present_types -=FTI_NDARRAY 
             if (present_types & FTI_DICT) != 0:
                 types.append(flex_type_enum_to_name(DICT))
                 present_types -= FTI_DICT
@@ -952,8 +975,8 @@ cdef flex_type_enum _infer_common_type_of_listlike(_listlike vl, bint undefined_
 
         if tr_code_buffer != NULL:
             tr_code_buffer[0][i] = tr_code
-
-    return infer_common_type(seen_types, undefined_on_error)
+    cdef flex_type_enum f = infer_common_type(seen_types, undefined_on_error)
+    return f
 
 cdef flex_type_enum infer_common_type_of_flex_list(const flex_list& fl, bint undefined_on_error = False):
     """
@@ -1107,7 +1130,6 @@ cdef inline fill_list(flex_list& retl, _listlike v,
     for the list is expected, and the result is stored in common_type[0].
     If tr_code_buffer is not null, then the translation codes are taken from that.
     """
-
     cdef size_t i
     cdef int tr_code = -1
     cdef size_t seen_types = 0
@@ -1343,6 +1365,30 @@ cdef inline bint _tr_buffer_to_flex_vec(flex_vec& retv, object v):
 
     return False
 
+
+@cython.boundscheck(False)
+cdef inline bint _tr_buffer_to_flex_nd_vec(flex_nd_vec& retv, object v):
+    if type(v) is not np_ndarray:
+        return False
+
+    # translate the elements
+    cdef flex_vec f_elements
+    cdef vector[size_t] f_shape
+    cdef vector[size_t] f_stride
+    if not _tr_buffer_to_flex_vec(f_elements, v.reshape(-1)):
+        return False
+
+    stride = [i / v.itemsize for i in v.strides]
+    for i in stride:
+        f_stride.push_back(<size_t>i)
+    for i in v.shape:
+        f_shape.push_back(<size_t>i)
+
+    # Argh. Assignment to reference bug.
+    # https://github.com/cython/cython/issues/1863
+    (&retv)[0] = flex_nd_vec(f_elements, f_shape, f_stride)
+    return True
+
 ################################################################################
 
 cdef inline tr_buffer_to_ft(flexible_type& ret, object v, flex_type_enum* common_type = NULL):
@@ -1377,6 +1423,15 @@ cdef inline tr_buffer_to_ft(flexible_type& ret, object v, flex_type_enum* common
 
     # Error if there are no more options.
     raise TypeError("Could not convert python object with type " + str(type(v)) + " to flexible_type.")
+
+cdef inline translate_ndarray(flexible_type& ret, object v, flex_type_enum* common_type = NULL):
+    cdef flex_nd_vec ft_nd_vec
+    if _tr_buffer_to_flex_nd_vec(ft_nd_vec, v):
+        ret.set_nd_vec(ft_nd_vec)
+        return
+    raise TypeError("Could not convert python object with type " + str(type(v)) + " to flexible_type.")
+
+
 
 
 ################################################################################
@@ -1415,6 +1470,9 @@ cdef flexible_type _ft_translate(object v, int tr_code) except *:
         return ret
     elif tr_code == FT_IMAGE_TYPE:
         translate_image(ret, v)
+        return ret
+    elif tr_code == FT_NDARRAY_TYPE:
+        translate_ndarray(ret, v)
         return ret
     elif tr_code == FT_BUFFER_TYPE or tr_code == FT_ARRAY_TYPE:
         tr_buffer_to_ft(ret, v)
@@ -1467,6 +1525,9 @@ cdef flexible_type _ft_translate(object v, int tr_code) except *:
         return ret
     elif tr_code == (FT_BUFFER_TYPE + FT_SAFE) or tr_code == (FT_ARRAY_TYPE + FT_SAFE):
         tr_buffer_to_ft(ret, v)
+        return ret
+    elif tr_code == (FT_NDARRAY_TYPE + FT_SAFE):
+        translate_ndarray(ret, v)
         return ret
     elif tr_code == (FT_NONE_TYPE + FT_SAFE):
         # Here for forced type conversion semantics
@@ -1554,6 +1615,19 @@ cdef inline array.array pyvec_from_flex_vec(const flex_vec& fv):
     return ret
 
 @cython.boundscheck(False)
+cdef inline object pyndarray_from_flex_nd_vec(const flex_nd_vec& fv):
+    cdef vector[size_t] shape  = fv.shape()
+    cdef vector[size_t] stride = fv.stride()
+    cdef const vector[double]* elements = &(fv.elements())
+    cdef size_t start = fv.start()
+
+    array_buf = pyvec_from_flex_vec(deref(elements))
+    for i in range(stride.size()):
+        stride[i] *= 8
+
+    return np_ndarray(shape, np.float64, array_buf, start, stride)
+
+@cython.boundscheck(False)
 cdef list pylist_from_flex_list(const flex_list& vec):
     """
     Converting vector[flexible_type] to list
@@ -1630,6 +1704,8 @@ cdef pyobject_from_flexible_type(const flexible_type& v):
         return pylist_from_flex_list(v.get_list())
     elif f_type == VECTOR:
         return pyvec_from_flex_vec(v.get_vec())
+    elif f_type == ND_VECTOR:
+        return pyndarray_from_flex_nd_vec(v.get_nd_vec())
     elif f_type == DICT:
         return pydict_from_flex_dict(v.get_dict())
     elif f_type == IMAGE:
@@ -1882,7 +1958,6 @@ cdef flex_list flex_list_from_typed_iterable(object v, flex_type_enum common_typ
     """
     Converting any iterable into a list of a certain type.
     """
-
     cdef int tr_code = get_translation_code(type(v), v)
     cdef flex_list ret
 

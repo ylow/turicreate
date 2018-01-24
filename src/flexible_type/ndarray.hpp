@@ -619,20 +619,20 @@ class ndarray {
 
   void print(std::ostream& os) const {
     std::vector<size_t> idx(m_shape.size(), 0);
-    if (num_elem() == 0) std::cout << "[]";
+    if (num_elem() == 0) os << "[]";
 
     // print all the open square brackets
-    for (size_t i = 0;i < idx.size(); ++i) std::cout << "[";
+    for (size_t i = 0;i < idx.size(); ++i) os << "[";
     size_t next_bracket_depth;
     do {
-      std::cout << (*m_elem)[fast_index(idx)];
+      os << (*m_elem)[fast_index(idx)];
       next_bracket_depth = increment_index(idx);
       if (next_bracket_depth == 0) break;
-      else if (next_bracket_depth == 1) std::cout << " ";
-      for (size_t i = 0;i < next_bracket_depth - 1; ++i) std::cout << "]";
-      for (size_t i = 0;i < next_bracket_depth - 1; ++i) std::cout << "[";
+      else if (next_bracket_depth == 1) os << " ";
+      for (size_t i = 0;i < next_bracket_depth - 1; ++i) os << "]";
+      for (size_t i = 0;i < next_bracket_depth - 1; ++i) os << "[";
     }while(1);
-    for (size_t i = 0;i < idx.size(); ++i) std::cout << "]";
+    for (size_t i = 0;i < idx.size(); ++i) os << "]";
   }
   
  private:
