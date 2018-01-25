@@ -109,6 +109,7 @@ cdef extern from "<flexible_type/flexible_type.hpp>" namespace "turi":
         const vector[size_t]& shape()
         const vector[size_t]& stride()
         const size_t start()
+        const size_t num_elem()
         bint is_full()
         bint is_valid()
 

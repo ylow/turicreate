@@ -198,6 +198,52 @@ class GMT(tzinfo):
     def  __repr__(self):
         return self.tzname(self.offset)
 
+################################################################################
+# NDArray wrapper that exposes the buffer protocol
+
+from cpython cimport Py_buffer
+from cpython.mem cimport PyMem_Malloc, PyMem_Free
+from cpython.buffer cimport PyBUF_ND, PyBUF_WRITABLE
+cdef class NDArrayWrapper:
+    cdef flex_nd_vec* vec
+    cdef Py_ssize_t* shape
+    cdef Py_ssize_t* strides
+
+    def __cinit__(self):
+        vec = NULL
+        shape = NULL
+        strides = NULL
+
+    cdef initialize(self, const flex_nd_vec* vec):
+        self.vec = new flex_nd_vec()
+        self.vec[0] = vec[0]
+        self.shape = <Py_ssize_t*>PyMem_Malloc(vec.shape().size() * sizeof(Py_ssize_t))
+        self.strides = <Py_ssize_t*>PyMem_Malloc(vec.stride().size() * sizeof(Py_ssize_t))
+        for i in range(vec.shape().size()):
+            self.shape[i] = vec.shape()[i]
+
+        for i in range(vec.stride().size()):
+            self.strides[i] = vec.stride()[i] * 8
+
+    def __dealloc__(self):
+        if self.vec != NULL:
+            del self.vec
+            PyMem_Free(self.shape)
+            PyMem_Free(self.strides)
+
+    def __getbuffer__(self, Py_buffer *buffer, int flags):
+        cdef Py_ssize_t itemsize = 8
+        buffer.buf = <char *>&(self.vec.elements()[self.vec.start()])
+        buffer.format = 'd'                     # double
+        buffer.internal = NULL                  # see References
+        buffer.itemsize = itemsize
+        buffer.len = self.vec.num_elem() * itemsize
+        buffer.ndim = self.vec.shape().size()
+        buffer.obj = self
+        buffer.readonly = 1
+        buffer.shape = self.shape
+        buffer.strides = self.strides
+        buffer.suboffsets = NULL                # for pointer arrays only
 
 ################################################################################
 # Some specific types require specific handling between python 2 and
@@ -1632,16 +1678,20 @@ cdef inline array.array pyvec_from_flex_vec(const flex_vec& fv):
 
 @cython.boundscheck(False)
 cdef inline object pyndarray_from_flex_nd_vec(const flex_nd_vec& fv):
-    cdef vector[size_t] shape  = fv.shape()
-    cdef vector[size_t] stride = fv.stride()
-    cdef const vector[double]* elements = &(fv.elements())
-    cdef size_t start = fv.start()
+    wrapper = NDArrayWrapper()
+    wrapper.initialize(&fv)
+    return np.asarray(wrapper)
+    # old unused code path
+    # cdef vector[size_t] shape  = fv.shape()
+    # cdef vector[size_t] stride = fv.stride()
+    # cdef const vector[double]* elements = &(fv.elements())
+    # cdef size_t start = fv.start()
 
-    array_buf = pyvec_from_flex_vec(deref(elements))
-    for i in range(stride.size()):
-        stride[i] *= 8
+    # array_buf = pyvec_from_flex_vec(deref(elements))
+    # for i in range(stride.size()):
+    #     stride[i] *= 8
 
-    return np_ndarray(shape, np.float64, array_buf, start, stride)
+    # return np_ndarray(shape, np.float64, array_buf, start, stride)
 
 @cython.boundscheck(False)
 cdef list pylist_from_flex_list(const flex_list& vec):
