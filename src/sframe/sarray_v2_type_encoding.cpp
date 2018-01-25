@@ -569,6 +569,9 @@ bool typed_decode(const block_info& info,
     } else if (column_type == flex_type_enum::VECTOR) {
       decode_vector(iarc, ret, num_undefined, 
                     info.flags & BLOCK_ENCODING_EXTENSION);
+    } else if (column_type == flex_type_enum::ND_VECTOR) {
+      decode_nd_vector(iarc, ret, num_undefined, 
+                    info.flags & BLOCK_ENCODING_EXTENSION);
     } else {
       flexible_type_impl::deserializer s{iarc};
       for (size_t i = 0;i < dsize; ++i) {
