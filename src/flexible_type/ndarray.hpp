@@ -644,9 +644,9 @@ class ndarray {
       next_bracket_depth = increment_index(idx);
       if (next_bracket_depth == 0) break;
       for (size_t i = next_bracket_depth ;i < idx.size(); ++i) os << "]";
-      if (next_bracket_depth + 1 < idx.size()) os << ",";
+      if (next_bracket_depth < idx.size()) os << ",";
       for (size_t i = next_bracket_depth;i < idx.size(); ++i) os << "[";
-      if (next_bracket_depth + 1 < idx.size()) is_first_element = true;
+      if (next_bracket_depth < idx.size()) is_first_element = true;
     }while(1);
     for (size_t i = 0;i < idx.size(); ++i) os << "]";
   }
