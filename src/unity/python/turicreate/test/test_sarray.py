@@ -2988,3 +2988,44 @@ class SArrayTest(unittest.TestCase):
         sa = SArray()
         c = sa.value_counts()
         self.assertEqual(len(c), 0)
+
+    def test_ndarray_shape(self):
+        a1 = np.array([[1,2,3,4],[5,6,7,8]], 'd')
+        a2 = a1.reshape(4,2)
+        a3 = a1.transpose()
+        a4 = a3.reshape(2,4)
+
+        b1 = a1[:2,:2]
+        b2 = a2[:2,:2]
+        b3 = a3[:2,:2]
+        b4 = a4[:2,:2]
+
+        c1 = b1.transpose()
+        c2 = b2.transpose()
+        c3 = b3.transpose()
+        c4 = b4.transpose()
+
+        d1 = a1[:2,2:4]
+        d2 = a2[2:4,:2]
+        d3 = a3[2:4,:2]
+        d4 = a4[:2,2:4]
+
+        sa = SArray([a1,a2,a3,a4,b1,b2,b3,b4,c1,c2,c3,c4,d1,d2,d3,d4])
+        l = list(sa)
+
+        self.assertTrue(np.array_equal(l[0], a1))
+        self.assertTrue(np.array_equal(l[1], a2))
+        self.assertTrue(np.array_equal(l[2], a3))
+        self.assertTrue(np.array_equal(l[3], a4))
+        self.assertTrue(np.array_equal(l[4], b1))
+        self.assertTrue(np.array_equal(l[5], b2))
+        self.assertTrue(np.array_equal(l[6], b3))
+        self.assertTrue(np.array_equal(l[7], b4))
+        self.assertTrue(np.array_equal(l[8], c1))
+        self.assertTrue(np.array_equal(l[9], c2))
+        self.assertTrue(np.array_equal(l[10], c3))
+        self.assertTrue(np.array_equal(l[11], c4))
+        self.assertTrue(np.array_equal(l[12], d1))
+        self.assertTrue(np.array_equal(l[13], d2))
+        self.assertTrue(np.array_equal(l[14], d3))
+        self.assertTrue(np.array_equal(l[15], d4))

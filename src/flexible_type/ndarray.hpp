@@ -83,6 +83,9 @@ class ndarray {
       }
     }
     ASSERT_TRUE(is_valid());
+    for (size_t i = 0;i < m_shape.size(); ++i) {
+      ASSERT_TRUE(m_shape[i] > 0);
+    }
   }
 
   /**
@@ -94,45 +97,15 @@ class ndarray {
     }
   }
 
-  /// resizes the array only if the shape is 1D
-  void resize(size_t size) {
-    ensure_unique();
-    if (m_shape.size() == 0) {
-      m_start = 0;
-      m_shape = {size};
-      m_stride = {1};
-      m_elem->resize(1);
-    } else {
-      ASSERT_EQ(m_start, 0);
-      ASSERT_EQ(m_shape.size(), 1);
-      ASSERT_EQ(m_shape[0], m_elem->size());
-      DASSERT_EQ(m_shape.size(), m_stride.size());
-      m_elem->resize(size);
-      m_shape[0] = size;
-    }
-  }
-
-
-  /// push back only if the shape is 1D
-  void push_back(const T& elem) {
-    ensure_unique();
-    if (m_shape.size() == 0) {
-      m_start = 0;
-      m_shape = {1};
-      m_stride = {1};
-      m_elem->push_back(elem);
-    } else {
-      ASSERT_EQ(m_start, 0);
-      ASSERT_EQ(m_shape.size(), 1);
-      ASSERT_EQ(m_shape[0], m_elem->size());
-      DASSERT_EQ(m_shape.size(), m_stride.size());
-      m_elem->push_back(elem);
-      m_shape[0] = m_elem->size();
-    }
-  }
-
+  /**
+   * Returns true if the ndarray is empty / has no elements.
+   */
   bool empty() const {
-    return m_elem->empty();
+    if (m_elem->empty()) {
+      return true;
+    } else {
+      return num_elem() == 0;
+    }
   }
 
   /**
@@ -286,6 +259,7 @@ class ndarray {
    */
   size_t num_elem() const {
     if (m_shape.size() == 0) return 0;
+    if (m_elem == nullptr) return 0;
     size_t p = 1;
     for (size_t s: m_shape) {
       p = p * s;
@@ -312,8 +286,8 @@ class ndarray {
    */
   bool is_valid() const {
     return m_shape.size() == m_stride.size() &&   // shape and stride line up
-        num_elem() + m_start <= m_elem->size() &&  // num_elements (as computed by shape) is in m_elem
-        last_index() + m_start <= m_elem->size();  // max index (as computed by stride( is in m_elem
+          num_elem() + m_start <= m_elem->size() &&  // num_elements (as computed by shape) is in m_elem
+          last_index() + m_start <= m_elem->size();  // max index (as computed by stride( is in m_elem
   }
 
   /** 
@@ -618,7 +592,7 @@ class ndarray {
   }
 
 
-  /// element-wise division. The other array must have the same shape.
+  /// element-wise equality. The other array must have the same shape.
   bool operator==(const ndarray<T>& other) const {
     if (!same_shape(other)) return false;
     if (num_elem() == 0) return true;
@@ -627,6 +601,11 @@ class ndarray {
       if ((*this)[fast_index(idx)] != other[other.fast_index(idx)]) return false;
     } while(increment_index(idx));
     return true;
+  }
+
+  /// inverse of ==
+  bool operator!=(const ndarray<T>& other) const {
+    return !((*this) == other);
   }
 
   void print(std::ostream& os) const {

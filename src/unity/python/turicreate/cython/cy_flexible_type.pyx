@@ -1084,6 +1084,12 @@ cdef flex_type_enum infer_flex_type_of_sequence(object l, bint undefined_on_erro
         return _infer_buffer_element_type(l, True, undefined_on_error)
     elif tr_code == FT_ARRAY_TYPE:
         return flex_type_from_array_typecode( (<array.array>l).typecode)
+    elif tr_code == FT_NDARRAY_TYPE or tr_code == FT_NDARRAY_TYPE + FT_SAFE:
+        try:
+            return flex_type_from_array_typecode(l.dtype.char)
+        except:
+            return _infer_common_type_of_listlike(list(l), undefined_on_error)
+
     elif tr_code == FT_LIST_TYPE + FT_SAFE:
         if type(l) is list:
             return _infer_common_type_of_listlike(<list>l, undefined_on_error)
@@ -1375,8 +1381,18 @@ cdef inline bint _tr_buffer_to_flex_nd_vec(flex_nd_vec& retv, object v):
     cdef flex_vec f_elements
     cdef vector[size_t] f_shape
     cdef vector[size_t] f_stride
-    if not _tr_buffer_to_flex_vec(f_elements, v.reshape(-1)):
-        return False
+    if v.flags['C_CONTIGUOUS'] == False and v.flags['F_CONTIGUOUS'] == False:
+        # we need to make contiguous
+        v = np.ascontiguousarray(v)
+
+    if v.base is None:
+        if not _tr_buffer_to_flex_vec(f_elements, v.reshape(-1)):
+            return False
+    else:
+        # compute offset
+        offset = (np.byte_bounds(v)[0] - np.byte_bounds(v.base)[0]) / v.itemsize
+        if not _tr_buffer_to_flex_vec(f_elements, v.base.reshape(-1)[offset:]):
+            return False
 
     stride = [i / v.itemsize for i in v.strides]
     for i in stride:
@@ -1968,7 +1984,7 @@ cdef flex_list flex_list_from_typed_iterable(object v, flex_type_enum common_typ
     elif tr_code == FT_TUPLE_TYPE:
         fill_typed_list(ret, <tuple>v, common_type, ignore_cast_failure)
         return ret
-    elif tr_code == FT_BUFFER_TYPE or tr_code == FT_ARRAY_TYPE:
+    elif tr_code == FT_BUFFER_TYPE or tr_code == FT_ARRAY_TYPE or tr_code == FT_NDARRAY_TYPE:
         tr_buffer_to_flex_list(ret, v, common_type, ignore_cast_failure)
         return ret
     elif tr_code == (FT_LIST_TYPE + FT_SAFE):
@@ -1983,11 +1999,11 @@ cdef flex_list flex_list_from_typed_iterable(object v, flex_type_enum common_typ
         else:
             fill_typed_list(ret, tuple(v), common_type, ignore_cast_failure)
         return ret
-    elif tr_code == (FT_BUFFER_TYPE + FT_SAFE) or tr_code == (FT_ARRAY_TYPE + FT_SAFE):
+    elif tr_code == (FT_BUFFER_TYPE + FT_SAFE) or tr_code == (FT_ARRAY_TYPE + FT_SAFE) or tr_code == (FT_NDARRAY_TYPE + FT_SAFE):
         tr_buffer_to_flex_list(ret, v, common_type, ignore_cast_failure)
         return ret
     else:
-        raise TypeError("Cannot convert type '" + type(v).__name__ + "' into flexible list.")
+        raise TypeError("Cannot convert type '" + type(v).__name__ + "' into flexible list. (" + str(tr_code) + ")")
 
 ################################################################################
 # Testing utilities

@@ -2398,9 +2398,6 @@ inline FLEX_ALWAYS_INLINE_FLATTEN void flexible_type::resize(size_t s) {
    case flex_type_enum::VECTOR:
      val.vecval->second.resize(s);
      return;
-   case flex_type_enum::ND_VECTOR:
-     val.ndvecval->second.resize(s);
-     return;
    case flex_type_enum::LIST:
      val.recval->second.resize(s);
      return;
@@ -2428,9 +2425,6 @@ inline FLEX_ALWAYS_INLINE_FLATTEN void flexible_type::push_back(flex_float i) {
    case flex_type_enum::VECTOR:
      val.vecval->second.push_back(i);
      return;
-   case flex_type_enum::ND_VECTOR:
-     val.ndvecval->second.push_back(i);
-     return;
    case flex_type_enum::LIST:
      val.recval->second.push_back(flexible_type(i));
      return;
@@ -2445,9 +2439,6 @@ inline FLEX_ALWAYS_INLINE_FLATTEN void flexible_type::push_back(const flexible_t
   switch(get_type()) {
    case flex_type_enum::VECTOR:
      val.vecval->second.push_back((flex_float)i);
-     return;
-   case flex_type_enum::ND_VECTOR:
-     val.ndvecval->second.push_back((flex_float)i);
      return;
    case flex_type_enum::LIST:
      val.recval->second.push_back(i);

@@ -48,6 +48,14 @@ BOOST_AUTO_TEST_CASE(test_empty) {
  BOOST_TEST(i.is_valid());
  BOOST_TEST(i.is_full());
  test_save_load(i);
+
+ ndarray<int> array1({1,1,2,3,
+                      4,5,6,7},
+                      {2,4},
+                      {4,1});
+ BOOST_TEST(array1.empty() == false);
+ ndarray<int> array2;
+ BOOST_TEST(array2.empty() == true);
 }
 
 BOOST_AUTO_TEST_CASE(test_canonical) {
@@ -374,6 +382,7 @@ BOOST_AUTO_TEST_CASE(test_flexible_type_conversions1) {
  BOOST_TEST(fconv1.elements() == target1.elements(), tt::per_element());
  BOOST_TEST(fconv1.shape() == target1.shape(), tt::per_element());
  BOOST_TEST(fconv1.stride() == target1.stride(), tt::per_element());
+ test_save_load(fconv1);
 }
 
 BOOST_AUTO_TEST_CASE(test_flexible_type_conversions2) {
@@ -394,6 +403,7 @@ BOOST_AUTO_TEST_CASE(test_flexible_type_conversions2) {
  BOOST_TEST(fconv1.elements() == target1.elements(), tt::per_element());
  BOOST_TEST(fconv1.shape() == target1.shape(), tt::per_element());
  BOOST_TEST(fconv1.stride() == target1.stride(), tt::per_element());
+ test_save_load(fconv1);
 }
 
 
@@ -426,6 +436,7 @@ BOOST_AUTO_TEST_CASE(test_flexible_type_conversions_3d) {
  BOOST_TEST(fconv1.elements() == target1.elements(), tt::per_element());
  BOOST_TEST(fconv1.shape() == target1.shape(), tt::per_element());
  BOOST_TEST(fconv1.stride() == target1.stride(), tt::per_element());
+ test_save_load(fconv1);
 }
 
 
@@ -504,3 +515,57 @@ BOOST_AUTO_TEST_CASE(test_image_conversion) {
  BOOST_TEST(nd3.stride() == rt3.stride(), tt::per_element());
 }
 
+
+BOOST_AUTO_TEST_CASE(test_equality) {
+ flex_nd_vec array1({1,1,2,3,
+                      4,5,6,7},
+                      {2,4},
+                      {4,1});
+ flex_nd_vec array2({1,4,
+                      1,5,
+                      2,6,
+                      3,7},
+                      {2,4},
+                      {1,2});
+ flexible_type f1(array1);
+ flexible_type f2(array2);
+ BOOST_TEST(array1 == array2);
+ BOOST_TEST(f1 == f2);
+}
+
+BOOST_AUTO_TEST_CASE(test_equality_subarray) {
+ flex_nd_vec array1({1,1,2,3,
+                      4,5,6,7},
+                      {1,2},
+                      {4,1});
+ flex_nd_vec array2({1,4,
+                      1,5,
+                      2,6,
+                      3,7},
+                      {1,2},
+                      {1,2});
+ flexible_type f1(array1);
+ flexible_type f2(array2);
+ BOOST_TEST(array1 == array2);
+ BOOST_TEST(f1 == f2);
+}
+
+BOOST_AUTO_TEST_CASE(test_equality_fail) {
+ flex_nd_vec array1({1,1,2,3,
+                      4,5,6,7},
+                      {1,2},
+                      {4,1});
+ flex_nd_vec array2({1,4,
+                      1,5,
+                      2,6,
+                      3,7},
+                      {2,1},
+                      {2,1});
+ flexible_type f1(array1);
+ flexible_type f2(array2);
+ BOOST_TEST(array1 != array2);
+ BOOST_TEST(f1 != f2);
+ // check both == and != 
+ bool t = f1 == f2;
+ BOOST_TEST(t == false);
+}
