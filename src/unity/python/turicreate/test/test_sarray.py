@@ -3030,6 +3030,11 @@ class SArrayTest(unittest.TestCase):
         self.assertTrue(np.array_equal(l[14], d3))
         self.assertTrue(np.array_equal(l[15], d4))
 
+        sb = SArray(l)
+        l2 = list(sb)
+        for i in range(len(l)):
+            self.assertTrue(np.array_equal(l[i], l2[i]))
+
     def test_ndarray_ops(self):
         a1 = np.array([[1,2,3,4],[5,6,7,8]], 'd')
         a2 = a1.reshape(4,2)

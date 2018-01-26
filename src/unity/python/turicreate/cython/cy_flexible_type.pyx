@@ -1427,6 +1427,12 @@ cdef inline bint _tr_buffer_to_flex_nd_vec(flex_nd_vec& retv, object v):
     cdef flex_vec f_elements
     cdef vector[size_t] f_shape
     cdef vector[size_t] f_stride
+
+    # there are certain bases which we don't understand
+    # and will cause problems. Copy it if necessary.
+    if v.base is not None and type(v.base) is not np_ndarray:
+        v = np.copy(v, 'C')
+
     if v.flags['C_CONTIGUOUS'] == False and v.flags['F_CONTIGUOUS'] == False:
         # we need to make contiguous
         v = np.ascontiguousarray(v)
