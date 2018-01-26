@@ -357,7 +357,7 @@ inline bool flex_type_is_convertible(flex_type_enum from, flex_type_enum to) {
 /*flt*/   {1,  1,  1,  0,  0,  0,  1,  0,  0, 0},  // float casts to integer, self, string
 /*str*/   {0,  0,  1,  0,  0,  0,  0,  0,  0, 0},  // string casts to string only
 /*vec*/   {0,  0,  1,  1,  1,  0,  0,  0,  0, 1},  // vector casts to string and self and recursive, ndvec
-/*rec*/   {0,  0,  1,  1,  1,  0,  0,  0,  0, 1},  // recursive casts to string vec, rec, ndvec, and self.
+/*rec*/   {0,  0,  1,  0,  1,  0,  0,  0,  0, 0},  // recursive casts to string vec, rec, ndvec, and self.
 /*dic*/   {0,  0,  1,  0,  0,  1,  0,  0,  0, 0},  // dict casts to self
 /*dtime*/ {1,  1,  1,  0,  0,  0,  1,  0,  0, 0},  // dtime casts to string and self
 /*undef*/ {0,  0,  1,  0,  0,  0,  0,  1,  0, 0},  //UNDEFINED casts to string and UNDEFINED

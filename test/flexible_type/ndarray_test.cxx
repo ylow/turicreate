@@ -156,14 +156,15 @@ BOOST_AUTO_TEST_CASE(test_invalid) {
 
 
 BOOST_AUTO_TEST_CASE(test_bad_shapes) {
- TS_ASSERT_THROWS(ndarray<int>({0,1,2,3,4,5,6,7,8,9},
-                        {0,0},
-                        {1,5}), std::string);
- TS_ASSERT_THROWS(ndarray<int>({0,1,2,3,4,5,6,7,8,9},
-                               {1,0},
-                               {1,5}), std::string);
+ ndarray<int> a({0,1,2,3,4,5,6,7,8,9},
+                {0,0},
+                {1,5});
+ BOOST_TEST(a.elements().size() == 0);
+ ndarray<int> b({0,1,2,3,4,5,6,7,8,9},
+                {1,0},
+                {1,5});
+ BOOST_TEST(b.elements().size() == 0);
 }
-
 BOOST_AUTO_TEST_CASE(test_odd_stride) {
  // a stride of 0 is technically valid
  // though a little odd

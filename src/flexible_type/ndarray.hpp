@@ -70,9 +70,11 @@ class ndarray {
           const index_range_type& stride = index_range_type(),
           const index_type start = 0): 
               m_elem(elements), m_shape(shape), m_stride(stride), m_start(start) { 
+    // construct m_shape if not given
     if (m_shape.size() == 0 && elements->size() - m_start > 0) {
       m_shape.push_back(elements->size() - m_start);
     }
+    // construct m_stide if not given
     if (m_stride.size() == 0 && m_shape.size() > 0) {
       m_stride.resize(m_shape.size());
       int i = m_shape.size() - 1;
@@ -82,6 +84,21 @@ class ndarray {
         m_stride[i] = m_stride[i + 1] * m_shape[i + 1];
       }
     }
+
+    // if any shape axis is empty
+    bool empty = m_shape.size() == 0;
+    for (size_t i = 0;i < m_shape.size(); ++i) {
+      if (m_shape[i] == 0) {
+        empty = true;
+      }
+    }
+    if (empty) {
+      m_elem->clear();
+      m_shape.clear();
+      m_stride.clear();
+      m_start = 0;
+    }
+
     ASSERT_TRUE(is_valid());
     for (size_t i = 0;i < m_shape.size(); ++i) {
       ASSERT_TRUE(m_shape[i] > 0);
