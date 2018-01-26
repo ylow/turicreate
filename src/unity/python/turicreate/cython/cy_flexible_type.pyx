@@ -240,7 +240,7 @@ cdef class NDArrayWrapper:
         buffer.len = self.vec.num_elem() * itemsize
         buffer.ndim = self.vec.shape().size()
         buffer.obj = self
-        buffer.readonly = 1
+        buffer.readonly = 0
         buffer.shape = self.shape
         buffer.strides = self.strides
         buffer.suboffsets = NULL                # for pointer arrays only
@@ -1379,7 +1379,9 @@ cdef inline bint __try_buffer_type_vec(flex_vec& retv, object v, _numeric t):
 
     try:
         buf = v
-    except:
+    except Exception as e:
+        #print "buf conversion failed for ", type(v), v
+        #print type(e), e
         return False
 
     cdef size_t i
@@ -1433,17 +1435,27 @@ cdef inline bint _tr_buffer_to_flex_nd_vec(flex_nd_vec& retv, object v):
     if v.base is not None and type(v.base) is not np_ndarray:
         v = np.copy(v, 'C')
 
+    # if not writeable, we get conversion issues
+    # https://github.com/cython/cython/issues/1605
+    if v.flags['WRITEABLE'] == False:
+        v = np.copy(v, 'C')
+
     if v.flags['C_CONTIGUOUS'] == False and v.flags['F_CONTIGUOUS'] == False:
         # we need to make contiguous
+        #print "converting to contiguous"
         v = np.ascontiguousarray(v)
 
     if v.base is None:
+        #print "baseless conversion"
         if not _tr_buffer_to_flex_vec(f_elements, v.reshape(-1)):
+            #print "baseless conversion fail"
             return False
     else:
+        #print "base and offset conversion"
         # compute offset
         offset = (np.byte_bounds(v)[0] - np.byte_bounds(v.base)[0]) / v.itemsize
         if not _tr_buffer_to_flex_vec(f_elements, v.base.reshape(-1)[offset:]):
+            #print "base and offset conversion fail"
             return False
 
     stride = [i / v.itemsize for i in v.strides]

@@ -3010,30 +3010,30 @@ class SArrayTest(unittest.TestCase):
         d3 = a3[2:4,:2]
         d4 = a4[:2,2:4]
 
-        sa = SArray([a1,a2,a3,a4,b1,b2,b3,b4,c1,c2,c3,c4,d1,d2,d3,d4])
+        originals = [a1,a2,a3,a4,b1,b2,b3,b4,c1,c2,c3,c4,d1,d2,d3,d4]
+        sa = SArray(originals)
         l = list(sa)
 
-        self.assertTrue(np.array_equal(l[0], a1))
-        self.assertTrue(np.array_equal(l[1], a2))
-        self.assertTrue(np.array_equal(l[2], a3))
-        self.assertTrue(np.array_equal(l[3], a4))
-        self.assertTrue(np.array_equal(l[4], b1))
-        self.assertTrue(np.array_equal(l[5], b2))
-        self.assertTrue(np.array_equal(l[6], b3))
-        self.assertTrue(np.array_equal(l[7], b4))
-        self.assertTrue(np.array_equal(l[8], c1))
-        self.assertTrue(np.array_equal(l[9], c2))
-        self.assertTrue(np.array_equal(l[10], c3))
-        self.assertTrue(np.array_equal(l[11], c4))
-        self.assertTrue(np.array_equal(l[12], d1))
-        self.assertTrue(np.array_equal(l[13], d2))
-        self.assertTrue(np.array_equal(l[14], d3))
-        self.assertTrue(np.array_equal(l[15], d4))
+        # check roundtriping of SArray ndarray type
+        for i in range(len(l)):
+                self.assertTrue(np.array_equal(l[i], originals[i]))
 
+        # check roundtriping again because the ndarray type SArray
+        # returned is slightly odd (it uses a custom bufferprotocol
+        # to share memory with C++)
         sb = SArray(l)
         l2 = list(sb)
         for i in range(len(l)):
             self.assertTrue(np.array_equal(l[i], l2[i]))
+
+        # test slicing
+        slice_true = [x[1:] for x in originals]
+
+        slice_test = list(sa.apply(lambda x:x[1:]))
+        for i in range(len(l)):
+            self.assertTrue(np.array_equal(slice_test[i], slice_true[i]))
+        # test slice round tripping
+        # test SArray(slice_true)
 
     def test_ndarray_ops(self):
         a1 = np.array([[1,2,3,4],[5,6,7,8]], 'd')
