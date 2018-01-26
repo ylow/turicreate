@@ -159,6 +159,7 @@ class ndarray {
    * unintentional side effects (changing other arrays).
    */
   value_type& operator[](size_t elem_index) {
+    ensure_unique();
     return (*m_elem)[m_start + elem_index];
   }
 
@@ -178,6 +179,7 @@ class ndarray {
    * unintentional side effects (changing other arrays).
    */
   value_type& at(size_t elem_index) {
+    ensure_unique();
     ASSERT_LT(m_start + elem_index, m_elem->size());
     return (*m_elem)[m_start + elem_index];
   }
@@ -218,6 +220,7 @@ class ndarray {
    * unintentional side effects (changing other arrays).
    */
   container_type& elements() {
+    ensure_unique();
     ASSERT_TRUE(is_full());
     return *m_elem;
   }
@@ -476,6 +479,7 @@ class ndarray {
   ndarray<T>& operator+=(const ndarray<T>& other) {
     ASSERT_TRUE(same_shape(other));
     if (num_elem() == 0) return *this;
+    ensure_unique();
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
       (*this)[fast_index(idx)] += other[other.fast_index(idx)];
@@ -486,6 +490,7 @@ class ndarray {
   /// scalar addition. 
   ndarray<T>& operator+=(T other) {
     if (num_elem() == 0) return *this;
+    ensure_unique();
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
       (*this)[fast_index(idx)] += other;
@@ -497,6 +502,7 @@ class ndarray {
   ndarray<T>& operator-=(const ndarray<T>& other) {
     ASSERT_TRUE(same_shape(other));
     if (num_elem() == 0) return *this;
+    ensure_unique();
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
       (*this)[fast_index(idx)] -= other[other.fast_index(idx)];
@@ -507,6 +513,7 @@ class ndarray {
   /// scalar subtraction. 
   ndarray<T>& operator-=(T other) {
     if (num_elem() == 0) return *this;
+    ensure_unique();
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
       (*this)[fast_index(idx)] -= other;
@@ -518,6 +525,7 @@ class ndarray {
   ndarray<T>& operator*=(const ndarray<T>& other) {
     ASSERT_TRUE(same_shape(other));
     if (num_elem() == 0) return *this;
+    ensure_unique();
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
       (*this)[fast_index(idx)] *= other[other.fast_index(idx)];
@@ -528,6 +536,7 @@ class ndarray {
   /// scalar multiplication 
   ndarray<T>& operator*=(T other) {
     if (num_elem() == 0) return *this;
+    ensure_unique();
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
       (*this)[fast_index(idx)] *= other;
@@ -540,6 +549,7 @@ class ndarray {
   ndarray<T>& operator/=(const ndarray<T>& other) {
     ASSERT_TRUE(same_shape(other));
     if (num_elem() == 0) return *this;
+    ensure_unique();
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
       (*this)[fast_index(idx)] /= other[other.fast_index(idx)];
@@ -550,6 +560,7 @@ class ndarray {
   /// scalar division
   ndarray<T>& operator/=(T other) {
     if (num_elem() == 0) return *this;
+    ensure_unique();
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
       (*this)[fast_index(idx)] /= other;
@@ -561,6 +572,7 @@ class ndarray {
   ndarray<T>& operator%=(const ndarray<T>& other) {
     ASSERT_TRUE(same_shape(other));
     if (num_elem() == 0) return *this;
+    ensure_unique();
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
       T& left = (*this)[fast_index(idx)];
@@ -572,6 +584,7 @@ class ndarray {
   /// scalar modulo. 
   ndarray<T>& operator%=(T other) {
     if (num_elem() == 0) return *this;
+    ensure_unique();
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
       T& left = (*this)[fast_index(idx)];
@@ -583,6 +596,7 @@ class ndarray {
   /// negation
   ndarray<T>& negate() {
     if (num_elem() == 0) return *this;
+    ensure_unique();
     std::vector<size_t> idx(m_shape.size(), 0);
     do {
       T& v = (*this)[fast_index(idx)];

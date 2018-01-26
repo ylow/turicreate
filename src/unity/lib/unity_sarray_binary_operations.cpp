@@ -26,7 +26,13 @@ void check_operation_feasibility(flex_type_enum left,
                              || left == flex_type_enum::VECTOR)
                              && (right == flex_type_enum::FLOAT
                                  || right == flex_type_enum::INTEGER
-                                 || right == flex_type_enum::VECTOR));
+                                 || right == flex_type_enum::VECTOR)) ||
+                            ((left == flex_type_enum::FLOAT
+                             || left == flex_type_enum::INTEGER
+                             || left == flex_type_enum::ND_VECTOR)
+                             && (right == flex_type_enum::FLOAT
+                                 || right == flex_type_enum::INTEGER
+                                 || right == flex_type_enum::ND_VECTOR));
     }
   } else if (op == "%") {
     operation_is_feasible = left == flex_type_enum::INTEGER &&
@@ -225,6 +231,10 @@ get_binary_operator(flex_type_enum left, flex_type_enum right, std::string op) {
     } else if (left == flex_type_enum::VECTOR) {
      return [](const flexible_type& l, const flexible_type& r)->flexible_type{ return l * r; };
     } else if (right == flex_type_enum::VECTOR) {
+     return [](const flexible_type& l, const flexible_type& r)->flexible_type{ return r * l; };
+    } else if (left == flex_type_enum::ND_VECTOR) {
+     return [](const flexible_type& l, const flexible_type& r)->flexible_type{ return l * r; };
+    } else if (right == flex_type_enum::ND_VECTOR) {
      return [](const flexible_type& l, const flexible_type& r)->flexible_type{ return r * l; };
     } else {
       // everything else, left hand side is good

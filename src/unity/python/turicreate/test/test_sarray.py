@@ -3029,3 +3029,70 @@ class SArrayTest(unittest.TestCase):
         self.assertTrue(np.array_equal(l[13], d2))
         self.assertTrue(np.array_equal(l[14], d3))
         self.assertTrue(np.array_equal(l[15], d4))
+
+    def test_ndarray_ops(self):
+        a1 = np.array([[1,2,3,4],[5,6,7,8]], 'd')
+        a2 = a1.reshape(4,2)
+        sa = SArray([a1,a2])
+
+        b1 = np.array([[2,1,4,3],[6,5,8,7]], 'd')
+        b2 = a1.reshape(4,2)
+        sb = SArray([b1,b2])
+
+        res = sa + sb
+        self.assertTrue(np.array_equal(res[0], a1+b1))
+        self.assertTrue(np.array_equal(res[1], a2+b2))
+
+        res = sa + 1
+        self.assertTrue(np.array_equal(res[0], a1+1))
+        self.assertTrue(np.array_equal(res[1], a2+1))
+
+        res = 1 + sa
+        self.assertTrue(np.array_equal(res[0], 1+a1))
+        self.assertTrue(np.array_equal(res[1], 1+a2))
+
+        res = sa - sb
+        self.assertTrue(np.array_equal(res[0], a1-b1))
+        self.assertTrue(np.array_equal(res[1], a2-b2))
+
+        res = sa - 1
+        self.assertTrue(np.array_equal(res[0], a1-1))
+        self.assertTrue(np.array_equal(res[1], a2-1))
+
+        res = 1 - sa 
+        self.assertTrue(np.array_equal(res[0], 1-a1))
+        self.assertTrue(np.array_equal(res[1], 1-a2))
+
+        res = sa * sb
+        self.assertTrue(np.array_equal(res[0], a1*b1))
+        self.assertTrue(np.array_equal(res[1], a2*b2))
+
+        res = sa * 2
+        self.assertTrue(np.array_equal(res[0], a1*2))
+        self.assertTrue(np.array_equal(res[1], a2*2))
+
+        res = 2 * sa
+        self.assertTrue(np.array_equal(res[0], 2*a1))
+        self.assertTrue(np.array_equal(res[1], 2*a2))
+
+        res = sa / sb
+        self.assertTrue(np.array_equal(res[0], a1/b1))
+        self.assertTrue(np.array_equal(res[1], a2/b2))
+
+        res = sa / 2
+        self.assertTrue(np.array_equal(res[0], a1/2.0))
+        self.assertTrue(np.array_equal(res[1], a2/2.0))
+
+        res = sa / 2.0
+        self.assertTrue(np.array_equal(res[0], a1/2.0))
+        self.assertTrue(np.array_equal(res[1], a2/2.0))
+
+        res = 2.0 / sa 
+        self.assertTrue(np.array_equal(res[0], 2.0/a1))
+        self.assertTrue(np.array_equal(res[1], 2.0/a2))
+
+        # misshappen
+        with self.assertRaises(RuntimeError):
+            res.sum()
+
+        self.assertTrue(np.array_equal(SArray([a1,b1]).sum(), a1+b1))
