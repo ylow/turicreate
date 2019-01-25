@@ -532,6 +532,7 @@ class sarray : public swriter_base<swriter_impl::output_iterator<T> > {
   void try_compact() {
     if (SFRAME_COMPACTION_THRESHOLD > 0 && 
         index_info.segment_files.size() > SFRAME_COMPACTION_THRESHOLD) {
+      log_func_entry();
       sarray_compact(*this, SFRAME_COMPACTION_THRESHOLD);
     }
   }

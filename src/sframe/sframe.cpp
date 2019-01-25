@@ -333,6 +333,7 @@ sframe sframe::append(const sframe& other) const {
 }
 
 void sframe::try_compact() {
+  Dlog_func_entry();
   for (auto& col : columns) col->try_compact();
 }
 
