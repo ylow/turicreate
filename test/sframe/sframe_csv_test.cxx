@@ -493,6 +493,19 @@ csv_test another_wierd_bracketing_thing_issue_1514() {
 }
 
 
+csv_test test_mismatched_square_brackets() {
+  csv_test ret;
+  std::stringstream strm;
+  strm << "a\n"
+       << "[hello\n";
+  ret.file = strm.str();
+  ret.tokenizer.delimiter = "\t";
+  ret.values.push_back({"[hello"});
+
+  ret.types = {{"a", flex_type_enum::STRING}};
+  return ret;
+}
+
 csv_test string_integers() {
   csv_test ret;
   std::stringstream strm;
@@ -982,6 +995,7 @@ struct sframe_test  {
      evaluate(single_string_column());
      evaluate(test_missing_tab_values());
      evaluate(tab_delimited_csv_with_list());
+     evaluate(test_mismatched_square_brackets());
    }
 
 
