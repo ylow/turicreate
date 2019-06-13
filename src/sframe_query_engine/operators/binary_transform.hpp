@@ -12,6 +12,7 @@
 #include <sframe_query_engine/operators/operator.hpp>
 #include <sframe_query_engine/execution/query_context.hpp>
 #include <sframe_query_engine/operators/operator_properties.hpp>
+#include <sframe_query_engine/util/coro.hpp>
 
 namespace turi {
 namespace query_eval {
@@ -32,7 +33,13 @@ typedef std::function<flexible_type(const sframe_rows::row&,
 template<>
 class operator_impl<planner_node_type::BINARY_TRANSFORM_NODE> : public query_operator {
  public:
-  
+  DECL_CORO_STATE(execute);
+  std::shared_ptr<const sframe_rows>  rows_left, rows_right;
+  sframe_rows::const_iterator left_iter, right_iter;
+  sframe_rows::iterator out_iter;
+  std::shared_ptr<sframe_rows>  output_buffer;
+
+
   planner_node_type type() const { return planner_node_type::BINARY_TRANSFORM_NODE; } 
 
   static std::string name() { return "binary_transform"; }
@@ -53,21 +60,26 @@ class operator_impl<planner_node_type::BINARY_TRANSFORM_NODE> : public query_ope
     return std::make_shared<operator_impl>(*this);
   }
   
+  inline bool coro_running() const {
+    return CORO_RUNNING(execute);
+  }
   inline void execute(query_context& context) {
+    CORO_BEGIN(execute)
     while(1) {
-      auto rows_left = context.get_next(0);
-      auto rows_right = context.get_next(1);
+      {
+      rows_left = context.get_next(0);
+      rows_right = context.get_next(1);
       if (rows_left == nullptr && rows_right == nullptr) break;
       ASSERT_TRUE(rows_left != nullptr && rows_right != nullptr);
       ASSERT_EQ(rows_left->num_rows(), rows_right->num_rows());
       ASSERT_EQ(rows_left->num_columns(), 1);
       ASSERT_EQ(rows_right->num_columns(), 1);
-      auto output_buffer = context.get_output_buffer();
+      output_buffer = context.get_output_buffer();
       output_buffer->resize(1, rows_left->num_rows());
 
-      auto left_iter = rows_left->cbegin();
-      auto right_iter = rows_right->cbegin();
-      auto out_iter = output_buffer->begin();
+      left_iter = rows_left->cbegin();
+      right_iter = rows_right->cbegin();
+      out_iter = output_buffer->begin();
       while(left_iter != rows_left->cend()) {
         (*out_iter)[0] = m_transform_fn((*left_iter), (*right_iter));
         ++left_iter;
@@ -75,7 +87,10 @@ class operator_impl<planner_node_type::BINARY_TRANSFORM_NODE> : public query_ope
         ++out_iter;
       }
       context.emit(output_buffer);
+      }
+      CORO_YIELD();
     }
+    CORO_END
   }
 
   static std::shared_ptr<planner_node> make_planner_node(
