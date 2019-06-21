@@ -11,7 +11,7 @@
 #include <sframe_query_engine/operators/operator.hpp>
 #include <sframe_query_engine/execution/query_context.hpp>
 #include <sframe_query_engine/operators/operator_properties.hpp>
-#include <sframe_query_engine/util/coro.hpp>
+#include <util/coro.hpp>
 
 namespace turi {
 

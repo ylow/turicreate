@@ -9,7 +9,7 @@
 #include <sframe_query_engine/execution/query_context.hpp>
 #include <sframe_query_engine/execution/execution_node.hpp>
 #include <cppipc/cppipc.hpp>
-#include <sframe_query_engine/util/coro.hpp>
+#include <util/coro.hpp>
 
 namespace turi {
 namespace query_eval {

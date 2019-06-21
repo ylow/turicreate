@@ -152,114 +152,153 @@ bool typed_decode_stream_callback(const block_info& info,
 void typed_encode(const std::vector<flexible_type>& data, 
                   block_info& info,
                   oarchive& oarc);
+#define PUT_BUFFER(x)  \
+   while(decode_bufpos < decodebuffer.size() &&  \
+         decodebuffer[decode_bufpos].get_type() == flex_type_enum::UNDEFINED) { \
+     ++decode_bufpos; \
+   } \
+  decode_buffer[decode_bufpos++] = (x);  \
+  if (decode_bufpos == decodebuffer.size()) CORO_YIELD(true);
 
 
+struct decode_number_stream {
+  DECL_CORO_STATE(read);
+  uint64_t buf[MAX_INTEGERS_PER_BLOCK];
+  size_t buflen;
+  size_t i;
 /**
  * Decodes num_elements of numbers, calling the callback for each number.
  */
-template <typename Fn> // Fn is a function like void(flexible_type)
-static void decode_number_stream(size_t num_elements,
-                                 iarchive& iarc,
-                                 Fn callback) {
-  uint64_t buf[MAX_INTEGERS_PER_BLOCK];
+  bool read(size_t num_elements,
+            iarchive& iarc,
+            std::vector<flexible_type>& decodebuffer) {
+  size_t decode_bufpos = 0;
+  CORO_BEGIN
   while(num_elements > 0) {
-    size_t buflen = std::min<size_t>(num_elements, MAX_INTEGERS_PER_BLOCK);
+    buflen = std::min<size_t>(num_elements, MAX_INTEGERS_PER_BLOCK);
     frame_of_reference_decode_128(iarc, buflen, buf);
-    for (size_t i = 0;i < buflen; ++i) {
-      callback(flexible_type(buf[i]));
+    for (i = 0;i < buflen; ++i) {
+      PUT_BUFFER(flexible_type(buf[i]));
     }
     num_elements -= buflen;
   }
+  CORO_END;
+  return false;
 }
+};
 
 
-/**
- * Decodes num_elements of numbers, calling the callback for each number.
- */
-template <typename Fn> // Fn is a function like void(flexible_type)
-static void decode_double_stream_legacy(size_t num_elements,
-                                 iarchive& iarc,
-                                 Fn callback) {
+struct decode_double_stream_legacy{
+  DECL_CORO_STATE(read);
   uint64_t buf[MAX_INTEGERS_PER_BLOCK];
-  while(num_elements > 0) {
-    size_t buflen = std::min<size_t>(num_elements, MAX_INTEGERS_PER_BLOCK);
-    frame_of_reference_decode_128(iarc, buflen, buf);
-    for (size_t i = 0;i < buflen; ++i) {
-      size_t intval = (buf[i] >> 1) | (buf[i] << 63);
-      // make a double flexible_type
-      flexible_type ret(0.0);
-      ret.reinterpret_mutable_get<flex_int>() = intval;
-      callback(ret);
+  size_t buflen;
+  size_t i;
+  flexible_type ret(0.0);
+
+  bool read(size_t num_elements,
+            iarchive& iarc,
+            std::vector<flexible_type>& decodebuffer) {
+    size_t decode_bufpos = 0;
+    CORO_BEGIN
+    while(num_elements > 0) {
+      buflen = std::min<size_t>(num_elements, MAX_INTEGERS_PER_BLOCK);
+      frame_of_reference_decode_128(iarc, buflen, buf);
+      for (i = 0;i < buflen; ++i) {
+        size_t intval = (buf[i] >> 1) | (buf[i] << 63);
+        // make a double flexible_type
+        ret.reinterpret_mutable_get<flex_int>() = intval;
+        PUT_BUFFER(ret);
+      }
+      num_elements -= buflen;
     }
-    num_elements -= buflen;
+    CORO_END;
+    return false;
   }
 }
 
+struct decode_double_stream{
+  DECL_CORO_STATE(read);
 
-/**
- * Decodes num_elements of numbers, calling the callback for each number.
- */
-template <typename Fn> // Fn is a function like void(flexible_type)
-static void decode_double_stream(size_t num_elements,
-                                 iarchive& iarc,
-                                 Fn callback) {
-  // we reserve one character so we can add new encoders as needed in the future
-  char reserved = 0;
-  iarc.read(&(reserved), sizeof(reserved));
-  ASSERT_LT(reserved, 3);
-  if (reserved == DOUBLE_RESERVED_FLAGS::LEGACY_ENCODING) {
-    decode_double_stream_legacy(num_elements, iarc, callback);
-    return;
-  } else if (reserved == DOUBLE_RESERVED_FLAGS::INTEGER_ENCODING) {
-    decode_number_stream(num_elements, iarc, 
-                         [=](const flexible_type& val) {
-                           flex_float ret = flex_float(val.get<flex_int>());
-                           callback(ret);
-                         });
-  } 
-}
+  char reserved;
+  decode_double_stream_legacy legacy;
+  uint64_t buf[MAX_INTEGERS_PER_BLOCK];
+  size_t buflen;
+  size_t i;
 
+  bool read(size_t num_elements,
+            iarchive& iarc,
+            std::vector<flexible_type>& decodebuffer) {
+    size_t decode_bufpos = 0;
+    CORO_BEGIN
+    // we reserve one character so we can add new encoders as needed in the future
+    reserved = 0;
+    iarc.read(&(reserved), sizeof(reserved));
+    ASSERT_LT(reserved, 3);
+    if (reserved == DOUBLE_RESERVED_FLAGS::LEGACY_ENCODING) {
+      while(legacy.read(num_elements, iarc, decodebuffer)) {
+        CORO_YIELD(true);
+      }
+    } else if (reserved == DOUBLE_RESERVED_FLAGS::INTEGER_ENCODING) {
+      while(num_elements > 0) {
+        buflen = std::min<size_t>(num_elements, MAX_INTEGERS_PER_BLOCK);
+        frame_of_reference_decode_128(iarc, buflen, buf);
+        for (i = 0;i < buflen; ++i) {
+          PUT_BUFFER(flexible_type(flex_float(buf[i])));
+        }
+        num_elements -= buflen;
+      }
+    }
+    return false;
+  }
+};
 
+struct decode_string_stream{
+  DECL_CORO_STATE(read);
+  bool use_dictionary_encoding = false;
+  std::vector<flexible_type> idx_values;
+  uint64_t num_values;
+  std::vector<flexible_type> str_values;
+  flexible_type ret(flex_type_enum::STRING);
+  size_t i;
 /**
  * Decodes num_elements of strings , calling the callback for each string.
  */
-template <typename Fn> // Fn is a function like void(flexible_type)
-static void decode_string_stream(size_t num_elements,
-                                 iarchive& iarc,
-                                 Fn callback) {
-  bool use_dictionary_encoding = false;
-  std::vector<flexible_type> idx_values;
-  idx_values.resize(num_elements, flexible_type(flex_type_enum::INTEGER));
-  iarc >> use_dictionary_encoding;
-  if (use_dictionary_encoding) {
-    uint64_t num_values;
-    std::vector<flexible_type> str_values;
-    variable_decode(iarc, num_values);
-    str_values.resize(num_values);
-    for (auto& str: str_values) {
-      std::string new_str;
-      uint64_t str_len;
-      variable_decode(iarc, str_len);
-      new_str.resize(str_len);
-      iarc.read(&(new_str[0]), str_len);
-      str = std::move(new_str);
+  bool read(size_t num_elements,
+            iarchive& iarc,
+            std::vector<flexible_type>& decodebuffer) {
+    size_t decode_bufpos = 0;
+    CORO_BEGIN
+    idx_values.resize(num_elements, flexible_type(flex_type_enum::INTEGER));
+    iarc >> use_dictionary_encoding;
+    if (use_dictionary_encoding) {
+      variable_decode(iarc, num_values);
+      str_values.resize(num_values);
+      for (auto& str: str_values) {
+        std::string new_str;
+        uint64_t str_len;
+        variable_decode(iarc, str_len);
+        new_str.resize(str_len);
+        iarc.read(&(new_str[0]), str_len);
+        str = std::move(new_str);
+      }
+      decode_number(iarc, idx_values, 0);
+      for (i = 0;i < num_elements; ++i) {
+        PUT_BUFFER(str_values[idx_values[i].get<flex_int>()]);
+      }
+    } else {
+      // get all the lengths
+      decode_number(iarc, idx_values, 0);
+      for (i = 0;i < num_elements; ++i) {
+        size_t str_len = idx_values[i].get<flex_int>();
+        ret.mutable_get<std::string>().resize(str_len);
+        iarc.read(&(ret.mutable_get<std::string>()[0]), str_len);
+        PUT_BUFFER(ret);
+      }
     }
-    decode_number(iarc, idx_values, 0);
-    for (size_t i = 0;i < num_elements; ++i) {
-      callback(str_values[idx_values[i].get<flex_int>()]);
-    }
-  } else {
-    // get all the lengths
-    decode_number(iarc, idx_values, 0);
-    flexible_type ret(flex_type_enum::STRING);
-    for (size_t i = 0;i < num_elements; ++i) {
-      size_t str_len = idx_values[i].get<flex_int>();
-      ret.mutable_get<std::string>().resize(str_len);
-      iarc.read(&(ret.mutable_get<std::string>()[0]), str_len);
-      callback(ret);
-    }
+    CORO_END
+    return false;
   }
-}
+};
 
 /**
  * Decodes num_elements of vectors, calling the callback for each string.
@@ -267,198 +306,262 @@ static void decode_string_stream(size_t num_elements,
  * This is the 2nd generation vector decoder. its use is flagged by
  * turning on the block flag BLOCK_ENCODING_EXTENSION. 
  */
-template <typename Fn> // Fn is a function like void(flexible_type)
-static void decode_vector_stream(size_t num_elements,
-                                 iarchive& iarc,
-                                 Fn callback,
-                                 bool new_format) {
-  // we reserve one character so we can add new encoders as needed in the future
-  if (new_format) {
-    char reserved = 0;
-    iarc.read(&(reserved), sizeof(reserved));
-  }
-  // decode the length of each vector
-  std::vector<flexible_type> lengths(num_elements);
-  decode_number(iarc, lengths, 0);
+struct decode_vector_stream {
+  DECL_CORO_STATE(read);
+  char reserved;
+  std::vector<flexible_type> lengths;
   size_t total_num_values = 0;
-  for (const flexible_type& length : lengths) {
-    total_num_values += length.get<flex_int>();
-  }
-
-  // decode the values
-  std::vector<flexible_type> values(total_num_values);
-  if (new_format) {
-    decode_double(iarc, values, 0);
-  } else {
-    decode_double_legacy(iarc, values, 0);
-  }
-
+  std::vector<flexible_type> values;
   size_t length_ctr = 0;
   size_t value_ctr = 0;
   flexible_type ret(flex_type_enum::VECTOR);
-  for (size_t i = 0 ;i < num_elements; ++i) {
-    flex_vec& output_vec = ret.mutable_get<flex_vec>();
-    // resize this to the appropriate length
-    output_vec.resize(lengths[length_ctr].get<flex_int>());
-    ++length_ctr;
-    // fill in the value
-    for(size_t j = 0; j < output_vec.size(); ++j) {
-      output_vec[j] = values[value_ctr].reinterpret_get<flex_float>();
-      ++value_ctr;
+
+  bool read(size_t num_elements,
+            iarchive& iarc,
+            std::vector<flexible_type>& decodebuffer,
+            bool new_format) {
+    size_t decode_bufpos = 0;
+    CORO_BEGIN
+    // we reserve one character so we can add new encoders as needed in the future
+    if (new_format) {
+      iarc.read(&(reserved), sizeof(reserved));
     }
-    callback(ret);
+    // decode the length of each vector
+    lengths.resize(num_elements);
+    decode_number(iarc, lengths, 0);
+    total_num_values = 0;
+    for (const flexible_type& length : lengths) {
+      total_num_values += length.get<flex_int>();
+    }
+
+    // decode the values
+    values.resize(total_num_values);
+    if (new_format) {
+      decode_double(iarc, values, 0);
+    } else {
+      decode_double_legacy(iarc, values, 0);
+    }
+
+    length_ctr = 0;
+    value_ctr = 0;
+    for (size_t i = 0 ;i < num_elements; ++i) {
+      flex_vec& output_vec = ret.mutable_get<flex_vec>();
+      // resize this to the appropriate length
+      output_vec.resize(lengths[length_ctr].get<flex_int>());
+      ++length_ctr;
+      // fill in the value
+      for(size_t j = 0; j < output_vec.size(); ++j) {
+        output_vec[j] = values[value_ctr].reinterpret_get<flex_float>();
+        ++value_ctr;
+      }
+      PUT_BUFFER(ret);
+    }
+    CORO_END
+    return false;
   }
-}
+};
 
-/**
- * Decodes num_elements of nd_vectors, calling the callback for each string.
- */
-template <typename Fn> // Fn is a function like void(flexible_type)
-static void decode_nd_vector_stream(size_t num_elements,
-                                    iarchive& iarc,
-                                    Fn callback,
-                                    bool new_format) {
-  // new_format is ignored. it should always be true.
-  // one character is reserved so we can add new encoders as needed in the future
-  char reserved = 0;
-  iarc.read(&(reserved), sizeof(reserved));
 
-  std::vector<flexible_type> shape_lengths(num_elements);
-  std::vector<flexible_type> numel(num_elements);
+struct decode_nd_vector_stream {
+  DECL_CORO_STATE(read);
+  char reserved;
+  std::vector<flexible_type> shape_lengths;
+  std::vector<flexible_type> numel;
   std::vector<flexible_type> shapes;
   std::vector<flexible_type> strides;
   std::vector<flexible_type> values;
-
-  // decode shape lengths and numel
-  decode_number(iarc, shape_lengths, 0);
-  decode_number(iarc, numel, 0);
-
-  // compute the length of shapes and strides
   size_t sum_shape_len = 0;
-  for (auto i : shape_lengths) sum_shape_len += i.get<flex_int>();
-  // decode shape and strides
-  shapes.resize(sum_shape_len);
-  strides.resize(sum_shape_len);
-  decode_number(iarc, shapes, 0);
-  decode_number(iarc, strides, 0);
-
-  // compute the length of values
   size_t sum_values_len = 0;
-  for (auto i : numel) sum_values_len += i.get<flex_int>();
-  values.resize(sum_values_len);
-  decode_double(iarc, values, 0);
-
-  // emit
   size_t shape_stride_ctr = 0;
   size_t value_ctr = 0;
-
   std::vector<size_t> ret_shape;
   std::vector<size_t> ret_stride;
+  size_t ret_numel;
+  std::shared_ptr<flex_nd_vec::container_type> ret_values;
+  /**
+   * Decodes num_elements of nd_vectors, calling the callback for each string.
+   */
+  bool read(size_t num_elements,
+            iarchive& iarc,
+            std::vector<flexible_type>& decodebuffer,
+            bool new_format) {
+    size_t decode_bufpos = 0;
+    CORO_BEGIN
+    // new_format is ignored. it should always be true.
+    // one character is reserved so we can add new encoders as needed in the future
+    iarc.read(&(reserved), sizeof(reserved));
 
-  for (size_t i = 0 ;i < num_elements; ++i) {
-    // construct the shape and stride
-    ret_shape.resize(shape_lengths[i]);
-    ret_stride.resize(shape_lengths[i]);
-    for (size_t j = 0;j < shape_lengths[i]; ++j) {
-      ret_shape[j] = shapes[shape_stride_ctr].get<flex_int>();
-      ret_stride[j] = strides[shape_stride_ctr].get<flex_int>();
-      ++shape_stride_ctr;
+    shape_lengths.resize(num_elements);
+    numel.resize(num_elements);
+
+    // decode shape lengths and numel
+    decode_number(iarc, shape_lengths, 0);
+    decode_number(iarc, numel, 0);
+
+    // compute the length of shapes and strides
+    sum_shape_len = 0;
+    for (auto i : shape_lengths) sum_shape_len += i.get<flex_int>();
+    // decode shape and strides
+    shapes.resize(sum_shape_len);
+    strides.resize(sum_shape_len);
+    decode_number(iarc, shapes, 0);
+    decode_number(iarc, strides, 0);
+
+    // compute the length of values
+    sum_values_len = 0;
+    for (auto i : numel) sum_values_len += i.get<flex_int>();
+    values.resize(sum_values_len);
+    decode_double(iarc, values, 0);
+
+    // emit
+    shape_stride_ctr = 0;
+    value_ctr = 0;
+
+    for (size_t i = 0 ;i < num_elements; ++i) {
+      // construct the shape and stride
+      ret_shape.resize(shape_lengths[i]);
+      ret_stride.resize(shape_lengths[i]);
+      for (size_t j = 0;j < shape_lengths[i]; ++j) {
+        ret_shape[j] = shapes[shape_stride_ctr].get<flex_int>();
+        ret_stride[j] = strides[shape_stride_ctr].get<flex_int>();
+        ++shape_stride_ctr;
+      }
+
+      // construct the values
+      size_t ret_numel = numel[i].get<flex_int>();
+      ret_values = std::make_shared<flex_nd_vec::container_type>(ret_numel);
+      for (size_t i = 0;i < ret_numel; ++i) {
+        (*ret_values)[i] = values[i + value_ctr].reinterpret_get<flex_float>();
+      }
+      value_ctr += ret_numel;
+      PUT_BUFFER(flexible_type(flex_nd_vec(ret_values, ret_shape, ret_stride)));
     }
-
-    // construct the values
-    size_t ret_numel = numel[i].get<flex_int>();
-    auto ret_values = std::make_shared<flex_nd_vec::container_type>(ret_numel);
-    for (size_t i = 0;i < ret_numel; ++i) {
-      (*ret_values)[i] = values[i + value_ctr].reinterpret_get<flex_float>();
-    }
-    value_ctr += ret_numel;
-    flexible_type ret(flex_nd_vec(ret_values, ret_shape, ret_stride));
-    callback(ret);
-  }
-}
-
-
-
-
-
-/**
- * Decodes a collection of flexible_type values. The array must be of 
- * contiguous type, but permitting undefined values.
- *
- * See \ref typed_encode() for details.
- *
- * \note The coding does not store the number of values stored. This is
- * stored in the block_info (block.num_elem)
- */
-template <typename Fn> // Fn is a function like void(flexible_type)
-static bool typed_decode_stream_callback(const block_info& info,
-                                  char* start, size_t len,
-                                  Fn callback) {
-  if (!(info.flags & IS_FLEXIBLE_TYPE)) {
-    logstream(LOG_ERROR) << "Attempting to decode a non-typed block"
-                         << std::endl;
+    CORO_END
     return false;
   }
-  turi::iarchive iarc(start, len);
 
-  // some basic block properties which will be filled in
-  // number of elements
-  size_t dsize = info.num_elem;
-  // column type
-  flex_type_enum column_type;
-  // num undefined.
-  size_t num_undefined = 0;
-  // undefined bitmap mapping out where are the undefined values.
-  // only specified if num_undefined > 0
-  turi::dense_bitset undefined_bitmap;
+};
 
-  char num_types; 
-  iarc >> num_types;
-  // if it is a multiple type block, we don't perform a type decode
-  bool perform_type_decoding = !(info.flags & MULTIPLE_TYPE_BLOCK);
-  if (perform_type_decoding) {
-    if (num_types == 0) {
-      // empty block
-      return true;
-    } else if (num_types == 1) {
-      //  one block of contiguous type. 
-      char c;
-      iarc >> c;
-      column_type = (flex_type_enum)c;
-      // all undefined. generate and return
-      if (column_type == flex_type_enum::UNDEFINED) {
-        for (size_t i = 0;i < dsize; ++i) callback(FLEX_UNDEFINED);
-        return true;
-      }
-    } else if (num_types == 2) {
-      // two types, but with undefined entries.
-      char c;
-      iarc >> c;
-      column_type = (flex_type_enum)c;
-      // read the bitset and undefine all the flagged entries
-      undefined_bitmap.resize(info.num_elem);
-      undefined_bitmap.clear();
-      iarc.read((char*)undefined_bitmap.array, sizeof(size_t)*undefined_bitmap.arrlen);
-      num_undefined = undefined_bitmap.popcount();
-    } else {
-      logstream(LOG_ERROR) << "Unexpected value for num_types: "
-                           << static_cast<int>(num_types)
-                           << " (expected 0, 1, or 2)" << std::endl;
-      return false;
-    }
-  } else {
-    std::vector<flexible_type> values;
-    iarc >> values;
-    for (const auto& i: values) {
-      callback(i);
-    }
-  }
 
-  if (perform_type_decoding) {
-    int last_id = 0;
-    auto stream_callback = 
-        [&](const flexible_type& val) {
-          // generate all the undefined
+
+  /**
+   * Decodes a collection of flexible_type values. The array must be of 
+   * contiguous type, but permitting undefined values.
+   *
+   * See \ref typed_encode() for details.
+   *
+   * \note The coding does not store the number of values stored. This is
+   * stored in the block_info (block.num_elem)
+   */
+  template <typename Fn> // Fn is a function like void(flexible_type)
+      static bool typed_decode_stream_callback(const block_info& info,
+                                               char* start, size_t len,
+                                               Fn callback) {
+        if (!(info.flags & IS_FLEXIBLE_TYPE)) {
+          logstream(LOG_ERROR) << "Attempting to decode a non-typed block"
+                               << std::endl;
+          return false;
+        }
+        turi::iarchive iarc(start, len);
+
+        // some basic block properties which will be filled in
+        // number of elements
+        size_t dsize = info.num_elem;
+        // column type
+        flex_type_enum column_type;
+        // num undefined.
+        size_t num_undefined = 0;
+        // undefined bitmap mapping out where are the undefined values.
+        // only specified if num_undefined > 0
+        turi::dense_bitset undefined_bitmap;
+
+        char num_types; 
+        iarc >> num_types;
+        // if it is a multiple type block, we don't perform a type decode
+        bool perform_type_decoding = !(info.flags & MULTIPLE_TYPE_BLOCK);
+        if (perform_type_decoding) {
+          if (num_types == 0) {
+            // empty block
+            return true;
+          } else if (num_types == 1) {
+            //  one block of contiguous type. 
+            char c;
+            iarc >> c;
+            column_type = (flex_type_enum)c;
+            // all undefined. generate and return
+            if (column_type == flex_type_enum::UNDEFINED) {
+              for (size_t i = 0;i < dsize; ++i) callback(FLEX_UNDEFINED);
+              return true;
+            }
+          } else if (num_types == 2) {
+            // two types, but with undefined entries.
+            char c;
+            iarc >> c;
+            column_type = (flex_type_enum)c;
+            // read the bitset and undefine all the flagged entries
+            undefined_bitmap.resize(info.num_elem);
+            undefined_bitmap.clear();
+            iarc.read((char*)undefined_bitmap.array, sizeof(size_t)*undefined_bitmap.arrlen);
+            num_undefined = undefined_bitmap.popcount();
+          } else {
+            logstream(LOG_ERROR) << "Unexpected value for num_types: "
+                                 << static_cast<int>(num_types)
+                                 << " (expected 0, 1, or 2)" << std::endl;
+            return false;
+          }
+        } else {
+          std::vector<flexible_type> values;
+          iarc >> values;
+          for (const auto& i: values) {
+            callback(i);
+          }
+        }
+
+        if (perform_type_decoding) {
+          int last_id = 0;
+          auto stream_callback = 
+              [&](const flexible_type& val) {
+                // generate all the undefined
+                if (num_undefined) {
+                  while(last_id < truncate_check<int64_t>(dsize) &&
+                        undefined_bitmap.get(last_id)) {
+                    callback(FLEX_UNDEFINED);
+                    ++last_id;
+                  }
+                }
+                callback(val);
+                ++last_id;
+              };
+          size_t elements_to_decode = dsize - num_undefined;
+          if (column_type == flex_type_enum::INTEGER) {
+            decode_number_stream(elements_to_decode, iarc, stream_callback); 
+          } else if (column_type == flex_type_enum::FLOAT) {
+            if (info.flags & BLOCK_ENCODING_EXTENSION) {
+              decode_double_stream(elements_to_decode, iarc, stream_callback); 
+            } else {
+              decode_double_stream_legacy(elements_to_decode, iarc, stream_callback); 
+            }
+          } else if (column_type == flex_type_enum::STRING) {
+            decode_string_stream(elements_to_decode, iarc, stream_callback); 
+          } else if (column_type == flex_type_enum::VECTOR) {
+            decode_vector_stream(elements_to_decode, iarc, stream_callback, 
+                                 info.flags & BLOCK_ENCODING_EXTENSION); 
+          } else if (column_type == flex_type_enum::ND_VECTOR) {
+            decode_nd_vector_stream(elements_to_decode, iarc, stream_callback, 
+                                    info.flags & BLOCK_ENCODING_EXTENSION); 
+          } else {
+            flexible_type_impl::deserializer s{iarc};
+            flexible_type ret(column_type);
+            for (size_t i = 0;i < dsize; ++i) {
+              if (num_undefined && undefined_bitmap.get(i)) {
+                callback(FLEX_UNDEFINED);
+              } else {
+                ret.apply_mutating_visitor(s);
+                callback(ret);
+              }
+            }
+          }
+          // generate the final undefined values
           if (num_undefined) {
             while(last_id < truncate_check<int64_t>(dsize) &&
                   undefined_bitmap.get(last_id)) {
@@ -466,52 +569,14 @@ static bool typed_decode_stream_callback(const block_info& info,
               ++last_id;
             }
           }
-          callback(val);
-          ++last_id;
-        };
-    size_t elements_to_decode = dsize - num_undefined;
-    if (column_type == flex_type_enum::INTEGER) {
-      decode_number_stream(elements_to_decode, iarc, stream_callback); 
-    } else if (column_type == flex_type_enum::FLOAT) {
-      if (info.flags & BLOCK_ENCODING_EXTENSION) {
-        decode_double_stream(elements_to_decode, iarc, stream_callback); 
-      } else {
-        decode_double_stream_legacy(elements_to_decode, iarc, stream_callback); 
-      }
-    } else if (column_type == flex_type_enum::STRING) {
-      decode_string_stream(elements_to_decode, iarc, stream_callback); 
-    } else if (column_type == flex_type_enum::VECTOR) {
-      decode_vector_stream(elements_to_decode, iarc, stream_callback, 
-                           info.flags & BLOCK_ENCODING_EXTENSION); 
-    } else if (column_type == flex_type_enum::ND_VECTOR) {
-      decode_nd_vector_stream(elements_to_decode, iarc, stream_callback, 
-                           info.flags & BLOCK_ENCODING_EXTENSION); 
-    } else {
-      flexible_type_impl::deserializer s{iarc};
-      flexible_type ret(column_type);
-      for (size_t i = 0;i < dsize; ++i) {
-        if (num_undefined && undefined_bitmap.get(i)) {
-          callback(FLEX_UNDEFINED);
-        } else {
-          ret.apply_mutating_visitor(s);
-          callback(ret);
         }
+        return true;
       }
-    }
-    // generate the final undefined values
-    if (num_undefined) {
-      while(last_id < truncate_check<int64_t>(dsize) &&
-            undefined_bitmap.get(last_id)) {
-        callback(FLEX_UNDEFINED);
-        ++last_id;
-      }
-    }
-  }
-  return true;
-}
 
 } // namespace v2_block_impl
 
 /// \}
 } // namespace turi
+
+#undef PUT_BUFFER
 #endif

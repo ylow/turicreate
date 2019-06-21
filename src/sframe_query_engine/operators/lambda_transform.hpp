@@ -11,7 +11,7 @@
 #include <sframe_query_engine/operators/operator_properties.hpp>
 #include <lambda/pylambda_function.hpp>
 #include <exceptions/error_types.hpp>
-#include <sframe_query_engine/util/coro.hpp>
+#include <util/coro.hpp>
 namespace turi {
 namespace query_eval {
 
