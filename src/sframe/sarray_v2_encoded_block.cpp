@@ -41,10 +41,15 @@ encoded_block_range::encoded_block_range(const encoded_block& block)
  }
 
 
+void encoded_block_range::release() {
+  decoder.reset();
+}
+
 encoded_block_range::~encoded_block_range() {}
 
 size_t encoded_block_range::decode_to(flexible_type* write_target, 
                                         size_t numel) {
+  if (numel == 0) return;
   return decoder->read({write_target, numel});
 }
 

@@ -165,6 +165,7 @@ class encoded_block_range {
    */
   size_t decode_to(flexible_type* decode_target, size_t num_elem);
   void skip(size_t n);
+  void release();
 
   ~encoded_block_range();
 
