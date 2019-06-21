@@ -11,7 +11,6 @@
 #include <memory>
 #include <flexible_type/flexible_type.hpp>
 #include <sframe/sarray_v2_block_types.hpp>
-#include <sframe/sarray_v2_type_encoding.hpp>
 namespace turi {
 
 
@@ -28,6 +27,7 @@ namespace turi {
 namespace v2_block_impl {
 
 class encoded_block_range;
+struct typed_decode_stream;
 /**
  * This class provides accessors into a typed v2
  * sarray<flexible_type> encoded column block. It maintains the

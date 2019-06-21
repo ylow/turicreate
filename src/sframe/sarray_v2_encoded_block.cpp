@@ -43,6 +43,7 @@ encoded_block_range::encoded_block_range(const encoded_block& block)
 
 void encoded_block_range::release() {
   decoder.reset();
+  m_block.m_data.reset();
 }
 
 encoded_block_range::~encoded_block_range() {}

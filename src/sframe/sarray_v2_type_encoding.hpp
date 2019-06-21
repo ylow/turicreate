@@ -151,6 +151,7 @@ void typed_encode(const std::vector<flexible_type>& data,
 struct decode_number_stream {
   DECL_CORO_STATE(read);
   uint64_t buf[MAX_INTEGERS_PER_BLOCK];
+  size_t num_elements;
   size_t buflen;
   size_t i;
 /**
@@ -164,6 +165,7 @@ struct decode_number_stream {
 
 struct decode_double_stream_legacy{
   DECL_CORO_STATE(read);
+  size_t num_elements;
   uint64_t buf[MAX_INTEGERS_PER_BLOCK];
   size_t buflen;
   size_t i;
@@ -178,6 +180,7 @@ struct decode_double_stream_legacy{
 
 struct decode_double_stream{
   DECL_CORO_STATE(read);
+  size_t num_elements;
 
   char reserved;
   decode_double_stream_legacy legacy;
@@ -192,6 +195,7 @@ struct decode_double_stream{
 
 struct decode_string_stream{
   DECL_CORO_STATE(read);
+  size_t num_elements;
   bool use_dictionary_encoding = false;
   std::vector<flexible_type> idx_values;
   uint64_t num_values;
@@ -217,6 +221,7 @@ struct decode_string_stream{
  */
 struct decode_vector_stream {
   DECL_CORO_STATE(read);
+  size_t num_elements;
   char reserved;
   std::vector<flexible_type> lengths;
   size_t total_num_values = 0;
@@ -237,6 +242,7 @@ struct decode_vector_stream {
 
 struct decode_ndvector_stream {
   DECL_CORO_STATE(read);
+  size_t num_elements;
   char reserved;
   std::vector<flexible_type> shape_lengths;
   std::vector<flexible_type> numel;

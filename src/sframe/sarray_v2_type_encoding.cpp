@@ -589,11 +589,12 @@ bool typed_decode(const block_info& info,
   decodebuffer.first[decode_bufpos++] = (x);  \
   if (decode_bufpos == decodebuffer.second) { CORO_YIELD(decode_bufpos); }
 
-size_t decode_number_stream::read(size_t num_elements,
+size_t decode_number_stream::read(size_t _num_elements,
                                   iarchive& iarc,
                                   const std::pair<flexible_type*, size_t>& decodebuffer) {
   size_t decode_bufpos = 0;
   CORO_BEGIN(read)
+  num_elements = _num_elements;
   while(num_elements > 0) {
     buflen = std::min<size_t>(num_elements, MAX_INTEGERS_PER_BLOCK);
     frame_of_reference_decode_128(iarc, buflen, buf);
@@ -607,11 +608,12 @@ size_t decode_number_stream::read(size_t num_elements,
 }
 
 
-bool decode_double_stream_legacy::read(size_t num_elements,
+bool decode_double_stream_legacy::read(size_t _num_elements,
           iarchive& iarc,
           const std::pair<flexible_type*, size_t>& decodebuffer) {
   size_t decode_bufpos = 0;
   CORO_BEGIN(read)
+  num_elements = _num_elements;
   while(num_elements > 0) {
     buflen = std::min<size_t>(num_elements, MAX_INTEGERS_PER_BLOCK);
     frame_of_reference_decode_128(iarc, buflen, buf);
@@ -631,11 +633,12 @@ bool decode_double_stream_legacy::read(size_t num_elements,
 
 
 
-bool decode_double_stream::read(size_t num_elements,
+bool decode_double_stream::read(size_t _num_elements,
           iarchive& iarc,
           const std::pair<flexible_type*, size_t>& decodebuffer) {
   size_t decode_bufpos = 0;
   CORO_BEGIN(read)
+  num_elements = _num_elements;
   // we reserve one character so we can add new encoders as needed in the future
   reserved = 0;
   iarc.read(&(reserved), sizeof(reserved));
@@ -660,11 +663,12 @@ bool decode_double_stream::read(size_t num_elements,
 }
 
 
-bool decode_string_stream::read(size_t num_elements,
+bool decode_string_stream::read(size_t _num_elements,
           iarchive& iarc,
           const std::pair<flexible_type*, size_t>& decodebuffer) {
   size_t decode_bufpos = 0;
   CORO_BEGIN(read)
+  num_elements = _num_elements;
   idx_values.resize(num_elements, flexible_type(flex_type_enum::INTEGER));
   iarc >> use_dictionary_encoding;
   if (use_dictionary_encoding) {
@@ -700,12 +704,13 @@ bool decode_string_stream::read(size_t num_elements,
 
 
 
-bool decode_vector_stream::read(size_t num_elements,
+bool decode_vector_stream::read(size_t _num_elements,
           iarchive& iarc,
           const std::pair<flexible_type*, size_t>& decodebuffer,
           bool new_format) {
   size_t decode_bufpos = 0;
   CORO_BEGIN(read)
+  num_elements = _num_elements;
   // we reserve one character so we can add new encoders as needed in the future
   if (new_format) {
     iarc.read(&(reserved), sizeof(reserved));
@@ -747,12 +752,13 @@ bool decode_vector_stream::read(size_t num_elements,
 }
 
 
-bool decode_ndvector_stream::read(size_t num_elements,
+bool decode_ndvector_stream::read(size_t _num_elements,
           iarchive& iarc,
           const std::pair<flexible_type*, size_t>& decodebuffer,
           bool new_format) {
   size_t decode_bufpos = 0;
   CORO_BEGIN(read)
+  num_elements = _num_elements;
   // new_format is ignored. it should always be true.
   // one character is reserved so we can add new encoders as needed in the future
   iarc.read(&(reserved), sizeof(reserved));
@@ -872,9 +878,9 @@ size_t typed_decode_stream::read(const std::pair<flexible_type*, size_t>& decode
   size_t decode_bufpos = 0;
   if (perform_type_decoding) {
     if (num_types == 1) {
-      if (decodebuffer.first) {
+      if (decodebuffer.first && column_type == flex_type_enum::UNDEFINED) {
         for (i = 0;i < decodebuffer.second; ++i) {
-          decodebuffer.first[i] = flexible_type(column_type);
+          decodebuffer.first[i] = FLEX_UNDEFINED;
         }
       }
     } else if (num_types == 2) {
@@ -985,8 +991,6 @@ void typed_decode_stream::pad_retbuf_with_undefined_positions(const std::pair<fl
     for (i = 0;i < decodebuffer.second; ++i) {
       if (undefined_bitmap.get(last_id)) {
         decodebuffer.first[i] = FLEX_UNDEFINED;
-      } else {
-        decodebuffer.first[i] = flexible_type(column_type);
       }
       ++last_id;
     }
