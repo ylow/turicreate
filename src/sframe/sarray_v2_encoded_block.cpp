@@ -49,7 +49,7 @@ encoded_block_range::~encoded_block_range() {}
 
 size_t encoded_block_range::decode_to(flexible_type* write_target, 
                                         size_t numel) {
-  if (numel == 0) return;
+  if (numel == 0) return 0;
   return decoder->read({write_target, numel});
 }
 
