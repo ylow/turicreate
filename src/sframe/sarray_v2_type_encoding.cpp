@@ -587,7 +587,7 @@ bool typed_decode(const block_info& info,
      ++decode_bufpos; \
    } \
   decodebuffer.first[decode_bufpos++] = (x);  \
-  if (decode_bufpos == decodebuffer.second) CORO_YIELD(decode_bufpos);
+  if (decode_bufpos == decodebuffer.second) { CORO_YIELD(decode_bufpos); }
 
 size_t decode_number_stream::read(size_t num_elements,
                                   iarchive& iarc,
@@ -840,7 +840,6 @@ typed_decode_stream::typed_decode_stream(const block_info& info,
         undefined_bitmap.clear();
         iarc.read((char*)undefined_bitmap.array, sizeof(size_t)*undefined_bitmap.arrlen);
         num_undefined = undefined_bitmap.popcount();
-        elements_to_decode = dsize - num_undefined;
       } else {
         logstream(LOG_ERROR) << "Unexpected value for num_types: "
                              << static_cast<int>(num_types)
@@ -848,6 +847,7 @@ typed_decode_stream::typed_decode_stream(const block_info& info,
         ASSERT_TRUE(false);
       }
     }
+    elements_to_decode = dsize - num_undefined;
   }
 
 typed_decode_stream::~typed_decode_stream() {
@@ -918,6 +918,8 @@ size_t typed_decode_stream::read(const std::pair<flexible_type*, size_t>& decode
         decode_bufpos = number_decoder->read(elements_to_decode, iarc, decodebuffer);
         CORO_YIELD(decode_bufpos);
       } while(CLASS_CORO_RUNNING(*number_decoder, read));
+      delete number_decoder;
+      number_decoder = nullptr;
 
     } else if (column_type == flex_type_enum::FLOAT) {
       if (info.flags & BLOCK_ENCODING_EXTENSION) {
@@ -926,12 +928,16 @@ size_t typed_decode_stream::read(const std::pair<flexible_type*, size_t>& decode
           decode_bufpos = double_decoder->read(elements_to_decode, iarc, decodebuffer);
           CORO_YIELD(decode_bufpos);
         } while(CLASS_CORO_RUNNING(*double_decoder, read));
+      delete double_decoder;
+      double_decoder = nullptr;
       } else {
         double_legacy_decoder = new decode_double_stream_legacy;
         do { 
           decode_bufpos = double_legacy_decoder->read(elements_to_decode, iarc, decodebuffer);
           CORO_YIELD(decode_bufpos);
         } while(CLASS_CORO_RUNNING(*double_legacy_decoder, read));
+      delete double_legacy_decoder;
+      double_legacy_decoder = nullptr;
       }
     } else if (column_type == flex_type_enum::STRING) {
       string_decoder = new decode_string_stream;
@@ -939,6 +945,8 @@ size_t typed_decode_stream::read(const std::pair<flexible_type*, size_t>& decode
         decode_bufpos = string_decoder->read(elements_to_decode, iarc, decodebuffer);
         CORO_YIELD(decode_bufpos);
       } while(CLASS_CORO_RUNNING(*string_decoder, read));
+      delete string_decoder;
+      string_decoder = nullptr;
     } else if (column_type == flex_type_enum::VECTOR) {
       vector_decoder = new decode_vector_stream;
       do { 
@@ -946,6 +954,8 @@ size_t typed_decode_stream::read(const std::pair<flexible_type*, size_t>& decode
                                              info.flags & BLOCK_ENCODING_EXTENSION);
         CORO_YIELD(decode_bufpos);
       } while(CLASS_CORO_RUNNING(*vector_decoder, read));
+      delete vector_decoder;
+      vector_decoder = nullptr;
     } else if (column_type == flex_type_enum::ND_VECTOR) {
       ndvector_decoder = new decode_ndvector_stream;
       do { 
@@ -953,6 +963,8 @@ size_t typed_decode_stream::read(const std::pair<flexible_type*, size_t>& decode
                                                info.flags & BLOCK_ENCODING_EXTENSION);
         CORO_YIELD(decode_bufpos);
       } while(CLASS_CORO_RUNNING(*ndvector_decoder, read));
+      delete ndvector_decoder;
+      ndvector_decoder = nullptr;
     } else {
       generic_ret = flexible_type(column_type);
       for (i = 0;i < dsize; ++i) {

@@ -39,14 +39,10 @@ encoded_block_range::encoded_block_range(const encoded_block& block)
                                          m_block.m_data->data(), 
                                          m_block.m_data->size()));
  }
-/*
-encoded_block_range& encoded_block_range::operator=(
-    const encoded_block_range&) {
-}
 
-encoded_block_range& encoded_block_range::operator=(
-    const encoded_block_range&) {
-}*/
+
+encoded_block_range::~encoded_block_range() {}
+
 size_t encoded_block_range::decode_to(flexible_type* write_target, 
                                         size_t numel) {
   return decoder->read({write_target, numel});
