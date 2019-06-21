@@ -301,7 +301,6 @@ class sarray_format_reader_v2: public sarray_format_reader<T> {
       m_buffer_pool.release_buffer(std::move(m_cache[block_number].buffer));
       m_cache[block_number].buffer.reset();
       m_cache[block_number].encoded_buffer.release();
-      m_cache[block_number].encoded_buffer_reader.release();
       m_cache[block_number].has_data = false;
       m_used_cache_entries.clear_bit(block_number);
       m_cache_size.dec();
@@ -430,7 +429,6 @@ ensure_cache_decoded(cache_entry& cache, size_t block_number) {
                                 *cache.buffer);
     // clear the encoded buffer information
     cache.encoded_buffer.release();
-    cache.encoded_buffer_reader.release();
     // reset the start row
     cache.is_encoded = false;
     cache.buffer_start_row = m_start_row[block_number];

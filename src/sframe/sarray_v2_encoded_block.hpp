@@ -6,14 +6,12 @@
 #ifndef TURI_SFRAME_ENCODED_BLOCK_HPP
 #define TURI_SFRAME_ENCODED_BLOCK_HPP
 
-#define BOOST_COROUTINES_NO_DEPRECATION_WARNING
-#include <boost/coroutine/coroutine.hpp>
-
 #include <boost/circular_buffer.hpp>
 #include <vector>
 #include <memory>
 #include <flexible_type/flexible_type.hpp>
 #include <sframe/sarray_v2_block_types.hpp>
+#include <sframe/sarray_v2_type_encoding.hpp>
 namespace turi {
 
 
@@ -147,30 +145,14 @@ class encoded_block {
  */
 class encoded_block_range {
  private:
-  /**************************************************************************/
-  /*                                                                        */
-  /*    Buffers and shared datastructures between this and the coroutine    */
-  /*                                                                        */
-  /**************************************************************************/
-  struct coro_shared_data {
-    size_t m_skip = 0;
-    flexible_type* m_write_target = nullptr;
-    size_t m_write_target_numel = 0;
-    bool terminate = false;
-  };
  public:
   encoded_block_range() = default;
   explicit encoded_block_range(const encoded_block& block);
-  encoded_block_range(encoded_block_range&&) = default;
 
+  encoded_block_range(const encoded_block_range&) = delete;
+  encoded_block_range(encoded_block_range&&) = default;
   encoded_block_range& operator=(const encoded_block_range&) = delete;
   encoded_block_range& operator=(encoded_block_range&&) = default;
-
-  /**
-   * Releases the range object and all internal handles.
-   * All iterators are invalidated.
-   */
-  void release();
 
   /**
    * Decodes the next num_elem elements into the decode_target.
@@ -182,10 +164,6 @@ class encoded_block_range {
    * }
    */
   size_t decode_to(flexible_type* decode_target, size_t num_elem);
-
-  /**
-   * Skips some number of elements
-   */
   void skip(size_t n);
 
   ~encoded_block_range();
@@ -204,24 +182,8 @@ class encoded_block_range {
   /*                          The coroutine types                           */
   /*                                                                        */
   /**************************************************************************/
-  typedef boost::coroutines::coroutine<void>::pull_type coroutine_type;
-  coroutine_type source;
+  std::unique_ptr<typed_decode_stream> decoder;
 
-  void coroutine_launch(); 
-  void call_source();
-  std::shared_ptr<coro_shared_data> m_shared;
-
-  /**************************************************************************/
-  /*                                                                        */
-  /*                          Iterator management                           */
-  /*                                                                        */
-  /**************************************************************************/
-
-  /// True if there is no more data
-  bool coroutine_started = false;
-
-  /// Fills up to numel elements starting from the pointer at write_target
-  size_t fill_buffer(flexible_type* write_target, size_t numel);
 
 }; // encoded_block_range
 
