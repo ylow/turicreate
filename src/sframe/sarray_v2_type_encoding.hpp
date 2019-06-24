@@ -159,7 +159,8 @@ struct decode_number_stream {
  */
   size_t read(size_t num_elements,
               iarchive& iarc,
-              const std::pair<flexible_type*, size_t>& decodebuffer);
+              const std::pair<flexible_type*, size_t>& decodebuffer,
+              size_t skip);
 };
 
 
@@ -175,7 +176,8 @@ struct decode_double_stream_legacy{
 
   bool read(size_t num_elements,
             iarchive& iarc,
-            const std::pair<flexible_type*, size_t>& decodebuffer);
+            const std::pair<flexible_type*, size_t>& decodebuffer,
+            size_t skip);
 };
 
 struct decode_double_stream{
@@ -190,7 +192,8 @@ struct decode_double_stream{
 
   bool read(size_t num_elements,
             iarchive& iarc,
-            const std::pair<flexible_type*, size_t>& decodebuffer);
+            const std::pair<flexible_type*, size_t>& decodebuffer,
+            size_t skip);
 };
 
 struct decode_string_stream{
@@ -210,7 +213,8 @@ struct decode_string_stream{
  */
   bool read(size_t num_elements,
             iarchive& iarc,
-            const std::pair<flexible_type*, size_t>& decodebuffer);
+            const std::pair<flexible_type*, size_t>& decodebuffer,
+            size_t skip);
 };
 
 /**
@@ -236,6 +240,7 @@ struct decode_vector_stream {
   bool read(size_t num_elements,
             iarchive& iarc,
             const std::pair<flexible_type*, size_t>& decodebuffer,
+            size_t skip,
             bool new_format);
 };
 
@@ -264,6 +269,7 @@ struct decode_ndvector_stream {
   bool read(size_t num_elements,
             iarchive& iarc,
             const std::pair<flexible_type*, size_t>& decodebuffer,
+            size_t skip,
             bool new_format);
 
 };
@@ -311,7 +317,7 @@ struct typed_decode_stream {
    * \note The coding does not store the number of values stored. This is
    * stored in the block_info (block.num_elem)
    */
-  size_t read(const std::pair<flexible_type*, size_t>& decodebuffer);
+  size_t read(const std::pair<flexible_type*, size_t>& decodebuffer, size_t skip);
  private:
   void pad_retbuf_with_undefined_positions(const std::pair<flexible_type*, size_t>& decodebuffer);
 

@@ -51,16 +51,11 @@ encoded_block_range::~encoded_block_range() {}
 size_t encoded_block_range::decode_to(flexible_type* write_target, 
                                         size_t numel) {
   if (numel == 0) return 0;
-  return decoder->read({write_target, numel});
+  return decoder->read({write_target, numel}, 0);
 }
 
 void encoded_block_range::skip(size_t n) {
-  flexible_type buf[128];
-  while(n > 0) {
-    size_t nread = std::min<size_t>(n, 128);
-    decode_to(buf, nread);
-    n -= nread;
-  }
+  decoder->read({nullptr, 0}, n);
 }
 
 } // v2_block_impl
