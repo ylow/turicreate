@@ -8,12 +8,12 @@ This is a fork of Turi Create to reestablish Mac compilation, clean up and
 remove all neural network stuff (that are much harder to keep working).
 
 There are many places for improvement:
- - Vectorized query execution
- - lambda workers can probably use PyInterpreter in the same process rather
- than subprocess.
  - support Python 3 stable ABI (PEP 384) (how?) so we don't need to compile
  a build for every other python version.
  - support fsspec in the filesystem abstraction
+ - lambda workers can probably use PyInterpreter in the same process rather
+ than subprocess.
+ - Vectorized query execution
 
 # Turi Create
 
