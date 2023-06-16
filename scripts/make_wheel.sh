@@ -233,7 +233,7 @@ mac_patch_rpath() {
   # - run 'file' on it
   # - look for binary files (shared libraries, executables)
   # - output is in the form [file]: type, so cut on ":", we just want the file
-  flist=`find . -type f -not -path "*/CMakeFiles/*" -not -path "./dist/*" | xargs -L 1 file | grep x86_64 | cut -f 1 -d :`
+  flist=`find . -type f -not -path "*/CMakeFiles/*" -not -path "./dist/*" -not -name "*.py"`
 
   # We are generally going to be installed in
   # a place of the form
@@ -342,7 +342,7 @@ function package_wheel() {
       temp=`echo $WHEEL_PATH | perl -ne 'print m/(^.*-).*$/'`
       temp=${temp/-cpdarwin-/-cp35m-}
 
-      platform_tag="macosx_10_12_intel.macosx_10_12_x86_64.macosx_10_13_intel.macosx_10_13_x86_64.macosx_10_14_intel.macosx_10_14_x86_64"
+      platform_tag="macosx_10_9_universal2"
       #  sdk_version=`xcrun --show-sdk-version`
       #  if [[ $sdk_version =~ ^10\.13 ]]; then
       #      platform_tag="macosx_10_13_intel.macosx_10_12_x86_64"
@@ -390,7 +390,6 @@ function package_wheel() {
 
   # Run the setup
   package_wheel_helper 0 ""
-  package_wheel_helper 1 +minimal
 
   echo -e "\n\n================= Done Packaging Wheel  ================\n\n"
 }

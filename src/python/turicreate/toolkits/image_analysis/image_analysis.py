@@ -13,7 +13,6 @@ import turicreate.toolkits._internal_utils as _tkutl
 from turicreate.toolkits._main import ToolkitError as _ToolkitError
 import turicreate.toolkits._internal_utils as _tkutl
 from .._internal_utils import _mac_ver
-from .. import _pre_trained_models
 from ...data_structures.image import Image as _Image
 from .. import _image_feature_extractor
 
@@ -193,71 +192,6 @@ def resize(image, width, height, channels=None, decode=False, resample="nearest"
         )
 
 
-def get_deep_features(images, model_name, batch_size=64, verbose=True):
-    """
-    Extracts features from images from a specific model.
-
-    Parameters
-    ----------
-    images : SArray
-        Input data.
-
-    model_name : string
-        string optional
-        Uses a pretrained model to bootstrap an image classifier:
-
-           - "resnet-50" : Uses a pretrained resnet model.
-                           Exported Core ML model will be ~90M.
-
-           - "squeezenet_v1.1" : Uses a pretrained squeezenet model.
-                                 Exported Core ML model will be ~4.7M.
-
-           - "VisionFeaturePrint_Scene": Uses an OS internal feature extractor.
-                                          Only on available on iOS 12.0+,
-                                          macOS 10.14+ and tvOS 12.0+.
-                                          Exported Core ML model will be ~41K.
-
-        Models are downloaded from the internet if not available locally. Once
-        downloaded, the models are cached for future use.
-
-    Returns
-    -------
-    out : SArray
-        Returns an SArray with all the extracted features.
-
-    See Also
-    --------
-    turicreate.image_classifier.create
-    turicreate.image_similarity.create
-
-    Examples
-    --------
-    >>> url = 'https://static.turi.com/datasets/images/nested'
-    >>> image_sframe = turicreate.load_images(url)
-    >>> image_sarray = image_sframe["image"]
-    >>> deep_features_sframe = turicreate.image_analysis.get_deep_features(image_sarray, model_name="resnet-50")
-    """
-
-    # Check model parameter
-    allowed_models = list(_pre_trained_models.IMAGE_MODELS.keys())
-    if _mac_ver() >= (10, 14):
-        allowed_models.append("VisionFeaturePrint_Scene")
-    _tkutl._check_categorical_option_type("model", model_name, allowed_models)
-
-    # Check images parameter
-    if not isinstance(images, _tc.SArray):
-        raise TypeError("Unrecognized type for 'images'. An SArray is expected.")
-    if len(images) == 0:
-        raise _ToolkitError("Unable to extract features on an empty SArray object")
-
-    if batch_size < 1:
-        raise ValueError("'batch_size' must be greater than or equal to 1")
-
-    # Extract features
-    feature_extractor = _image_feature_extractor._create_feature_extractor(model_name)
-    images_sf = _tc.SFrame({"image":images})
-    return feature_extractor.extract_features(images_sf, "image", verbose=verbose, 
-        batch_size=batch_size)
 
 
 def _find_only_image_extracted_features_column(sframe, model_name):

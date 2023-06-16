@@ -366,43 +366,6 @@ class TextClassifier(_CustomModel):
         """
         return self.__proxy__["classifier"].summary()
 
-    def export_coreml(self, filename):
-        """
-        Export the model in Core ML format.
-
-        Parameters
-        ----------
-        filename: str
-          A valid filename where the model can be saved.
-
-        Examples
-        --------
-        >>> model.export_coreml("MyTextMessageClassifier.mlmodel")
-        >>>
-        >>> from coremltools.models import MLModel
-        >>> coreml_model = MLModel("MyTextMessageClassifier.mlmodel")
-        >>>
-        >>> test_input = tc.SArray(["Hi! How are you?"])
-        >>> bag_of_words = tc.text_analytics.count_words(test_input)
-        >>>
-        >>> # "text" is the input column name
-        >>> coreml_model.predict({"text": bag_of_words[0]})
-        """
-        from turicreate.extensions import _logistic_classifier_export_as_model_asset
-        from turicreate.toolkits import _coreml_utils
-
-        display_name = "text classifier"
-        short_description = _coreml_utils._mlmodel_short_description(display_name)
-        context = {
-            "class": self.__class__.__name__,
-            "short_description": short_description,
-        }
-        context["user_defined"] = _coreml_utils._get_model_metadata(
-            self.__class__.__name__, None
-        )
-
-        model = self.__proxy__["classifier"].__proxy__
-        _logistic_classifier_export_as_model_asset(model, filename, context)
 
 
 def _get_str_columns(sf):

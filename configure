@@ -10,7 +10,7 @@ DEBUG_DIR=debug
 TURI_HOME=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 DEPS_PREFIX=$PWD/deps/local
 IOS_DEFAULT_MIN_VERSION=12
-MACOS_DEFAULT_MIN_VERSION=10.12
+MACOS_DEFAULT_MIN_VERSION=10.9
 
 function print_help {
   echo "Configures the build with the specified toolchain. "

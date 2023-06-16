@@ -213,7 +213,7 @@ function( compile_pyx _name generated_file )
   set( _generated_file "${CMAKE_CURRENT_BINARY_DIR}/${_name}.${extension}")
   set( _generated_target_file "${CMAKE_CURRENT_BINARY_DIR}/${_name}.${extension}")
   set_source_files_properties( ${_generated_file} PROPERTIES GENERATED TRUE )
-  set_source_files_properties( ${_generated_file} PROPERTIES COMPILE_FLAGS "-Wno-cpp -Wno-unused-function" )
+  set_source_files_properties( ${_generated_file} PROPERTIES COMPILE_FLAGS "-Wno-cpp -Wno-unused-function -DCYTHON_LIMITED_API" )
   set( ${generated_file} ${_generated_file} PARENT_SCOPE )
 
   list( REMOVE_DUPLICATES pxd_dependencies )

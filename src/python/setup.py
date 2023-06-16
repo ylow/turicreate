@@ -19,7 +19,6 @@ NON_MINIMAL_LIST = [
     "pandas",
     "resampy",
     "scipy",
-    "tensorflow",
 ]
 
 
@@ -173,32 +172,6 @@ if __name__ == "__main__":
         "scipy >= 1.1.0",
         "six >= 1.10.0",
     ]
-    if sys.version_info[0] == 2 or (
-        sys.version_info[0] == 3 and sys.version_info[1] == 5
-    ):
-        install_requires.append("llvmlite == 0.31.0")
-    if sys.version_info[0] == 3 and sys.version_info[1] == 9:
-        install_requires.append("llvmlite == 0.36.0")
-
-    if sys.platform == "darwin":
-        install_requires.append("tensorflow >= 2.0.0")
-    else:
-        # ST, OD, AC and DC segfault on Linux with TensorFlow 2.1.0 and 2.1.1
-        # See: https://github.com/apple/turicreate/issues/3003
-
-        # SC errors out on Linux with TensorFlow 2.2 and 2.3
-        # See: https://github.com/apple/turicreate/issues/3303
-
-        if sys.version_info[0] != 3 or sys.version_info[1] < 8:
-            install_requires.append("tensorflow >= 2.0.0,<2.1.0")
-        else:
-            # Only TensorFlow >= 2.2 supports Python 3.8
-            install_requires.append("tensorflow >= 2.0.0")
-
-        # numba 0.51 started using "manylinux2014" rather than "manylinux2010".
-        # This breaks a lot of Linux installs.
-        if sys.version_info[0] != 3 and sys.version_info[1] != 9:
-            install_requires.append("numba < 0.51.0")
 
     setup(
         name="turicreate",
