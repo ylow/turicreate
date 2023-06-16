@@ -25,6 +25,9 @@ enable_language(CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED 1)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+if (APPLE)
+set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
+endif()
 
 # ##############################################################################
 # Set options

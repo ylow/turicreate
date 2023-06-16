@@ -25,19 +25,54 @@ if(APPLE)
   # SSL seems to link fine even when compiled using the default compiler
   # The alternative to get openssl to use gcc on mac requires a patch to
   # the ./Configure script
-ExternalProject_Add(ex_openssl
-  PREFIX ${CMAKE_SOURCE_DIR}/deps/build/libssl
-  URL ${CMAKE_SOURCE_DIR}/deps/src/openssl-1.1.1s
-  INSTALL_DIR ${CMAKE_SOURCE_DIR}/deps/local
-  BUILD_IN_SOURCE 1
-  CONFIGURE_COMMAND bash -c "env ${__SDKCMD} CC=\"${CMAKE_C_COMPILER}\" ./Configure darwin64-arm64-cc no-rc5 --prefix=<INSTALL_DIR>  -fPIC -Os -g ${CMAKE_C_FLAGS} -Wno-everything -w"
-  BUILD_COMMAND bash -c "SDKROOT=${CMAKE_OSX_SYSROOT} make -j1"
-  INSTALL_COMMAND bash -c "SDKROOT=${CMAKE_OSX_SYSROOT} make -j1 install && cp ./libcrypto.a <INSTALL_DIR>/ssl && cp ./libssl.a <INSTALL_DIR>/ssl"
-  BUILD_BYPRODUCTS
-  ${CMAKE_SOURCE_DIR}/deps/local/lib/libssl.a
-  ${CMAKE_SOURCE_DIR}/deps/local/lib/libcrypto.a
-  ${_openssl_installed_headers}
-  )
+  ExternalProject_Add(ex_openssl_arm
+    PREFIX ${CMAKE_SOURCE_DIR}/deps/build/libssl_arm
+    URL ${CMAKE_SOURCE_DIR}/deps/src/openssl-1.1.1s
+    INSTALL_DIR ${CMAKE_SOURCE_DIR}/deps/local
+    BUILD_IN_SOURCE 1
+    CONFIGURE_COMMAND bash -c "env ${__SDKCMD} CC=\"${CMAKE_C_COMPILER}\" ./Configure darwin64-arm64-cc no-rc5 --prefix=<INSTALL_DIR>  -fPIC -Os -g ${CMAKE_C_FLAGS} -Wno-everything -w"
+    BUILD_COMMAND bash -c "SDKROOT=${CMAKE_OSX_SYSROOT} make -j1"
+    INSTALL_COMMAND bash -c "SDKROOT=${CMAKE_OSX_SYSROOT} make -j1 install && cp ./libcrypto.a <INSTALL_DIR>/ssl/libcrypto_arm.a && cp ./libssl.a <INSTALL_DIR>/ssl/libssl_arm.a"
+    BUILD_BYPRODUCTS
+    ${CMAKE_SOURCE_DIR}/deps/local/lib/libssl.a
+    ${CMAKE_SOURCE_DIR}/deps/local/lib/libcrypto.a
+    ${CMAKE_SOURCE_DIR}/deps/local/ssl/libssl_arm.a
+    ${CMAKE_SOURCE_DIR}/deps/local/ssl/libcrypto_arm.a
+    ${_openssl_installed_headers}
+    )
+
+  ExternalProject_Add(ex_openssl_x86
+    PREFIX ${CMAKE_SOURCE_DIR}/deps/build/libssl_x86
+    URL ${CMAKE_SOURCE_DIR}/deps/src/openssl-1.1.1s
+    INSTALL_DIR ${CMAKE_SOURCE_DIR}/deps/local
+    BUILD_IN_SOURCE 1
+    CONFIGURE_COMMAND bash -c "env ${__SDKCMD} CC=\"${CMAKE_C_COMPILER}\" ./Configure darwin64-x86_64-cc no-rc5 --prefix=<INSTALL_DIR>  -fPIC -Os -g ${CMAKE_C_FLAGS} -Wno-everything -w"
+    BUILD_COMMAND bash -c "SDKROOT=${CMAKE_OSX_SYSROOT} make -j1"
+    INSTALL_COMMAND bash -c "SDKROOT=${CMAKE_OSX_SYSROOT} cp ./libcrypto.a <INSTALL_DIR>/ssl/libcrypto_x86.a && cp ./libssl.a <INSTALL_DIR>/ssl/libssl_x86.a"
+    BUILD_BYPRODUCTS
+    ${CMAKE_SOURCE_DIR}/deps/local/lib/libssl.a
+    ${CMAKE_SOURCE_DIR}/deps/local/lib/libcrypto.a
+    ${CMAKE_SOURCE_DIR}/deps/local/ssl/libssl_x86.a
+    ${CMAKE_SOURCE_DIR}/deps/local/ssl/libcrypto_x86.a
+    ${_openssl_installed_headers}
+    )
+
+  add_library(libssl_x86 STATIC IMPORTED)
+  set_property(TARGET libssl_x86 PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/ssl/libssl_x86.a)
+
+  add_library(libcrypto_x86 STATIC IMPORTED)
+  set_property(TARGET libcrypto_x86 PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/ssl/libcrypto_x86.a)
+
+  add_library(libssl_arm STATIC IMPORTED)
+  set_property(TARGET libssl_arm PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/ssl/libssl_arm.a)
+
+  add_library(libcrypto_arm STATIC IMPORTED)
+  set_property(TARGET libcrypto_arm PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/ssl/libcrypto_arm.a)
+
+  add_library(libcryptoa INTERFACE)
+  target_link_libraries(libcryptoa INTERFACE libcrypto_arm libcrypto_x86)
+  add_library(libssla INTERFACE)
+  target_link_libraries(libssla INTERFACE libssl_arm libssl_x86)
 elseif(WIN32)
 ExternalProject_Add(ex_openssl
   PREFIX ${CMAKE_SOURCE_DIR}/deps/build/libssl
@@ -48,6 +83,11 @@ ExternalProject_Add(ex_openssl
   BUILD_COMMAND make depend && make -j1
   INSTALL_COMMAND make -j1 install_sw
   )
+  add_library(libssla STATIC IMPORTED)
+  set_property(TARGET libssla PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/lib/libssl.a)
+
+  add_library(libcryptoa STATIC IMPORTED)
+  set_property(TARGET libcryptoa PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/lib/libcrypto.a)
 else()
 ExternalProject_Add(ex_openssl
   PREFIX ${CMAKE_SOURCE_DIR}/deps/build/libssl
@@ -62,13 +102,13 @@ ExternalProject_Add(ex_openssl
   ${CMAKE_SOURCE_DIR}/deps/local/lib/libcrypto.a
   ${_openssl_installed_headers}
   )
+
+  add_library(libssla STATIC IMPORTED)
+  set_property(TARGET libssla PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/lib/libssl.a)
+
+  add_library(libcryptoa STATIC IMPORTED)
+  set_property(TARGET libcryptoa PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/lib/libcrypto.a)
 endif()
-
-add_library(libssla STATIC IMPORTED)
-set_property(TARGET libssla PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/lib/libssl.a)
-
-add_library(libcryptoa STATIC IMPORTED)
-set_property(TARGET libcryptoa PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/lib/libcrypto.a)
 
 add_library(openssl INTERFACE )
 target_link_libraries(openssl INTERFACE libssla libcryptoa)
@@ -79,6 +119,13 @@ endif()
 target_compile_definitions(openssl INTERFACE HAS_OPENSSL)
 
 add_dependencies(openssl libssla libcryptoa)
-add_dependencies(libssla ex_openssl)
-add_dependencies(libcryptoa ex_openssl)
+if (APPLE)
+  add_dependencies(libssla ex_openssl_arm)
+  add_dependencies(libcryptoa ex_openssl_arm)
+  add_dependencies(libssla ex_openssl_x86)
+  add_dependencies(libcryptoa ex_openssl_x86)
+else()
+  add_dependencies(libssla ex_openssl)
+  add_dependencies(libcryptoa ex_openssl)
+endif()
 set(HAS_OPENSSL TRUE CACHE BOOL "")
