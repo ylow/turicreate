@@ -1,12 +1,8 @@
 Quick Links: [Installation](#supported-platforms) | [Documentation](#documentation)
 
-[![Build Status](https://travis-ci.com/apple/turicreate.svg?branch=master)](#)
-[![PyPI Release](https://img.shields.io/pypi/v/turicreate.svg)](#)
-[![Python Versions](https://img.shields.io/pypi/pyversions/turicreate.svg)](#)
-
 [<img align="right" src="https://docs-assets.developer.apple.com/turicreate/turi-dog.svg" alt="Turi Create" width="100">](#)
 
-# Turi Create 
+# Fork
 
 This is a fork of Turi Create to reestablish Mac compilation, clean up and
 remove all neural network stuff (that are much harder to keep working).
@@ -19,6 +15,7 @@ There are many places for improvement:
  a build for every other python version.
  - support fsspec in the filesystem abstraction
 
+# Turi Create
 
 Turi Create simplifies the development of custom machine learning models. You
 don't have to be a machine learning expert to add recommendations, object
