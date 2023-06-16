@@ -8,9 +8,6 @@
 // ML Data
 #include <ml/ml_data/ml_data.hpp>
 
-// Core ML
-#include <toolkits/coreml_export/linear_models_exporter.hpp>
-
 // Toolkits
 #include <toolkits/supervised_learning/linear_regression_opt_interface.hpp>
 #include <toolkits/supervised_learning/supervised_learning_utils-inl.hpp>
@@ -421,16 +418,6 @@ size_t linear_regression::get_version() const{
   return LINEAR_REGRESSION_MODEL_VERSION;
 }
 
-std::shared_ptr<coreml::MLModelWrapper> linear_regression::export_to_coreml() {
-
-  std::map<std::string, flexible_type> context_metadata = {
-    {"class", name()},
-    {"version", std::to_string(get_version())},
-    {"short_description", "Linear regression model."}};
-
-  return export_linear_regression_as_model_asset(ml_mdata, coefs,
-                                                 context_metadata);
-}
 
 
 

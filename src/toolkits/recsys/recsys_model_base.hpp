@@ -18,7 +18,6 @@
 #include <toolkits/ml_data_2/ml_data.hpp>
 #include <toolkits/ml_data_2/ml_data_iterators.hpp>
 #include <core/util/fast_top_k.hpp>
-#include <toolkits/coreml_export/mlmodel_wrapper.hpp>
 
 
 // Interfaces
@@ -336,9 +335,6 @@ public:
 
   std::shared_ptr<unity_sframe_base> get_num_items_per_user_extension_wrapper() const;
 
-  virtual std::shared_ptr<coreml::MLModelWrapper> export_to_coreml(
-      const std::string& filename,
-      const std::map<std::string, flexible_type>& additional_user_defined);
 
   variant_map_type summary();
 
@@ -446,12 +442,6 @@ public:
   REGISTER_NAMED_CLASS_MEMBER_FUNCTION(
       "get_item_intersection_info",
       recsys_model_base::api_get_item_intersection_info, "item_pairs");
-
-  REGISTER_NAMED_CLASS_MEMBER_FUNCTION("export_to_coreml",
-                                       recsys_model_base::export_to_coreml,
-                                       "filename", "additional_user_defined");
-  register_defaults("export_to_coreml",
-      {{"additional_user_defined", to_variant(std::map<std::string, flexible_type>())}});
 
   REGISTER_NAMED_CLASS_MEMBER_FUNCTION(
       "precision_recall_by_user", recsys_model_base::api_precision_recall_by_user,

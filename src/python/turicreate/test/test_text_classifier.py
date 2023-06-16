@@ -93,37 +93,6 @@ class TextClassifierTest(unittest.TestCase):
         """
         self.model.evaluate(self.docs)
 
-    def test_export_coreml(self):
-        import platform
-        import coremltools
-
-        filename = tempfile.NamedTemporaryFile(suffix=".mlmodel").name
-        self.model.export_coreml(filename)
-
-        coreml_model = coremltools.models.MLModel(filename)
-        metadata = coreml_model.user_defined_metadata
-
-        self.assertEqual(metadata["com.github.apple.turicreate.version"], tc.__version__)
-        self.assertEqual(metadata["com.github.apple.os.platform"], platform.platform())
-        self.assertEqual(metadata["type"], self.model.__class__.__name__)
-
-        expected_result = (
-            "Text classifier created by Turi Create (version %s)" % tc.__version__
-        )
-        self.assertEquals(expected_result, coreml_model.short_description)
-
-    @unittest.skipIf(_mac_ver() < (10, 13), "Only supported on macOS 10.13+")
-    def test_export_coreml_with_predict(self):
-        filename = tempfile.NamedTemporaryFile(suffix=".mlmodel").name
-        self.model.export_coreml(filename)
-        preds = self.model.predict(self.docs, output_type="probability_vector")
-
-        import coremltools
-
-        coreml_model = coremltools.models.MLModel(filename)
-        coreml_preds = coreml_model.predict({"text": {"hello": 1, "friend": 1}})
-        self.assertAlmostEqual(preds[0][0], coreml_preds["scoreProbability"][0])
-        self.assertAlmostEqual(preds[0][1], coreml_preds["scoreProbability"][1])
 
     def test_save_and_load(self):
         """

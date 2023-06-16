@@ -23,7 +23,6 @@
 #include <model_server/lib/variant.hpp>
 #include <model_server/lib/unity_base_types.hpp>
 #include <model_server/lib/variant_deep_serialize.hpp>
-#include <toolkits/coreml_export/mlmodel_wrapper.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
@@ -680,12 +679,6 @@ class EXPORT supervised_learning_model_base : public ml_model_base {
   gl_sarray api_extract_features(
       gl_sframe data, std::string missing_value_action);
 
-  /** Export to CoreML.
-   */
-  virtual std::shared_ptr<coreml::MLModelWrapper> export_to_coreml() = 0;
-
-  std::shared_ptr<coreml::MLModelWrapper> api_export_to_coreml(const std::string& file);
-
   //////////////////////////////////////////////////////////////////////////////
 
   BEGIN_BASE_CLASS_MEMBER_REGISTRATION()
@@ -768,11 +761,6 @@ class EXPORT supervised_learning_model_base : public ml_model_base {
   REGISTER_CLASS_MEMBER_FUNCTION(
       supervised_learning_model_base::get_feature_names);
 
-  REGISTER_NAMED_CLASS_MEMBER_FUNCTION(
-      "export_to_coreml", supervised_learning_model_base::api_export_to_coreml,
-      "filename");
-
-  register_defaults("export_to_coreml", {{"filename", std::string("")}});
 
   END_CLASS_MEMBER_REGISTRATION
 

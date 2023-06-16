@@ -29,7 +29,6 @@ make_extension(json SOURCES
 
 #----------------------------
 make_extension(xgboost_extension SOURCES ${CMAKE_SOURCE_DIR}/src/toolkits/supervised_learning/xgboost_extension.cpp)
-make_extension(coreml_extension SOURCES ${CMAKE_SOURCE_DIR}/src/toolkits/coreml_export/coreml_extension.cpp)
 
 #----------------------------
 make_extension(content_interpretation_extensions SOURCES

@@ -22,16 +22,6 @@ make_copy_target(copy_unity_shared
 )
 add_dependencies(copy_unity_shared tctensorflow unity_shared)
 
-if(APPLE AND HAS_COREML_CUSTOM_MODEL)
-  make_copy_target(copy_coreml_dylibs
-    FILES
-    $<TARGET_FILE:Recommender>
-    $<TARGET_FILE:AudioPreprocessing>
-  )
-
-  add_dependencies(copy_coreml_dylibs Recommender AudioPreprocessing)
-endif() 
-
 make_copy_target(release_binaries
         TARGETS
         ${INSTALLATION_EXTENSIONS}

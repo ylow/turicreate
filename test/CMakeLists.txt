@@ -29,10 +29,10 @@ subdirs(
         table_printer
         network
         process
-        vega_renderer
         neural_net
         benchmark
         exceptions
+        vega_renderer
 )
 
 if(${TC_BUILD_CAPI})

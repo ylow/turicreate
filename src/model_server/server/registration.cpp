@@ -14,14 +14,8 @@
 
 #include <model_server/lib/extensions/ml_model.hpp>
 
-#include <visualization/annotation/class_registrations.hpp>
 #include <visualization/server/show.hpp>
 
-#include <toolkits/activity_classification/class_registrations.hpp>
-#include <toolkits/drawing_classifier/class_registrations.hpp>
-#include <toolkits/object_detection/class_registrations.hpp>
-#include <toolkits/object_detection/one_shot_object_detection/class_registrations.hpp>
-#include <toolkits/style_transfer/class_registrations.hpp>
 
 #include <toolkits/evaluation/metrics.hpp>
 #include <toolkits/evaluation/unity_evaluation.hpp>
@@ -50,7 +44,6 @@
 #include <toolkits/util/class_registrations.hpp>
 #include <toolkits/prototype/class_registrations.hpp>
 
-#include <toolkits/image_deep_feature_extractor/class_registrations.hpp>
 
 
 namespace turi {
@@ -62,7 +55,6 @@ void register_functions(toolkit_function_registry& registry) {
 
   registry.register_toolkit_function(image_util::get_toolkit_function_registration());
   registry.register_toolkit_function(visualization::get_toolkit_function_registration());
-  registry.register_toolkit_function(turi::annotate::get_toolkit_function_registration());
 
   // Register proprietary toolkits
   registry.register_toolkit_function(turi::kmeans::get_toolkit_function_registration(), "_kmeans");
@@ -85,8 +77,6 @@ void register_functions(toolkit_function_registry& registry) {
   registry.register_toolkit_function(turi::image_util::get_toolkit_function_registration());
   registry.register_toolkit_function(turi::ml_model_sdk::get_toolkit_function_registration());
   registry.register_toolkit_function(turi::pattern_mining::get_toolkit_function_registration());
-  registry.register_toolkit_function(turi::activity_classification::get_toolkit_function_registration());
-  registry.register_toolkit_function(turi::drawing_classifier::get_toolkit_function_registration());
   registry.register_toolkit_function(turi::util::get_toolkit_function_registration());
 }
 
@@ -131,32 +121,8 @@ void register_models(toolkit_class_registry& registry) {
   // Pattern Mining
   registry.register_toolkit_class(turi::pattern_mining::get_toolkit_class_registration());
 
-#if HAS_CORE_ML
-  // Image Deep Feature Extractor
-  registry.register_toolkit_class(turi::image_deep_feature_extractor::get_toolkit_class_registration());
-#endif
-
-  // Object Detection
-  registry.register_toolkit_class(turi::object_detection::get_toolkit_class_registration());
-
-  // One Shot Object Detection
-  registry.register_toolkit_class(turi::one_shot_object_detection::get_toolkit_class_registration());
-
-  // Activity Classification
-  registry.register_toolkit_class(turi::activity_classification::get_toolkit_class_registration());
-
-  // Drawing Classification
-  registry.register_toolkit_class(turi::drawing_classifier::get_toolkit_class_registration());
-
-  // Style Transfer
-  registry.register_toolkit_class(
-      turi::style_transfer::get_toolkit_class_registration());
-
   // Various prototypes
   registry.register_toolkit_class(turi::prototype::get_toolkit_class_registration());
-
-  // Annotate Registration
-  registry.register_toolkit_class(turi::annotate::get_toolkit_class_registration());
 }
 
 }

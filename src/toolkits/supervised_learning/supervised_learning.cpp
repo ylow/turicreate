@@ -1237,17 +1237,6 @@ gl_sarray supervised_learning_model_base::api_extract_features(
   return extract_features(X, missing_value_action);
 }
 
-std::shared_ptr<coreml::MLModelWrapper>
-supervised_learning_model_base::api_export_to_coreml(
-    const std::string& filename) {
-  std::shared_ptr<coreml::MLModelWrapper> model = export_to_coreml();
-
-  if (filename != "") {
-    model->save(filename);
-  }
-
-  return model;
-}
 
 /**
  * Get the missing value enum from the string.

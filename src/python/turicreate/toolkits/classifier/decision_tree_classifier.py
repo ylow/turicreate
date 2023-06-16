@@ -439,31 +439,6 @@ class DecisionTreeClassifier(_Classifier, _TreeModelMixin):
             dataset, missing_value_action=missing_value_action
         )
 
-    def export_coreml(self, filename):
-        """
-        Export the model in Core ML format.
-
-        Parameters
-        ----------
-        filename: str
-          A valid filename where the model can be saved.
-
-        Examples
-        --------
-        >>> model.export_coreml("MyModel.mlmodel")
-        """
-        from turicreate.toolkits import _coreml_utils
-
-        display_name = "decision tree classifier"
-        short_description = _coreml_utils._mlmodel_short_description(display_name)
-        context = {
-            "mode": "classification",
-            "model_type": "decision_tree",
-            "class": self.__class__.__name__,
-            "short_description": short_description,
-        }
-
-        self._export_coreml_impl(filename, context)
 
 
 def create(

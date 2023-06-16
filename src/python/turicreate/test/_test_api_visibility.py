@@ -120,7 +120,6 @@ class TabCompleteVisibilityTests(unittest.TestCase):
             "coefficients",
             "convergence_threshold",
             "evaluate",
-            "export_coreml",
             "feature_rescaling",
             "features",
             "get",

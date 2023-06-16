@@ -217,22 +217,11 @@ if(APPLE)
   find_library(CORE_GRAPHICS CoreGraphics)
   find_library(JAVASCRIPT_CORE JavaScriptCore)
   find_library(FOUNDATION Foundation)
-  find_library(CORE_IMAGE NAMES CoreImage)
-  find_library(CORE_ML CoreML)
-  find_library(CORE_VIDEO CoreVideo)
-  find_library(METAL NAMES Metal)
-  find_library(METAL_PERFORMANCE_SHADERS NAMES MetalPerformanceShaders)
-  find_library(MLCOMPUTE NAMES MLCompute)
   set(_TC_APPLE_DEPENDENCIES
       ${ACCELERATE}
       ${CORE_GRAPHICS}
       ${JAVASCRIPT_CORE}
-      ${FOUNDATION}
-      ${CORE_IMAGE}
-      ${CORE_ML}
-      ${CORE_VIDEO}
-      ${METAL}
-      ${METAL_PERFORMANCE_SHADERS})
+      ${FOUNDATION})
 
   if(NOT ${TC_BUILD_IOS})
     find_library(APPKIT AppKit)
@@ -362,7 +351,6 @@ include_directories(SYSTEM
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/src/external/libjpeg/jpeg-8d/)
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/src/external/bzip2/)
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/src/external/zlib/zlib-1.2.11/)
-include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/src/external/coremltools_wrap/)
 
 link_directories(${CMAKE_SOURCE_DIR}/deps/local/lib)
 link_directories(${CMAKE_SOURCE_DIR}/deps/local/lib64)
@@ -419,9 +407,7 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
       "$<TARGET_OBJECTS:protobuf>"
       "$<TARGET_OBJECTS:uuid>"
       "$<TARGET_OBJECTS:xgboost>"
-      "$<TARGET_OBJECTS:coremltools_mlmodel>"
       # Then our own source code
-      "$<TARGET_OBJECTS:annotation>"
       "$<TARGET_OBJECTS:cancel_serverside_ops>"
       "$<TARGET_OBJECTS:crash_handler>"
       "$<TARGET_OBJECTS:cppipc>"
@@ -454,11 +440,8 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
       "$<TARGET_OBJECTS:gl_sframe>"
       "$<TARGET_OBJECTS:unity_sketches>"
       "$<TARGET_OBJECTS:unity>"
-      "$<TARGET_OBJECTS:unity_activity_classification>"
       "$<TARGET_OBJECTS:unity_core>"
-      "$<TARGET_OBJECTS:unity_coreml_model_export>"
       "$<TARGET_OBJECTS:unity_clustering>"
-      "$<TARGET_OBJECTS:unity_drawing_classifier>"
       "$<TARGET_OBJECTS:unity_evaluation>"
       "$<TARGET_OBJECTS:unity_factorization>"
       "$<TARGET_OBJECTS:unity_feature_engineering>"
@@ -467,19 +450,16 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
       "$<TARGET_OBJECTS:unity_ml_data_2>"
       "$<TARGET_OBJECTS:unity_ml_model>"
       "$<TARGET_OBJECTS:unity_nearest_neighbors>"
-      "$<TARGET_OBJECTS:unity_neural_net>"
-      "$<TARGET_OBJECTS:unity_object_detection>"
-      "$<TARGET_OBJECTS:unity_one_shot_object_detection>"
       "$<TARGET_OBJECTS:unity_pattern_mining>"
       "$<TARGET_OBJECTS:unity_prototype>"
       "$<TARGET_OBJECTS:unity_recsys>"
       "$<TARGET_OBJECTS:unity_sgd>"
       "$<TARGET_OBJECTS:unity_sparse_similarity>"
-      "$<TARGET_OBJECTS:unity_style_transfer>"
       "$<TARGET_OBJECTS:unity_text>"
       "$<TARGET_OBJECTS:unity_util>"
       "$<TARGET_OBJECTS:util>"
-      "$<TARGET_OBJECTS:visualization>")
+      "$<TARGET_OBJECTS:visualization>"
+      )
 
   # TODO we can remove the requirements from here when target_link_libraries
   # works with OBJECT library targets (requires CMake 3.12) See
@@ -490,34 +470,6 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
   if(APPLE)
     set(_TC_COMMON_REQUIREMENTS # External dependencies (from deps)
         ${_TC_COMMON_REQUIREMENTS} ${_TC_APPLE_DEPENDENCIES})
-  endif()
-
-  set(_TC_COMMON_OBJECTS ${_TC_COMMON_OBJECTS} "$<TARGET_OBJECTS:annotation>"
-                         "$<TARGET_OBJECTS:visualization>")
-
-  if(APPLE)
-    set(_TC_COMMON_OBJECTS
-        ${_TC_COMMON_OBJECTS} "$<TARGET_OBJECTS:image_deep_feature_extractor>"
-        "$<TARGET_OBJECTS:platform_config>")
-    set(_TC_COMMON_REQUIREMENTS ${_TC_COMMON_REQUIREMENTS} ${CORE_ML}
-                                ${CORE_VIDEO} ${FOUNDATION})
-    if(NOT ${TC_BUILD_IOS})
-      set(_TC_COMMON_OBJECTS ${_TC_COMMON_OBJECTS}
-                             "$<TARGET_OBJECTS:vega_renderer>")
-      set(_TC_COMMON_REQUIREMENTS ${_TC_COMMON_REQUIREMENTS} ${APPKIT}
-                                  ${CORE_GRAPHICS} ${JAVASCRIPT_CORE})
-      if(HAS_MPS)
-        set(_TC_COMMON_OBJECTS ${_TC_COMMON_OBJECTS} "$<TARGET_OBJECTS:tcmps>")
-        set(_TC_COMMON_REQUIREMENTS
-            ${_TC_COMMON_REQUIREMENTS} ${ACCELERATE} ${CORE_IMAGE} ${METAL}
-            ${METAL_PERFORMANCE_SHADERS})
-      endif()
-      if(HAS_ML_COMPUTE)
-        set(_TC_COMMON_OBJECTS ${_TC_COMMON_OBJECTS} "$<TARGET_OBJECTS:tcmlc>")
-        set(_TC_COMMON_REQUIREMENTS
-            ${_TC_COMMON_REQUIREMENTS} ${ACCELERATE} ${CORE_IMAGE} ${MLCOMPUTE})
-      endif()
-    endif()
   endif()
 
   if(TC_BUILD_REMOTEFS)

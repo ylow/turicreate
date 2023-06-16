@@ -8,7 +8,6 @@ from __future__ import division as _
 from __future__ import absolute_import as _
 
 import turicreate.toolkits._internal_utils as _tkutl
-from turicreate.toolkits import _coreml_utils
 from turicreate.toolkits._internal_utils import _raise_error_if_not_sframe
 from turicreate._deps.minimal_package import _minimal_package_import_check
 from .. import _pre_trained_models

@@ -12,7 +12,6 @@ import array as _array
 import logging as _logging
 import time as _time
 import six as _six
-from turicreate.toolkits import _coreml_utils
 from turicreate.toolkits._main import ToolkitError as _ToolkitError
 from turicreate.toolkits._model import Model as _Model
 from turicreate.toolkits._internal_utils import _toolkit_repr_print, _precomputed_field
@@ -1919,25 +1918,3 @@ class _Recommender(_Model):
         response = self.__proxy__.get_item_intersection_info(item_pairs)
         return response
 
-    def export_coreml(self, filename):
-        """
-        Export the model in Core ML format.
-
-        Parameters
-        ----------
-        filename: str
-          A valid filename where the model can be saved.
-
-        Examples
-        --------
-        >>> model.export_coreml('myModel.mlmodel')
-        """
-        print(
-            "This model is exported as a custom Core ML model. In order to use it in your\n"
-            'application, you must also include "libRecommender.dylib". For additional\n'
-            "details see:\n"
-            "https://apple.github.io/turicreate/docs/userguide/recommender/coreml-deployment.html"
-        )
-
-        additional_user_defined_metadata = _coreml_utils._get_tc_version_info()
-        self.__proxy__.export_to_coreml(filename, additional_user_defined_metadata)

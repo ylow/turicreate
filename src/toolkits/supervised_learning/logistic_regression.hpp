@@ -11,7 +11,6 @@
 
 // Toolkits
 #include <toolkits/supervised_learning/supervised_learning.hpp>
-#include <toolkits/coreml_export/mlmodel_wrapper.hpp>
 
 // Optimization Interface
 #include <ml/optimization/optimization_interface.hpp>
@@ -170,7 +169,6 @@ class EXPORT logistic_regression: public supervised_learning_model_base {
     _coefs = coefs;
   }
 
-  std::shared_ptr<coreml::MLModelWrapper> export_to_coreml() override;
 
   BEGIN_CLASS_MEMBER_REGISTRATION("classifier_logistic_regression");
   IMPORT_BASE_CLASS_REGISTRATION(supervised_learning_model_base);

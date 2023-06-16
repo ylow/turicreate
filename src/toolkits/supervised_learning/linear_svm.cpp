@@ -16,9 +16,6 @@
 #include <toolkits/supervised_learning/supervised_learning_utils-inl.hpp>
 #include <toolkits/supervised_learning/linear_svm_opt_interface.hpp>
 
-// CoreML
-#include <toolkits/coreml_export/linear_models_exporter.hpp>
-
 
 // Solvers
 #include <ml/optimization/utils.hpp>
@@ -416,16 +413,6 @@ size_t linear_svm::get_version() const{
   return SVM_MODEL_VERSION;
 }
 
-std::shared_ptr<coreml::MLModelWrapper> linear_svm::export_to_coreml() {
-
-  std::map<std::string, flexible_type> context = {
-    {"model_type", "linear_svm"},
-    {"version", std::to_string(get_version())},
-    {"class", name()},
-    {"short_description", "Linear SVM Model."}};
-
-  return export_linear_svm_as_model_asset(ml_mdata, coefs, context);
-}
 
 } // supervised
 } // turicreate

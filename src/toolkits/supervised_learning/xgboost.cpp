@@ -28,8 +28,6 @@
 #include <core/storage/fileio/temp_files.hpp>
 #include <core/storage/fileio/sanitize_url.hpp>
 
-// CoreML
-#include <toolkits/coreml_export/xgboost_exporter.hpp>
 
 
 // sframe
@@ -1716,16 +1714,6 @@ void xgboost_model::load_version(turi::iarchive& iarc, size_t version) {
   }
 }
 
-std::shared_ptr<coreml::MLModelWrapper> xgboost_model::_export_xgboost_model(bool is_classifier,
-      bool is_random_forest,
-      const std::map<std::string, flexible_type>& context) {
-
-  flex_list tree_fl = this->get_trees().get<flex_list>();
-  std::vector<std::string> trees(tree_fl.begin(), tree_fl.end());
-
-  return export_xgboost_model(ml_mdata, trees, is_classifier, is_random_forest,
-                              context);
-}
 
 }  // namespace xgboost
 }  // namespace supervised

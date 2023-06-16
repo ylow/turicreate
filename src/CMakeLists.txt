@@ -3,11 +3,10 @@ subdirs(
   external
   capi
   core
-  deployment
   ml
   toolkits
-  visualization
-  model_server)
+  model_server
+  visualization)
 
 
 if(TC_BUILD_PYTHON)

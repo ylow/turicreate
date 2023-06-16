@@ -127,16 +127,7 @@ void decision_tree_regression::init_options(
   add_or_update_state(flexmap_to_varmap(options.current_option_values()));
 }
 
-std::shared_ptr<coreml::MLModelWrapper> decision_tree_regression::export_to_coreml() {
 
-  std::map<std::string, flexible_type> context = {
-    {"model_type", "decision_tree"},
-    {"version", get_version()},
-    {"class", name()},
-    {"short_description", "Decision Tree Regression model."}};
-
-  return this->_export_xgboost_model(false, true, context);
-}
 
 /**
  * classifier
@@ -204,19 +195,6 @@ void decision_tree_classifier::init_options(
   add_or_update_state(flexmap_to_varmap(options.current_option_values()));
 
 }
-
-std::shared_ptr<coreml::MLModelWrapper> decision_tree_classifier::export_to_coreml() {
-
-  std::map<std::string, flexible_type> context = {
-    {"model_type", "decision_tree"},
-    {"version", std::to_string(get_version())},
-    {"class", name()},
-    {"short_description", "Decision Tree classification model."}};
-
-  return this->_export_xgboost_model(true, true, context);
-}
-
-
 
 }  // namespace xgboost
 }  // namespace supervised

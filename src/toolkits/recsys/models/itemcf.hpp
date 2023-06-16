@@ -9,7 +9,6 @@
 #include <vector>
 #include <string>
 #include <model_server/lib/extensions/option_manager.hpp>
-#include <toolkits/coreml_export/mlmodel_wrapper.hpp>
 #include <toolkits/recsys/recsys_model_base.hpp>
 #include <core/generics/symmetric_2d_array.hpp>
 
@@ -217,11 +216,6 @@ public:
 
     return sframe();
   }
-
-  virtual std::shared_ptr<coreml::MLModelWrapper> export_to_coreml(
-      const std::string& filename,
-      const std::map<std::string, flexible_type>& additional_user_defined)
-      override;
 
  private:
 

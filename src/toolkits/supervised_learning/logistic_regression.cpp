@@ -16,9 +16,6 @@
 #include <toolkits/supervised_learning/logistic_regression_opt_interface.hpp>
 #include <toolkits/supervised_learning/supervised_learning_utils-inl.hpp>
 
-// Core ML
-#include <toolkits/coreml_export/linear_models_exporter.hpp>
-
 // Solvers
 #include <ml/optimization/utils.hpp>
 #include <ml/optimization/newton_method-inl.hpp>
@@ -771,17 +768,6 @@ size_t logistic_regression::get_version() const{
   return LOGISTIC_REGRESSION_MODEL_VERSION;
 }
 
-std::shared_ptr<coreml::MLModelWrapper> logistic_regression::export_to_coreml() {
-
-  // Add metadata
-  std::map<std::string, flexible_type> context_metadata = {
-    {"class", name()},
-    {"version", std::to_string(get_version())},
-    {"short_description", "Logisitic regression model."}};
-
-  return export_logistic_model_as_model_asset(ml_mdata, coefs,
-                                              context_metadata);
-}
 
 } // supervised
 } // turicreate

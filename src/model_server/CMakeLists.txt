@@ -5,9 +5,6 @@ subdirs(extensions
 
 set(additional_unity_requirements)
 
-if(HAS_CORE_ML)
-  set(additional_unity_requirements image_deep_feature_extractor)
-endif()
 
 if(NOT TC_DISABLE_OBJECT_BUILDS) 
   set(unity_shared_object_deps
@@ -15,12 +12,6 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
   "$<TARGET_OBJECTS:python_callbacks>"
   )
   
-if(APPLE AND HAS_COREML_CUSTOM_MODEL)
-    set(unity_shared_object_deps
-      ${unity_shared_object_deps}
-      "$<TARGET_OBJECTS:objcapi>"
-      "$<TARGET_OBJECTS:capi>")
-endif()
 
 else()
   set(unity_shared_deps 

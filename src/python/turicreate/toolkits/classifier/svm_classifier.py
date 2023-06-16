@@ -382,33 +382,6 @@ class SVMClassifier(_Classifier):
         (sections, section_titles) = self._get_summary_struct()
         return _toolkit_repr_print(self, sections, section_titles, width=30)
 
-    def export_coreml(self, filename):
-        """
-        Export the model in Core ML format.
-
-        Parameters
-        ----------
-        filename: str
-          A valid filename where the model can be saved.
-
-        Examples
-        --------
-        >>> model.export_coreml("MyModel.mlmodel")
-        """
-        from turicreate.extensions import _linear_svm_export_as_model_asset
-        from turicreate.toolkits import _coreml_utils
-
-        display_name = "svm classifier"
-        short_description = _coreml_utils._mlmodel_short_description(display_name)
-        context = {
-            "class": self.__class__.__name__,
-            "short_description": short_description,
-        }
-        context["user_defined"] = _coreml_utils._get_model_metadata(
-            self.__class__.__name__, None
-        )
-        _linear_svm_export_as_model_asset(self.__proxy__, filename, context)
-
     def _get(self, field):
         """
         Return the value of a given field. The list of all queryable fields is

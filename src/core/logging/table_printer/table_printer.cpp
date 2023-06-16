@@ -71,18 +71,10 @@ table_printer::table_printer(const std::vector<std::pair<std::string, size_t> >&
 {
   DASSERT_FALSE(format.empty());
 
-  size_t total_size = 0;
-
-  // The column start.
-  total_size += 2;
-
   for(size_t i = 0; i < format.size(); ++i) {
 
     if(format[i].first.size() > format[i].second)
       format[i].second = format[i].first.size();
-
-    total_size += format[i].second;
-    total_size += 3; // Width into next column.
   }
 
   lowres_tt.ms();
