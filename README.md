@@ -8,6 +8,18 @@ Quick Links: [Installation](#supported-platforms) | [Documentation](#documentati
 
 # Turi Create 
 
+This is a fork of Turi Create to reestablish Mac compilation, clean up and
+remove all neural network stuff (that are much harder to keep working).
+
+There are many places for improvement:
+ - Vectorized query execution
+ - lambda workers can probably use PyInterpreter in the same process rather
+ than subprocess.
+ - support Python 3 stable ABI (PEP 384) (how?) so we don't need to compile
+ a build for every other python version.
+ - support fsspec in the filesystem abstraction
+
+
 Turi Create simplifies the development of custom machine learning models. You
 don't have to be a machine learning expert to add recommendations, object
 detection, image classification, image similarity or activity classification to
@@ -24,12 +36,6 @@ With Turi Create, you can accomplish many common ML tasks:
 | ML Task                 | Description                      |
 |:------------------------:|:--------------------------------:|
 | [Recommender](https://apple.github.io/turicreate/docs/userguide/recommender/)             | Personalize choices for users    |
-| [Image Classification](https://apple.github.io/turicreate/docs/userguide/image_classifier/)    | Label images                     |
-| [Drawing Classification](https://apple.github.io/turicreate/docs/userguide/drawing_classifier)  | Recognize Pencil/Touch Drawings and Gestures                     |
-| [Sound Classification](https://apple.github.io/turicreate/docs/userguide/sound_classifier)  | Classify sounds                     |
-| [Object Detection](https://apple.github.io/turicreate/docs/userguide/object_detection/)        | Recognize objects within images  |
-| [One Shot Object Detection](https://apple.github.io/turicreate/docs/userguide/one_shot_object_detection/)    | Recognize 2D objects within images using a single example  |
-| [Style Transfer](https://apple.github.io/turicreate/docs/userguide/style_transfer/)        | Stylize images |
 | [Activity Classification](https://apple.github.io/turicreate/docs/userguide/activity_classifier/) | Detect an activity using sensors |
 | [Image Similarity](https://apple.github.io/turicreate/docs/userguide/image_similarity/)        | Find similar images              |
 | [Classifiers](https://apple.github.io/turicreate/docs/userguide/supervised-learning/classifier.html)             | Predict a label           |
@@ -37,31 +43,6 @@ With Turi Create, you can accomplish many common ML tasks:
 | [Clustering](https://apple.github.io/turicreate/docs/userguide/clustering/)              | Group similar datapoints together|
 | [Text Classifier](https://apple.github.io/turicreate/docs/userguide/text_classifier/)         | Analyze sentiment of messages    |
 
-
-Example: Image classifier with a few lines of code
---------------------------------------------------
-
-If you want your app to recognize specific objects in images, you can build your own model with just a few lines of code:
-
-```python
-import turicreate as tc
-
-# Load data 
-data = tc.SFrame('photoLabel.sframe')
-
-# Create a model
-model = tc.image_classifier.create(data, target='photoLabel')
-
-# Make predictions
-predictions = model.predict(data)
-
-# Export to Core ML
-model.export_coreml('MyClassifier.mlmodel')
-```
- 
-It's easy to use the resulting model in an [iOS application](https://developer.apple.com/documentation/vision/classifying_images_with_vision_and_core_ml):
-
-<p align="center"><img src="https://docs-assets.developer.apple.com/published/a2c37bce1f/689f61a6-1087-4112-99d9-bbfb326e3138.png" alt="Turi Create" width="600"></p>
 
 Supported Platforms
 -------------------
@@ -121,24 +102,6 @@ Documentation
 
 The package [User Guide](https://apple.github.io/turicreate/docs/userguide) and [API Docs](https://apple.github.io/turicreate/docs/api) contain
 more details on how to use Turi Create.
-
-GPU Support
------------
-
-Turi Create **does not require a GPU**, but certain models can be accelerated 9-13x by utilizing a GPU.
-
-| Linux                     | macOS 10.13+         | macOS 10.14+ discrete GPUs, macOS 10.15+ integrated GPUs |
-| :-------------------------|:---------------------|:---------------------------------------------------------|
-| Activity Classification   | Image Classification | Activity Classification                                  |
-| Drawing Classification    | Image Similarity     | Object Detection                                         |
-| Image Classification      | Sound Classification | One Shot Object Detection                                |
-| Image Similarity          |                      | Style Transfer                                           |
-| Object Detection          |                      |                                                          |
-| One Shot Object Detection |                      |                                                          |
-| Sound Classification      |                      |                                                          |
-| Style Transfer            |                      |                                                          |
-
-macOS GPU support is automatic. For Linux GPU support, see [LinuxGPU.md](LinuxGPU.md).
 
 Building From Source
 ---------------------
