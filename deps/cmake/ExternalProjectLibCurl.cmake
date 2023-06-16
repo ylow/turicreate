@@ -13,27 +13,53 @@ else()
   SET(EXTRA_CONFIGURE_FLAGS LIBS=-ldl --with-ssl=<INSTALL_DIR>)
 endif()
 
+# create the libcurla target
 if(APPLE)
   set(__SDKCMD "SDKROOT=${CMAKE_OSX_SYSROOT}")
-  if(${CMAKE_C_COMPILER_TARGET})
-    set(__ARCH_FLAG "--target=${CMAKE_C_COMPILER_TARGET}")
-  endif()
+  ExternalProject_Add(ex_libcurl_x86
+    PREFIX ${CMAKE_SOURCE_DIR}/deps/build/libcurl_x86
+    URL ${CMAKE_SOURCE_DIR}/deps/src/curl-7.65.1
+    INSTALL_DIR ${CMAKE_SOURCE_DIR}/deps/local
+    CONFIGURE_COMMAND env ${__SDKCMD} CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} "CFLAGS=-fPIC -w ${CMAKE_C_FLAGS} -target x86_64-apple-macos10.12" "CXXFLAGS=-w" <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --without-winidn --without-libidn --without-libidn2 --without-nghttp2 --without-ca-bundle --with-ca-path=/etc/ssl/certs/ --without-polarssl --without-cyassl --without-nss --disable-crypto-auth --enable-shared=no --enable-static=yes --disable-ldap --without-librtmp --without-zlib --libdir=<INSTALL_DIR>/libcurl_x86 ${EXTRA_CONFIGURE_FLAGS}
+    BUILD_COMMAND bash -c "SDKROOT=${CMAKE_OSX_SYSROOT} make -j4"
+    BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/deps/local/libcurl_x86/libcurl.a ${CMAKE_SOURCE_DIR}/deps/local/include/curl/curl.h
+    )
+  ExternalProject_Add(ex_libcurl_arm
+    PREFIX ${CMAKE_SOURCE_DIR}/deps/build/libcurl_arm
+    URL ${CMAKE_SOURCE_DIR}/deps/src/curl-7.65.1
+    INSTALL_DIR ${CMAKE_SOURCE_DIR}/deps/local
+    CONFIGURE_COMMAND env ${__SDKCMD} CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} "CFLAGS=-fPIC -w ${CMAKE_C_FLAGS} -target arm64-apple-macos11" "CXXFLAGS=-w" <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --without-winidn --without-libidn --without-libidn2 --without-nghttp2 --without-ca-bundle --with-ca-path=/etc/ssl/certs/ --without-polarssl --without-cyassl --without-nss --disable-crypto-auth --enable-shared=no --enable-static=yes --disable-ldap --without-librtmp --without-zlib --libdir=<INSTALL_DIR>/libcurl_arm ${EXTRA_CONFIGURE_FLAGS}
+    BUILD_COMMAND bash -c "SDKROOT=${CMAKE_OSX_SYSROOT} make -j4"
+    BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/deps/local/libcurl_arm/libcurl.a ${CMAKE_SOURCE_DIR}/deps/local/include/curl/curl.h
+    )
+
+  add_dependencies(ex_libcurl_x86 ex_openssl)
+  add_dependencies(ex_libcurl_arm ex_openssl)
+  add_library(libcurl_arm STATIC IMPORTED)
+  set_property(TARGET libcurl_arm PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/libcurl_arm/libcurl.a)
+  add_library(libcurl_x86 STATIC IMPORTED)
+  set_property(TARGET libcurl_x86 PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/libcurl_x86/libcurl.a)
+
+  add_library(libcurla INTERFACE)
+  target_link_libraries(libcurla INTERFACE libcurl_arm libcurl_x86)
+  add_dependencies(libcurla ex_libcurl_x86)
+  add_dependencies(libcurla ex_libcurl_arm)
+else()
+  ExternalProject_Add(ex_libcurl
+    PREFIX ${CMAKE_SOURCE_DIR}/deps/build/libcurl
+    URL ${CMAKE_SOURCE_DIR}/deps/src/curl-7.65.1
+    INSTALL_DIR ${CMAKE_SOURCE_DIR}/deps/local
+    CONFIGURE_COMMAND env ${__SDKCMD} CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} "CFLAGS=-fPIC -w ${CMAKE_C_FLAGS} ${__ARCH_FLAG}" "CXXFLAGS=-w" <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --without-winidn --without-libidn --without-libidn2 --without-nghttp2 --without-ca-bundle --with-ca-path=/etc/ssl/certs/ --without-polarssl --without-cyassl --without-nss --disable-crypto-auth --enable-shared=no --enable-static=yes --disable-ldap --without-librtmp --without-zlib --libdir=<INSTALL_DIR>/lib ${EXTRA_CONFIGURE_FLAGS}
+    BUILD_COMMAND bash -c "SDKROOT=${CMAKE_OSX_SYSROOT} make -j4"
+    BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/deps/local/lib/libcurl.a ${CMAKE_SOURCE_DIR}/deps/local/include/curl/curl.h
+    )
+  add_dependencies(ex_libcurl ex_openssl)
+
+  add_library(libcurla STATIC IMPORTED)
+  set_property(TARGET libcurla PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/lib/libcurl.a)
 endif()
 
-ExternalProject_Add(ex_libcurl
-  PREFIX ${CMAKE_SOURCE_DIR}/deps/build/libcurl
-  URL ${CMAKE_SOURCE_DIR}/deps/src/curl-7.65.1
-  INSTALL_DIR ${CMAKE_SOURCE_DIR}/deps/local
-  CONFIGURE_COMMAND env ${__SDKCMD} CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} "CFLAGS=-fPIC -w ${CMAKE_C_FLAGS} ${__ARCH_FLAG}" "CXXFLAGS=-w" <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --without-winidn --without-libidn --without-libidn2 --without-nghttp2 --without-ca-bundle --with-ca-path=/etc/ssl/certs/ --without-polarssl --without-cyassl --without-nss --disable-crypto-auth --enable-shared=no --enable-static=yes --disable-ldap --without-librtmp --without-zlib --libdir=<INSTALL_DIR>/lib ${EXTRA_CONFIGURE_FLAGS}
-  BUILD_COMMAND bash -c "SDKROOT=${CMAKE_OSX_SYSROOT} make -j4"
-  BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/deps/local/lib/libcurl.a ${CMAKE_SOURCE_DIR}/deps/local/include/curl/curl.h
-  )
-
-add_dependencies(ex_libcurl ex_openssl)
-
-add_library(libcurla STATIC IMPORTED)
-set_property(TARGET libcurla PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/local/lib/libcurl.a)
-
+# create the curl dependency
 if (APPLE)
   find_library(security_framework NAMES Security)
   find_library(core_framework NAMES CoreFoundation)
