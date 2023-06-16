@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import turicreate as tc
 from turicreate.toolkits._main import ToolkitError
@@ -46,7 +46,7 @@ class TreeRegressionTrackingMetricsTest(unittest.TestCase):
             return metric
 
     def _run_test(self, train, valid, metric):
-        for (name, model) in self.models.items():
+        for (name, model) in list(self.models.items()):
             m = model.create(
                 train, "target", validation_set=valid, max_depth=2, metric=metric
             )

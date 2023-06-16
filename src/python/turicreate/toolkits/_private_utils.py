@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from turicreate.toolkits._main import ToolkitError
 import logging as _logging
 
@@ -26,7 +26,7 @@ def _validate_row_label(label, column_type_map):
     if not isinstance(label, str):
         raise TypeError("The row label column name must be a string.")
 
-    if not label in column_type_map.keys():
+    if not label in list(column_type_map.keys()):
         raise ToolkitError("Row label column not found in the dataset.")
 
     if not column_type_map[label] in (str, int):
@@ -266,7 +266,7 @@ def _summarize_accessible_fields(
     items.append(section_title)
     items.append("-" * len(section_title))
 
-    for field_name, field_desc in field_descriptions.items():
+    for field_name, field_desc in list(field_descriptions.items()):
         items.append(key_str.format(field_name, width, field_desc))
 
     return "\n".join(items)

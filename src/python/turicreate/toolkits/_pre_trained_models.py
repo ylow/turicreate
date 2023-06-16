@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import os as _os
 import sys as _sys
 import requests as _requests
@@ -46,7 +46,7 @@ def _download_and_checksum_files(urls, dirname, delete=False):
         else:
             return url_or_pair, None
 
-    urls, shas = zip(*[url_sha_pair(pair) for pair in urls])
+    urls, shas = list(zip(*[url_sha_pair(pair) for pair in urls]))
     fns = [
         _os.path.join(dirname, _os.path.basename(_urlparse.urlparse(url).path))
         for url in urls
@@ -183,7 +183,7 @@ class DarkNetObjectDetectorBase(ObjectDetectorBasePreTrainedModel):
 
         subset_params = copy(mx_params)
         subset_params._params = OrderedDict(
-            [(k, v) for k, v in mx_params.items() if k in self.weight_names]
+            [(k, v) for k, v in list(mx_params.items()) if k in self.weight_names]
         )
         return subset_params
 

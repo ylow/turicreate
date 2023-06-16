@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import turicreate as tc
 import sys
@@ -144,7 +144,7 @@ class SVMClassifierTest(unittest.TestCase):
             "validation_data": lambda x: isinstance(x, tc.SFrame) and len(x) == 0,
             "disable_posttrain_evaluation": lambda x: x == False,
         }
-        self.fields_ans = self.get_ans.keys()
+        self.fields_ans = list(self.get_ans.keys())
 
     def test__list_fields(self):
         """

@@ -7,9 +7,9 @@
 This package provides commonly used methods for dealing with file operation,
 including working with network file system like S3, http, etc.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import os
 import logging
 import shutil

@@ -9,9 +9,9 @@ is a directed graph, consisting of a set of Vertex objects and Edges that
 connect pairs of Vertices. The methods in this module are available from the top
 level import of the turicreate package.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 from .._connect import main as glconnect
 from .sframe import SFrame
@@ -408,7 +408,7 @@ class SGraph(object):
         0
         """
         ret = self.__proxy__.summary()
-        return dict(ret.items())
+        return dict(list(ret.items()))
 
     def get_vertices(self, ids=[], fields={}, format="sframe"):
         """
@@ -1308,7 +1308,7 @@ def _vertex_list_to_sframe(ls, id_column_name):
 
     elif type(ls) == Vertex:
         sf[id_column_name] = [ls.vid]
-        for col, val in ls.attr.iteritems():
+        for col, val in ls.attr.items():
             sf[col] = [val]
 
     else:

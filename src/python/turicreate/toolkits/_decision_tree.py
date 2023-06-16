@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from turicreate.util import _raise_error_if_not_of_type
 from turicreate.toolkits._internal_utils import _numeric_param_check_range
 
@@ -58,7 +58,7 @@ class Node(object):
         # float/int/str or leaf.
         # Set to leaf if the node type is leaf.
         self.node_type = node_type
-        is_leaf = node_type == u"leaf"
+        is_leaf = node_type == "leaf"
         self.is_leaf = is_leaf
         self.value = value
 
@@ -141,7 +141,7 @@ class Node(object):
               and right).
         """
         out = {}
-        for key in self.__dict__.keys():
+        for key in list(self.__dict__.keys()):
             if key not in ["left", "right", "missing", "parent"]:
                 out[key] = self.__dict__[key]
         return out
@@ -199,7 +199,7 @@ class DecisionTree:
         import turicreate as _tc
         import json as _json
 
-        _raise_error_if_not_of_type(tree_id, [int, long], "tree_id")
+        _raise_error_if_not_of_type(tree_id, [int, int], "tree_id")
         _numeric_param_check_range("tree_id", tree_id, 0, model.num_trees - 1)
 
         tree = DecisionTree()
@@ -265,7 +265,7 @@ class DecisionTree:
 
         # Parse the edges from the tree.
         edges = []
-        for nid, node in self.nodes.items():
+        for nid, node in list(self.nodes.items()):
             if not node.is_leaf:
                 e = [
                     {"src": node.node_id, "dst": node.left_id, "value": "left"},
@@ -298,7 +298,7 @@ class DecisionTree:
         self.num_nodes = len(self.nodes)
 
         # Set the root_id.
-        for nid, n in self.nodes.items():
+        for nid, n in list(self.nodes.items()):
             if n.parent is None:
                 self._root_id = n.node_id
                 break
@@ -363,7 +363,7 @@ class DecisionTree:
              'split_feature_index': 'count_sum',
              'value': 22.5}
         """
-        _raise_error_if_not_of_type(root_id, [int, long], "root_id")
+        _raise_error_if_not_of_type(root_id, [int, int], "root_id")
         _numeric_param_check_range("root_id", root_id, 0, self.num_nodes - 1)
 
         node = self.nodes[root_id]
@@ -401,7 +401,7 @@ class DecisionTree:
             None
 
         """
-        _raise_error_if_not_of_type(node_id, [int, long], "node_id")
+        _raise_error_if_not_of_type(node_id, [int, int], "node_id")
         _numeric_param_check_range("node_id", node_id, 0, self.num_nodes - 1)
         node = self.nodes[node_id]
         return None if node.is_leaf is False else node.value
@@ -437,7 +437,7 @@ class DecisionTree:
                'sign': '<=',
                'value': 146.5}]
         """
-        _raise_error_if_not_of_type(node_id, [int, long], "node_id")
+        _raise_error_if_not_of_type(node_id, [int, int], "node_id")
         _numeric_param_check_range("node_id", node_id, 0, self.num_nodes - 1)
 
         def _deduplicate_path(path):

@@ -117,9 +117,9 @@ d1: 1.65286120899 d2: 3.66096749031
 This tells that under our first composite distance, the 'cat' and 'dog' data
 points are closer than the 'cat' and 'elephant' data points.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 __all__ = ["_distances", "_util"]
 

@@ -45,9 +45,9 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import builtins
 import dis
@@ -156,7 +156,7 @@ def _whichmodule(obj, name):
     # Protect the iteration by using a copy of sys.modules against dynamic
     # modules that trigger imports of other modules upon calls to getattr or
     # other threads importing at the same time.
-    for module_name, module in sys.modules.copy().items():
+    for module_name, module in list(sys.modules.copy().items()):
         # Some modules such as coverage can inject non-module objects inside
         # sys.modules
         if (
@@ -410,7 +410,7 @@ EXTENDED_ARG = dis.EXTENDED_ARG
 
 
 _BUILTIN_TYPE_NAMES = {}
-for k, v in types.__dict__.items():
+for k, v in list(types.__dict__.items()):
     if type(v) is type:
         _BUILTIN_TYPE_NAMES[v] = k
 
@@ -445,7 +445,7 @@ def _extract_class_dict(cls):
         for base in reversed(cls.__bases__):
             inherited_dict.update(base.__dict__)
     to_remove = []
-    for name, value in clsdict.items():
+    for name, value in list(clsdict.items()):
         try:
             base_value = inherited_dict[name]
             if value is base_value:
@@ -631,13 +631,13 @@ def _fill_function(*args):
         # argument was introduced
         func = args[0]
         keys = ['globals', 'defaults', 'dict', 'closure_values']
-        state = dict(zip(keys, args[1:]))
+        state = dict(list(zip(keys, args[1:])))
     elif len(args) == 6:
         # Backwards compat for cloudpickle v0.4.1, after which the function
         # state was passed as a dict to the _fill_function it-self.
         func = args[0]
         keys = ['globals', 'defaults', 'dict', 'module', 'closure_values']
-        state = dict(zip(keys, args[1:]))
+        state = dict(list(zip(keys, args[1:])))
     else:
         raise ValueError('Unexpected _fill_value arguments: %r' % (args,))
 
@@ -751,7 +751,7 @@ def _rehydrate_skeleton_class(skeleton_class, class_dict):
     See CloudPickler.save_dynamic_class for more info.
     """
     registry = None
-    for attrname, attr in class_dict.items():
+    for attrname, attr in list(class_dict.items()):
         if attrname == "_abc_impl":
             registry = attr
         else:
@@ -784,7 +784,7 @@ def _make_skeleton_enum(bases, name, qualname, members, module,
     metacls = enum_base.__class__
     classdict = metacls.__prepare__(name, bases)
 
-    for member_name, member_value in members.items():
+    for member_name, member_value in list(members.items()):
         classdict[member_name] = member_value
     enum_class = metacls.__new__(metacls, name, bases, classdict)
     enum_class.__module__ = module

@@ -7,9 +7,9 @@
 """@package turicreate.toolkits
 This module defines the (internal) functions used by the supervised_learning_models.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import turicreate as _turicreate
 
 from turicreate.toolkits._model import Model

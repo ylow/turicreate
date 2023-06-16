@@ -45,9 +45,9 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import dis
 from functools import partial
@@ -68,9 +68,9 @@ if sys.version_info.major == 2:
     from pickle import Pickler
 
     try:
-        from cStringIO import StringIO
+        from io import StringIO
     except ImportError:
-        from StringIO import StringIO
+        from io import StringIO
     PY3 = False
     # This import prevents futurize from trying to change types.ClassType -> type
     from types import ClassType as _ClassType
@@ -180,7 +180,7 @@ def islambda(func):
 
 
 _BUILTIN_TYPE_NAMES = {}
-for k, v in types.__dict__.items():
+for k, v in list(types.__dict__.items()):
     if type(v) is type:
         _BUILTIN_TYPE_NAMES[v] = k
 
@@ -198,7 +198,7 @@ if sys.version_info < (3, 4):
         """
         code = getattr(code, "co_code", b"")
         if not PY3:
-            code = map(ord, code)
+            code = list(map(ord, code))
 
         n = len(code)
         i = 0
@@ -285,7 +285,7 @@ class CloudPickler(Pickler):
     dispatch[types.GeneratorType] = save_unsupported
 
     # itertools objects do not pickle!
-    for v in itertools.__dict__.values():
+    for v in list(itertools.__dict__.values()):
         if type(v) is type:
             dispatch[v] = save_unsupported
 
@@ -450,7 +450,7 @@ class CloudPickler(Pickler):
             ):
                 # check if the package has any currently loaded sub-imports
                 prefix = x.__name__ + "."
-                for name, module in sys.modules.items():
+                for name, module in list(sys.modules.items()):
                     # Older versions of pytest will add a "None" module to sys.modules.
                     if name is not None and name.startswith(prefix):
                         # check whether the function can address the sub-module
@@ -559,7 +559,7 @@ class CloudPickler(Pickler):
         write(pickle.MARK)  # beginning of tuple that _fill_function expects
 
         self._save_subimports(
-            code, itertools.chain(f_globals.values(), closure_values or ()),
+            code, itertools.chain(list(f_globals.values()), closure_values or ()),
         )
 
         # create a skeleton function object and memoize it
@@ -906,7 +906,7 @@ class CloudPickler(Pickler):
     def save_file(self, obj):
         """Save a file"""
         try:
-            import StringIO as pystringIO  # we can't use cStringIO as it lacks the name attribute
+            import io as pystringIO  # we can't use cStringIO as it lacks the name attribute
         except ImportError:
             import io as pystringIO
 
@@ -1086,7 +1086,7 @@ def dynamic_subimport(name, vars):
 
 # restores function attributes
 def _restore_attr(obj, attr):
-    for key, val in attr.items():
+    for key, val in list(attr.items()):
         setattr(obj, key, val)
     return obj
 
@@ -1221,7 +1221,7 @@ def _rehydrate_skeleton_class(skeleton_class, class_dict):
 
     See CloudPickler.save_dynamic_class for more info.
     """
-    for attrname, attr in class_dict.items():
+    for attrname, attr in list(class_dict.items()):
         setattr(skeleton_class, attrname, attr)
     return skeleton_class
 
@@ -1268,7 +1268,7 @@ if sys.version_info < (3, 4):
         return (getattr, (obj.__objclass__, obj.__name__))
 
     try:
-        import copy_reg as copyreg
+        import copyreg as copyreg
     except ImportError:
         import copyreg
     copyreg.pickle(method_descriptor, _reduce_method_descriptor)

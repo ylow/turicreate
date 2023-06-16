@@ -6,9 +6,9 @@
 # All rights reserved.
 # This software may be modified and distributed under the terms
 # of the BSD license. See the LICENSE file for details.
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import sys
 import ast
@@ -303,7 +303,7 @@ def translate(fn):
     # now. annoyingly enough certain captures are not here. We need to
     # look in func_closures for it
     if func_closure:
-        closure = dict(zip(co_freevars, (c.cell_contents for c in func_closure)))
+        closure = dict(list(zip(co_freevars, (c.cell_contents for c in func_closure))))
         # inject closure into "caller_globals"
         for i in closure:
             visitor.caller_globals[i] = closure[i]

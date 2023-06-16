@@ -7,9 +7,9 @@
 This module contains the K-Means clustering algorithm, including the KmeansModel
 class which provides methods for inspecting the returned cluster information.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import logging as _logging
 from array import array as _array
@@ -179,7 +179,7 @@ def _validate_features(features, column_type_map, valid_types, label):
                 + "corresponding to column names in the input dataset."
             )
 
-        elif ftr not in column_type_map.keys():
+        elif ftr not in list(column_type_map.keys()):
             _logging.warning(
                 "Feature '{}' excluded because ".format(ftr)
                 + "it is not in the input dataset."

@@ -11,9 +11,9 @@
 # naively-JSON-serializable flexible_type that should retain all necessary
 # information to be rehydrated into the original variant_type.
 
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import array
 import datetime
@@ -71,8 +71,8 @@ _SFrameComparer = util.SFrameComparer()
 
 class JSONTest(unittest.TestCase):
     def _assertEqual(self, x, y):
-        if type(x) in [long, int]:
-            self.assertTrue(type(y) in [long, int])
+        if type(x) in [int, int]:
+            self.assertTrue(type(y) in [int, int])
         elif isinstance(x, six.string_types):
             self.assertTrue(isinstance(y, six.string_types))
         else:

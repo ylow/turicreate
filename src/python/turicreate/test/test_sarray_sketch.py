@@ -5,9 +5,9 @@
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
 # This software may be modified and distributed under the terms
 # of the BSD license. See the LICENSE file for details.
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from ..data_structures.sarray import SArray
 import pandas as pd
 import numpy as np
@@ -119,7 +119,7 @@ class SArraySketchTest(unittest.TestCase):
             expected = sa.vector_slice(key)
             self.__validate_sketch_result(s[key], expected)
 
-        indexes = range(0, 10)
+        indexes = list(range(0, 10))
         s = sa.summary(sub_sketch_keys=indexes).element_sub_sketch()
         self.assertEqual(len(s), len(indexes))
 
@@ -318,7 +318,7 @@ class SArraySketchTest(unittest.TestCase):
         self.__validate_sketch_result(sa.summary(), sa, 1e-5)
 
     def test_cancellation(self):
-        sa = SArray(range(1, 10000))
+        sa = SArray(list(range(1, 10000)))
         s = sa.summary(background=True)
         s.cancel()
         # this can be rather non-deterministic, so there is very little

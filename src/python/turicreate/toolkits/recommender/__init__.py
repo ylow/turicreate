@@ -80,9 +80,9 @@ for more details and extended examples.
    +---------+-----------------+--------------------------------+
    [3 rows x 3 columns]}
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 __all__ = [
     "popularity_recommender",

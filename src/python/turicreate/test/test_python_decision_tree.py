@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import turicreate as tc
 from turicreate.toolkits._decision_tree import DecisionTree, Node
@@ -45,7 +45,7 @@ class PythonDecisionTreeCorrectness(unittest.TestCase):
                 "left_id": 2,
                 "node_id": 0,
                 "missing_id": 1,
-                "node_type": u"indicator",
+                "node_type": "indicator",
                 "parent_id": None,
                 "right_id": 1,
                 "split_feature_column": "cat1",
@@ -211,7 +211,7 @@ class PythonDecisionTreeCorrectness(unittest.TestCase):
                 "is_leaf": False,
                 "left_id": 1,
                 "node_id": 0,
-                "node_type": u"float",
+                "node_type": "float",
                 "parent_id": None,
                 "right_id": 2,
                 "missing_id": 1,
@@ -513,7 +513,7 @@ class PythonDecisionTreeAllModelsTest(unittest.TestCase):
         ]:
             m = model.create(sf, "target", validation_set=None, max_depth=2)
             tree = DecisionTree.from_model(m)
-            for nid, node in tree.nodes.items():
+            for nid, node in list(tree.nodes.items()):
                 val = tree.get_prediction_score(nid)
                 if node.is_leaf:
                     self.assertTrue(type(val) in {float, int})

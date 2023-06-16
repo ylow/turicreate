@@ -26,9 +26,9 @@ Each transformer has the following methods:
     | save          | Save the model to a Turi Create archive.      |
     +---------------+---------------------------------------------------+
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from ._feature_engineering import Transformer as _Transformer
 from ._feature_engineering import _SampleTransformer
 

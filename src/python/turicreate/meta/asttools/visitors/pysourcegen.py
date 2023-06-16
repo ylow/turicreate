@@ -8,9 +8,9 @@ Created on Jul 15, 2011
 
 @author: sean
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import _ast
 from ...asttools import Visitor
 from string import Formatter
@@ -18,7 +18,7 @@ import sys
 from ...utils import py3op, py2op
 
 if sys.version_info.major < 3:
-    from StringIO import StringIO
+    from io import StringIO
 else:
     from io import StringIO
 
@@ -291,7 +291,7 @@ class ExprSourceGen(Visitor):
     def visitDict(self, node):
         self.print("{{")
 
-        items = zip(node.keys, node.values)
+        items = list(zip(node.keys, node.values))
 
         with self.no_indent:
             i = 0

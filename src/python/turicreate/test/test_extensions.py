@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 from ..data_structures.sarray import SArray
 from ..data_structures.sframe import SFrame
@@ -25,8 +25,8 @@ pytestmark = [pytest.mark.minimal]
 
 class VariantCheckTest(unittest.TestCase):
     def identical(self, reference, b):
-        if type(reference) in [int, long]:
-            self.assertIn(type(b), [int, long])
+        if type(reference) in [int, int]:
+            self.assertIn(type(b), [int, int])
         else:
             self.assertEqual(type(reference), type(b))
         if isinstance(reference, list):

@@ -8,9 +8,9 @@ The Item Content Recommender recommends similar items, where similar is
 determined by information about the items rather than the user
 interaction patterns.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import turicreate as _turicreate
 from turicreate import SFrame as _SFrame
 from turicreate.toolkits.recommender.util import _Recommender
@@ -247,7 +247,7 @@ def create(
             }
 
         # Use the abs value here in case users pass in weights with negative values.
-        normalization_factor = sum(abs(v) for v in weights.values())
+        normalization_factor = sum(abs(v) for v in list(weights.values()))
         if normalization_factor == 0:
             raise ValueError("Weights cannot all be set to 0.")
 
@@ -261,7 +261,7 @@ def create(
                 ),
                 weight,
             )
-            for col_name, weight in weights.items()
+            for col_name, weight in list(weights.items())
         ]
 
     else:

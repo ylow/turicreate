@@ -8,9 +8,9 @@ Created on Nov 6, 2011
 
 @author: sean
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 from ...decompiler.tests import Base
 

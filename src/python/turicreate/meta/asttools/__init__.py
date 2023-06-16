@@ -8,9 +8,9 @@ Module to augment and analyze python ast nodes.
 
 This module uses the python `ast` module exclusively not the deprecated `compiler.ast`.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import _ast
 import ast

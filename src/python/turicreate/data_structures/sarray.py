@@ -10,9 +10,9 @@ ability to create, access and manipulate a remote scalable array object.
 SArray acts similarly to pandas.Series but without indexing.
 The data is immutable and homogeneous.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 from .._connect import main as glconnect
 from .._cython.cy_flexible_type import pytype_from_dtype, pytype_from_array_typecode
@@ -464,7 +464,7 @@ class SArray(object):
                         )
 
                 elif isinstance(data, str) or (
-                    sys.version_info.major < 3 and isinstance(data, unicode)
+                    sys.version_info.major < 3 and isinstance(data, str)
                 ):
                     # if it is a file, we default to string
                     dtype = str
@@ -483,7 +483,7 @@ class SArray(object):
                         data.values, dtype, ignore_cast_failure
                     )
             elif isinstance(data, str) or (
-                sys.version_info.major <= 2 and isinstance(data, unicode)
+                sys.version_info.major <= 2 and isinstance(data, str)
             ):
                 internal_url = _make_internal_url(data)
                 with cython_context():
@@ -584,7 +584,7 @@ class SArray(object):
         >>> turicreate.SArray.from_const(None, 10, str)
         """
         assert (
-            isinstance(size, (int, long)) and size >= 0
+            isinstance(size, int) and size >= 0
         ), "size must be a positive int"
         if not isinstance(
             value,
@@ -864,7 +864,7 @@ class SArray(object):
         else:
             if sys.version_info.major < 3:
                 headln = str(list(self.head(100)))
-                headln = unicode(
+                headln = str(
                     headln.decode("string_escape"), "utf-8", errors="replace"
                 ).encode("utf-8")
             else:
@@ -875,7 +875,7 @@ class SArray(object):
             headln = headln[0:-1] + ", ... ]"
         return headln
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Raises a ValueError exception.
         The truth value of an array with more than one element is ambiguous. Use a.any() or a.all().
@@ -1148,7 +1148,7 @@ class SArray(object):
             return SArray(_proxy=self.__proxy__.right_scalar_operator(0, "-"))
 
     def __pos__(self):
-        if self.dtype not in [int, long, float, array.array]:
+        if self.dtype not in [int, int, float, array.array]:
             raise RuntimeError(
                 "Runtime Exception. Unsupported type operation. "
                 "cannot perform operation + on type %s" % str(self.dtype)
@@ -1385,7 +1385,7 @@ class SArray(object):
                 pass
 
             # Not in cache, need to grab it
-            block_size = 1024 * (32 if self.dtype in [int, long, float] else 4)
+            block_size = 1024 * (32 if self.dtype in [int, int, float] else 4)
             if self.dtype in [numpy.ndarray, _Image, dict, list]:
                 block_size = 16
 
@@ -2210,7 +2210,7 @@ class SArray(object):
 
         if len(self) == 0:
             return None
-        if not any([isinstance(self[0], i) for i in [int, float, long]]):
+        if not any([isinstance(self[0], i) for i in [int, float, int]]):
             raise TypeError("SArray must be of type 'int', 'long', or 'float'.")
 
         sf = _SFrame(self).add_row_number()
@@ -2245,7 +2245,7 @@ class SArray(object):
 
         if len(self) == 0:
             return None
-        if not any([isinstance(self[0], i) for i in [int, float, long]]):
+        if not any([isinstance(self[0], i) for i in [int, float, int]]):
             raise TypeError("SArray must be of type 'int', 'long', or 'float'.")
 
         sf = _SFrame(self).add_row_number()
@@ -3293,7 +3293,7 @@ class SArray(object):
 
         if column_name_prefix is None:
             column_name_prefix = ""
-        if six.PY2 and type(column_name_prefix) == unicode:
+        if six.PY2 and type(column_name_prefix) == str:
             column_name_prefix = column_name_prefix.encode("utf-8")
         if type(column_name_prefix) != str:
             raise TypeError("'column_name_prefix' must be a string")
@@ -3583,7 +3583,7 @@ class SArray(object):
                     "if 'column_types' is given, 'limit' has to be provided to unpack dict type."
                 )
             else:
-                limit = range(len(column_types))
+                limit = list(range(len(column_types)))
 
         else:
             head_rows = self.head(100).dropna()
@@ -3597,7 +3597,7 @@ class SArray(object):
             if self.dtype != dict:
                 length = max(lengths)
                 if limit is None:
-                    limit = range(length)
+                    limit = list(range(length))
                 else:
                     # adjust the length
                     length = len(limit)

@@ -1,6 +1,6 @@
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import json as _json
 import os as _os
 import sys as _sys
@@ -462,8 +462,8 @@ def display_table_in_notebook(sf, title=None):
         sf = sf[:maximum_rows]
 
     check_image_column = [_Image == x for x in sf.column_types()]
-    zipped_image_columns = zip(sf.column_names(), check_image_column)
-    image_columns = filter(lambda a: a[1], zipped_image_columns)
+    zipped_image_columns = list(zip(sf.column_names(), check_image_column))
+    image_columns = [a for a in zipped_image_columns if a[1]]
     image_key = [x[0] for x in image_columns]
     image_column_formatter = dict.fromkeys(image_key, image_formatter)
 

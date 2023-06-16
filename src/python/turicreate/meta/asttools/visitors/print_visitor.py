@@ -8,9 +8,9 @@ Created on Jul 19, 2011
 
 @author: sean
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 from ...asttools import Visitor
 import sys
@@ -18,7 +18,7 @@ import _ast
 from warnings import warn
 
 if sys.version_info.major < 3:
-    from StringIO import StringIO
+    from io import StringIO
 else:
     from io import StringIO
 

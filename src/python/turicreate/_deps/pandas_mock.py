@@ -9,6 +9,6 @@ When pandas is not available we will import this module as turicreate._deps.pand
 and set HAS_pandas to false. All methods that access pandas should check the HAS_pandas
 flag, therefore, attributes/class/methods in this module should never be actually used.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+

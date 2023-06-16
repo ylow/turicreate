@@ -24,9 +24,9 @@ The evaluation module supports the following regression metrics:
 - rmse
 - max_error
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import turicreate as _turicreate
 from turicreate.toolkits._internal_utils import (
@@ -92,7 +92,7 @@ def _check_index_map(index_map):
             "Input `index_map` must be a dict mapping target label to prediction-vector index."
         )
 
-    indices = [v for k, v in index_map.items()]
+    indices = [v for k, v in list(index_map.items())]
     indices.sort()
     if indices != list(range(len(index_map))):
         raise _ToolkitError(

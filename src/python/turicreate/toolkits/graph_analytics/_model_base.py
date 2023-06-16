@@ -6,9 +6,9 @@
 """
 Model base for graph analytics models
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import turicreate as _tc
 from turicreate.toolkits._model import CustomModel

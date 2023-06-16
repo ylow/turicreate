@@ -12,9 +12,9 @@
 # also check inverse (exported JSON, when loaded, should produce original
 # SFrame.)
 
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import json
 import numpy as np
@@ -37,7 +37,7 @@ class JSONExporterTest(unittest.TestCase):
     def test_simple_types(self):
         np.random.seed(42)
         sf = tc.SFrame()
-        sf["idx"] = range(_TEST_CASE_SIZE)
+        sf["idx"] = list(range(_TEST_CASE_SIZE))
         sf["ints"] = np.random.randint(-100000, 100000, _TEST_CASE_SIZE)
         sf["strings"] = sf["ints"].astype(str)
         sf["floats"] = np.random.random(_TEST_CASE_SIZE)

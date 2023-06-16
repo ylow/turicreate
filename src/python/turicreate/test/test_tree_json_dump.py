@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import turicreate as tc
 import unittest
 import json
@@ -61,7 +61,7 @@ class GBDTNode:
     def load_turicreate_json_tree(cls, jstree):
         vertices = jstree["vertices"]
         edges = jstree["edges"]
-        vtup = map(lambda x: (x["id"], GBDTNode.load_vertex(x)), vertices)
+        vtup = [(x["id"], GBDTNode.load_vertex(x)) for x in vertices]
         id2ver = dict(vtup)
         for e in edges:
             src = id2ver[e["src"]]
@@ -165,7 +165,7 @@ class GBDTNode:
     def get_all_vertices(self):
         vhash = {}
         self.get_all_vertice_helper(vhash)
-        vlist = vhash.values()
+        vlist = list(vhash.values())
         return vlist
 
     def get_all_edge_helper(self, visited, edge_lst):
@@ -212,7 +212,7 @@ class GBDTDecoder:
 
     @classmethod
     def parse_turicreate_json(cls, jslst):
-        treelst = map(lambda js: GBDTNode.load_turicreate_json_tree(js), jslst)
+        treelst = [GBDTNode.load_turicreate_json_tree(js) for js in jslst]
         return treelst
 
     def predict(self, data):
@@ -238,8 +238,8 @@ class GBDTDecoder:
         return retval
 
     def get_json_trees(self):
-        dict_trees = map(lambda x: x.to_dict(), self.tree_list)
-        js_trees = map(lambda x: json.dumps(x), dict_trees)
+        dict_trees = [x.to_dict() for x in self.tree_list]
+        js_trees = [json.dumps(x) for x in dict_trees]
         # ret_json = json.dumps(js_trees)
         return js_trees
 

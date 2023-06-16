@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from .sframe import SFrame
 from .._cython.context import debug_trace as cython_context
 from ..util import _is_non_string_iterable
@@ -291,12 +291,12 @@ class GFrame(SFrame):
             with cython_context():
                 if self._is_vertex_frame():
                     graph_proxy = self.__graph__.__proxy__.rename_vertex_fields(
-                        names.keys(), names.values()
+                        list(names.keys()), list(names.values())
                     )
                     self.__graph__.__proxy__ = graph_proxy
                 elif self._is_edge_frame():
                     graph_proxy = self.__graph__.__proxy__.rename_edge_fields(
-                        names.keys(), names.values()
+                        list(names.keys()), list(names.values())
                     )
                     self.__graph__.__proxy__ = graph_proxy
             return self

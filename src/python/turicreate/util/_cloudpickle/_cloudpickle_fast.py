@@ -205,7 +205,7 @@ def _function_getstate(func):
     # trigger the side effect of importing these modules at unpickling time
     # (which is necessary for func to work correctly once depickled)
     slotstate["_cloudpickle_submodules"] = _find_imported_submodules(
-        func.__code__, itertools.chain(f_globals.values(), closure_values))
+        func.__code__, itertools.chain(list(f_globals.values()), closure_values))
     slotstate["__globals__"] = f_globals
 
     state = func.__dict__
@@ -474,14 +474,14 @@ def _function_setstate(obj, state):
                 continue
             cell_set(obj.__closure__[i], value)
 
-    for k, v in slotstate.items():
+    for k, v in list(slotstate.items()):
         setattr(obj, k, v)
 
 
 def _class_setstate(obj, state):
     state, slotstate = state
     registry = None
-    for attrname, attr in state.items():
+    for attrname, attr in list(state.items()):
         if attrname == "_abc_impl":
             registry = attr
         else:

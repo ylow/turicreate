@@ -10,9 +10,9 @@ ability to create, access and manipulate a remote scalable dataframe object.
 SFrame acts similarly to pandas.DataFrame, but the data is completely immutable
 and is stored column wise.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from .._connect import main as glconnect
 from .._cython.cy_flexible_type import infer_type_of_list
 from .._cython.context import debug_trace as cython_context
@@ -739,13 +739,13 @@ class SFrame(object):
         else:
             self.__proxy__ = UnitySFrameProxy()
             _format = None
-            if six.PY2 and isinstance(data, unicode):
+            if six.PY2 and isinstance(data, str):
                 data = data.encode("utf-8")
             if format == "auto":
                 if HAS_PANDAS and isinstance(data, pandas.DataFrame):
                     _format = "dataframe"
                 elif isinstance(data, str) or (
-                    sys.version_info.major < 3 and isinstance(data, unicode)
+                    sys.version_info.major < 3 and isinstance(data, str)
                 ):
 
                     if data.endswith((".csv", ".csv.gz")):
@@ -801,7 +801,7 @@ class SFrame(object):
                             self.__proxy__.add_column(SArray(data).__proxy__, "")
                 elif _format == "dict":
                     # Validate that every column is the same length.
-                    if len(set(len(value) for value in data.values())) > 1:
+                    if len(set(len(value) for value in list(data.values()))) > 1:
                         # probably should be a value error. But we used to raise
                         # runtime error here...
                         raise RuntimeError("All column should be of the same length")
@@ -868,7 +868,7 @@ class SFrame(object):
                 if len(d) == 1:
                     # easy case. both agree on the type
                     continue
-                if ((long in d) or (int in d)) and (float in d):
+                if ((int in d) or (int in d)) and (float in d):
                     # one is an int, one is a float. its a float
                     column_type_hints[j] = float
                 elif (array.array in d) and (list in d):
@@ -946,7 +946,7 @@ class SFrame(object):
             line_terminator = kwargs["lineterminator"]
             del kwargs["lineterminator"]
         if len(kwargs) > 0:
-            raise TypeError("Unexpected keyword arguments " + str(kwargs.keys()))
+            raise TypeError("Unexpected keyword arguments " + str(list(kwargs.keys())))
 
         parsing_config = dict()
         parsing_config["delimiter"] = delimiter
@@ -1115,7 +1115,7 @@ class SFrame(object):
 
         glconnect.get_server().set_log_progress(True)
 
-        return (cls(_proxy=proxy), {f: SArray(_proxy=es) for (f, es) in errors.items()})
+        return (cls(_proxy=proxy), {f: SArray(_proxy=es) for (f, es) in list(errors.items())})
 
     @classmethod
     def read_csv_with_errors(
@@ -1837,7 +1837,7 @@ class SFrame(object):
         col_name_to_num = {result_names[i]: i for i in range(len(result_names))}
         if column_type_hints is not None:
             if type(column_type_hints) is dict:
-                for k, v in column_type_hints.items():
+                for k, v in list(column_type_hints.items()):
                     col_num = col_name_to_num[k]
                     cols_to_force_cast.add(col_num)
                     result_types[col_num] = v
@@ -1850,10 +1850,10 @@ class SFrame(object):
                     )
                 else:
                     result_types = column_type_hints
-                    cols_to_force_cast.update(range(len(result_desc)))
+                    cols_to_force_cast.update(list(range(len(result_desc))))
             elif type(column_type_hints) is type:
                 result_types = [column_type_hints for i in result_desc]
-                cols_to_force_cast.update(range(len(result_desc)))
+                cols_to_force_cast.update(list(range(len(result_desc))))
 
         # Since we will be casting whatever we receive to the types given
         # before submitting the values to the SFrame, we need to make sure that
@@ -2152,7 +2152,7 @@ class SFrame(object):
                 return s
             else:
                 if sys.version_info.major < 3:
-                    u = unicode(s, "utf-8", errors="replace")
+                    u = str(s, "utf-8", errors="replace")
                     return u[:max_length].encode("utf-8")
                 else:
                     return s[:max_length]
@@ -2166,7 +2166,7 @@ class SFrame(object):
 
             if len(s) <= max_column_width:
                 if sys.version_info.major < 3:
-                    return unicode(s, "utf-8", errors="replace")
+                    return str(s, "utf-8", errors="replace")
                 else:
                     return s
             else:
@@ -2186,7 +2186,7 @@ class SFrame(object):
                     ret = _truncate_respect_unicode(s, max_column_width - 4) + "..."
 
                 if sys.version_info.major < 3:
-                    return unicode(ret, "utf-8", errors="replace")
+                    return str(ret, "utf-8", errors="replace")
                 else:
                     return ret
 
@@ -2417,7 +2417,7 @@ class SFrame(object):
             + end
         )
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Returns true if the frame is not empty.
         """
@@ -3819,7 +3819,7 @@ class SFrame(object):
         if type(key) is SArray:
             return self._row_selector(key)
         elif isinstance(key, six.string_types):
-            if six.PY2 and type(key) == unicode:
+            if six.PY2 and type(key) == str:
                 key = key.encode("utf-8")
             return self.select_column(key)
         elif type(key) is type:
@@ -3850,7 +3850,7 @@ class SFrame(object):
             # Do we have a good block size that won't cause memory to blow up?
             if not "getitem_cache_blocksize" in self._cache:
                 block_size = (8 * 1024) // sum(
-                    (2 if dt in [int, long, float] else 8) for dt in self.column_types()
+                    (2 if dt in [int, int, float] else 8) for dt in self.column_types()
                 )
 
                 block_size = max(16, block_size)
@@ -4620,7 +4620,7 @@ class SFrame(object):
             if type(alter_name) is dict:
                 left_names = self.column_names()
                 right_names = right.column_names()
-                for (k, v) in alter_name.items():
+                for (k, v) in list(alter_name.items()):
                     if (k not in right_names) or (k in join_keys):
                         raise KeyError("Redundant key %s for collision resolution" % k)
                     if k == v:

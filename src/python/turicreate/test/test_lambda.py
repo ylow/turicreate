@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import multiprocessing
 import time
 import unittest
@@ -95,7 +95,7 @@ class LambdaTests(unittest.TestCase):
 
         import turicreate as tc
 
-        x = tc.SArray(range(10000))
+        x = tc.SArray(list(range(10000)))
         y = x.apply(test_env)
 
         self.assertTrue((x == y).all())
@@ -104,7 +104,7 @@ class LambdaTests(unittest.TestCase):
     def test_crash_recovery(self):
         import time, sys
 
-        ls = range(1000)
+        ls = list(range(1000))
 
         def good_fun(x):
             return x
@@ -142,6 +142,6 @@ class LambdaTests(unittest.TestCase):
 
             return x + 1
 
-        x = tc.SArray(range(2000)).apply(lambda_func)
+        x = tc.SArray(list(range(2000))).apply(lambda_func)
 
-        self.assertTrue((x == tc.SArray(range(1, 2001))).all())
+        self.assertTrue((x == tc.SArray(list(range(1, 2001)))).all())

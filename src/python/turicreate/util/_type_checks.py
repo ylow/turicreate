@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 
 def _raise_error_if_not_of_type(arg, expected_type, arg_name=None):
@@ -38,7 +38,7 @@ def _raise_error_if_not_of_type(arg, expected_type, arg_name=None):
         " or ".join([x.__name__ for x in lst_expected_type]),
     )
     err_msg += "(not %s)." % type(arg).__name__
-    if not any(map(lambda x: isinstance(arg, x), lst_expected_type)):
+    if not any([isinstance(arg, x) for x in lst_expected_type]):
         raise TypeError(err_msg)
 
 

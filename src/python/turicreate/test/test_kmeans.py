@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import unittest
 import copy
@@ -113,7 +113,7 @@ class KmeansModelTest(unittest.TestCase):
         }
 
         print(self.model)
-        for field, ans in correct_fields.items():
+        for field, ans in list(correct_fields.items()):
             self.assertEqual(self.model._get(field), ans, "{} failed".format(field))
         self.assertGreaterEqual(self.model.training_time, 0)
         self.assertGreater(self.model.num_unpacked_features, self.n)
@@ -315,7 +315,7 @@ class KmeansCreateTest(unittest.TestCase):
             "batch_size": self.n,
         }
 
-        for field, ans in correct_fields.items():
+        for field, ans in list(correct_fields.items()):
             self.assertEqual(m._get(field), ans, "{} failed".format(field))
 
     def test_features_param(self):
@@ -539,9 +539,9 @@ class KmeansCreateTest(unittest.TestCase):
         self.assertItemsEqual(
             m.cluster_id.column_names(), ["row_id", "cluster_id", "distance"]
         )
-        self.assertItemsEqual(m.cluster_id["cluster_id"].unique(), range(10))
+        self.assertItemsEqual(m.cluster_id["cluster_id"].unique(), list(range(10)))
 
-        self.assertItemsEqual(m.cluster_info["cluster_id"], range(10))
+        self.assertItemsEqual(m.cluster_info["cluster_id"], list(range(10)))
         self.assertTrue((m.cluster_info["size"] > 0).all())
         self.assertEqual(m.cluster_info.num_rows(), self.K)
         self.assertItemsEqual(
@@ -580,10 +580,10 @@ class KmeansClusterTest(unittest.TestCase):
         ## Check output if there is a cluster for each point.
         m = tc.kmeans.create(self.sf, num_clusters=self.n, verbose=False)
 
-        self.assertItemsEqual(m.cluster_id["cluster_id"], range(self.n))
+        self.assertItemsEqual(m.cluster_id["cluster_id"], list(range(self.n)))
 
         self.assertTrue(all(m.cluster_id["distance"] < 1e-12))
-        self.assertItemsEqual(m.cluster_info["cluster_id"], range(self.n))
+        self.assertItemsEqual(m.cluster_info["cluster_id"], list(range(self.n)))
         self.assertTrue(all(m.cluster_info["size"] == 1))
         self.assertTrue(all(m.cluster_info["sum_squared_distance"] < 1e-12))
 
@@ -663,7 +663,7 @@ class KmeansClusterTest(unittest.TestCase):
         coltype_map = {
             k: v for k, v in zip(sf_predict.column_names(), sf_predict.column_types())
         }
-        for ftr in coltype_map.keys():
+        for ftr in list(coltype_map.keys()):
             if coltype_map[ftr] is int:
                 sf_predict[ftr] = sf_predict[ftr].astype(float)
 

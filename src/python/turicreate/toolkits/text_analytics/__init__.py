@@ -18,9 +18,9 @@ We provide methods for learning topic models, which can be useful for modeling
 large document collections. See :py:func:`~turicreate.topic_model.create` for
 more info.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 __all__ = [
     "tf_idf",

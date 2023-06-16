@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import copy
 import numpy as np
 import unittest
@@ -397,7 +397,7 @@ class ModelMethodsTest(unittest.TestCase):
             "num_examples": 30,
         }
 
-        for field, ans in simple_fields.items():
+        for field, ans in list(simple_fields.items()):
             self.assertEqual(self.model._get(field), ans, "{} failed".format(field))
 
         _list_fields = {
@@ -406,7 +406,7 @@ class ModelMethodsTest(unittest.TestCase):
             "features": ["X1"],
         }
 
-        for field, ans in _list_fields.items():
+        for field, ans in list(_list_fields.items()):
             self.assertItemsEqual(
                 self.model._get(field), ans, "{} failed".format(field)
             )

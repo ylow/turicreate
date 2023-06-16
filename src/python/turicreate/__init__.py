@@ -9,9 +9,9 @@
 Turi Create is a machine learning platform that enables data scientists and app
 developers to easily create intelligent applications at scale.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 __version__ = "{{VERSION_STRING}}"
 from turicreate.version_info import __version__

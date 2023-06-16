@@ -14,9 +14,9 @@ The imported module will be under namespace `.extensions`.
 Alternatively, if the shared library is local, it can be directly imported
 using the python import statement. Note that turicreate must be imported first.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 # This is a fake meta namespace which contains toolkit functions and toolkit
 # models implemented as extensions in C++
@@ -155,7 +155,7 @@ def _run_toolkit_function(fnname, arguments, args, kwargs):
         argument_dict[arguments[i]] = args[i]
 
     # now fill with the kwargs.
-    for k in kwargs.keys():
+    for k in list(kwargs.keys()):
         if k in argument_dict:
             raise TypeError("Got multiple values for keyword argument '" + k + "'")
         argument_dict[k] = kwargs[k]
@@ -281,7 +281,7 @@ class _ToolkitClass:
             argument_dict[arguments[i]] = args[i]
 
         # now fill with the kwargs.
-        for k in kwargs.keys():
+        for k in list(kwargs.keys()):
             if k in argument_dict:
                 raise TypeError("Got multiple values for keyword argument '" + k + "'")
             argument_dict[k] = kwargs[k]

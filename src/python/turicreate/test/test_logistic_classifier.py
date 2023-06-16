@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import turicreate as tc
 import uuid
@@ -183,7 +183,7 @@ def binary_classification_integer_target(cls):
         "validation_data": lambda x: isinstance(x, tc.SFrame) and len(x) == 0,
         "disable_posttrain_evaluation": lambda x: x == False,
     }
-    cls.fields_ans = cls.get_ans.keys()
+    cls.fields_ans = list(cls.get_ans.keys())
 
 
 def multiclass_integer_target(cls):
@@ -298,7 +298,7 @@ def multiclass_integer_target(cls):
         2: (cls.sf["target"] == 2).sum(),
     }
 
-    cls.fields_ans = cls.get_ans.keys()
+    cls.fields_ans = list(cls.get_ans.keys())
 
 
 def binary_classification_string_target(cls):
@@ -1209,7 +1209,7 @@ class DictLogisticRegressionTest(unittest.TestCase):
         self.assertEqual(sum(pred - pred2), 0)
         self.sf["dict"] = self.sf["dict"].apply(
             lambda x: {
-                k: v for k, v in x.items() if k not in ["extra_col", "extra_col_2"]
+                k: v for k, v in list(x.items()) if k not in ["extra_col", "extra_col_2"]
             }
         )
 
@@ -1227,7 +1227,7 @@ class DictLogisticRegressionTest(unittest.TestCase):
         eval2 = model.evaluate(self.sf)
         self.sf["dict"] = self.sf["dict"].apply(
             lambda x: {
-                k: v for k, v in x.items() if k not in ["extra_col", "extra_col_2"]
+                k: v for k, v in list(x.items()) if k not in ["extra_col", "extra_col_2"]
             }
         )
         self.assertEqual(eval1["accuracy"], eval2["accuracy"])

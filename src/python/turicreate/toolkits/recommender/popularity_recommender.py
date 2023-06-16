@@ -6,9 +6,9 @@
 """
 Models that rank items based on their popularity.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import turicreate as _turicreate
 from turicreate.toolkits.recommender.util import _Recommender
 from turicreate.data_structures.sframe import SFrame as _SFrame

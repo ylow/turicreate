@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from ..data_structures.sgraph import SGraph, Vertex, Edge, load_sgraph
 from ..data_structures.sframe import SFrame
 from . import util
@@ -176,20 +176,20 @@ class GraphTests(unittest.TestCase):
         g2 = g.get_neighborhood(ids=["b"], radius=1, full_subgraph=False)
         out = g2.get_edges(format="dataframe")
         out.sort_values(by=["__src_id", "__dst_id"], axis=0, inplace=True)
-        out.index = range(len(out))
+        out.index = list(range(len(out)))
 
         correct = pd.DataFrame.from_records(
             [("b", "d"), ("a", "b"), ("c", "b")], columns=["__src_id", "__dst_id"]
         )
         correct.sort_values(by=["__src_id", "__dst_id"], axis=0, inplace=True)
-        correct.index = range(len(correct))
+        correct.index = list(range(len(correct)))
         assert_frame_equal(out, correct, check_dtype=False)
 
         # check larger radius, full subgraph, and multiple vertices
         g2 = g.get_neighborhood(ids=["a", "g"], radius=2, full_subgraph=True)
         out = g2.get_edges(format="dataframe")
         out.sort_values(by=["__src_id", "__dst_id"], axis=0, inplace=True)
-        out.index = range(len(out))
+        out.index = list(range(len(out)))
 
         correct = pd.DataFrame.from_records(
             [
@@ -205,7 +205,7 @@ class GraphTests(unittest.TestCase):
             columns=["__src_id", "__dst_id"],
         )
         correct.sort_values(by=["__src_id", "__dst_id"], axis=0, inplace=True)
-        correct.index = range(len(correct))
+        correct.index = list(range(len(correct)))
         assert_frame_equal(out, correct, check_dtype=False)
 
     def test_select_query(self):
@@ -231,8 +231,8 @@ class GraphTests(unittest.TestCase):
         self.assertSequenceEqual((g2.get_fields()), ["__id", "__src_id", "__dst_id"])
 
     def test_select_query_with_same_vertex_edge_field(self):
-        vertices = SFrame({"__id": range(10)})
-        edges = SFrame({"__src_id": range(10), "__dst_id": range(1, 11)})
+        vertices = SFrame({"__id": list(range(10))})
+        edges = SFrame({"__src_id": list(range(10)), "__dst_id": list(range(1, 11))})
         g = SGraph(vertices, edges)
         g.vertices["weight"] = 0
         g.vertices["v"] = 0
@@ -465,8 +465,8 @@ class GraphTests(unittest.TestCase):
         # test add row number
         e_expected = g.get_edges().to_dataframe()
         v_expected = g.get_vertices().to_dataframe()
-        e_expected["id"] = range(len(e_expected))
-        v_expected["id"] = range(len(v_expected))
+        e_expected["id"] = list(range(len(e_expected)))
+        v_expected["id"] = list(range(len(v_expected)))
 
     def test_sframe_le_append_skip_row_bug_is_fixed(self):
         """
@@ -484,7 +484,7 @@ class GraphTests(unittest.TestCase):
 
         # A graph with edge i -> i + 1
         g = SGraph().add_edges(
-            SFrame({"src": range(n), "dst": range(1, n + 1)}), "src", "dst"
+            SFrame({"src": list(range(n)), "dst": list(range(1, n + 1))}), "src", "dst"
         )
 
         lazy_sf = g.get_edges()

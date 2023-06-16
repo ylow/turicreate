@@ -7,9 +7,9 @@
 Wraps utilities for generating random sframes for testing and
 benchmarking.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 
 def generate_random_sframe(num_rows, column_codes, random_seed=0):

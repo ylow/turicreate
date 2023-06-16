@@ -7,9 +7,9 @@
 Private utility functions for working with distance specifications and
 functions.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import copy as _copy
 import array as _array

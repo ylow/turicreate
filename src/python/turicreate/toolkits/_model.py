@@ -8,9 +8,9 @@
 
 Defines a basic interface for a model object.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import turicreate as _tc
 import turicreate._connect.main as glconnect
@@ -79,7 +79,7 @@ def load_model(location):
     saved_state = glconnect.get_unity().load_model(_internal_url)
     saved_state = _wrap_function_return(saved_state)
     # The archive version could be both bytes/unicode
-    key = u"archive_version"
+    key = "archive_version"
     archive_version = (
         saved_state[key] if key in saved_state else saved_state[key.encode()]
     )
@@ -96,13 +96,6 @@ def load_model(location):
         if name in MODEL_NAME_MAP:
             cls = MODEL_NAME_MAP[name]
             if "model" in saved_state:
-                if name in [
-                    "activity_classifier",
-                    "object_detector",
-                    "style_transfer",
-                    "drawing_classifier",
-                ]:
-                    _minimal_package_import_check("turicreate.toolkits.libtctensorflow")
                 # this is a native model
                 return cls(saved_state["model"])
             else:
@@ -110,50 +103,6 @@ def load_model(location):
                 model_data = saved_state["side_data"]
                 model_version = model_data["model_version"]
                 del model_data["model_version"]
-
-                if name == "activity_classifier":
-                    _minimal_package_import_check("turicreate.toolkits.libtctensorflow")
-
-                    model = _extensions.activity_classifier()
-                    model.import_from_custom_model(model_data, model_version)
-                    return cls(model)
-
-                if name == "object_detector":
-                    _minimal_package_import_check("turicreate.toolkits.libtctensorflow")
-
-                    model = _extensions.object_detector()
-                    model.import_from_custom_model(model_data, model_version)
-                    return cls(model)
-
-                if name == "style_transfer":
-                    _minimal_package_import_check("turicreate.toolkits.libtctensorflow")
-
-                    model = _extensions.style_transfer()
-                    model.import_from_custom_model(model_data, model_version)
-                    return cls(model)
-
-                if name == "drawing_classifier":
-                    _minimal_package_import_check("turicreate.toolkits.libtctensorflow")
-
-                    model = _extensions.drawing_classifier()
-                    model.import_from_custom_model(model_data, model_version)
-                    return cls(model)
-
-                if name == "one_shot_object_detector":
-                    _minimal_package_import_check("turicreate.toolkits.libtctensorflow")
-
-                    od_cls = MODEL_NAME_MAP["object_detector"]
-                    if "detector_model" in model_data["detector"]:
-                        model_data["detector"] = od_cls(
-                            model_data["detector"]["detector_model"]
-                        )
-                    else:
-                        model = _extensions.object_detector()
-                        model.import_from_custom_model(
-                            model_data["detector"], model_data["_detector_version"]
-                        )
-                        model_data["detector"] = od_cls(model)
-                    return cls(model_data)
 
                 return cls._load_version(model_data, model_version)
 
@@ -288,7 +237,7 @@ def _get_default_options_wrapper(
         if output_type == "json":
             return response
         else:
-            json_list = [{"name": k, "": v} for k, v in response.items()]
+            json_list = [{"name": k, "": v} for k, v in list(response.items())]
             return (
                 _SFrame(json_list)
                 .unpack("X1", column_name_prefix="")
@@ -332,7 +281,7 @@ class PythonProxy(object):
         return self.state[key]
 
     def keys(self):
-        return self.state.keys()
+        return list(self.state.keys())
 
     def list_fields(self):
         return list(self.state.keys())

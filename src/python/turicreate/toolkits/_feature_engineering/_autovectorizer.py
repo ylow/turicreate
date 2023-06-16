@@ -6,9 +6,9 @@
 """
 Builds a content transformer.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from . import TransformerBase as _TransformerBase
 from . import TransformerChain as _TransformerChain
 from . import TransformToFlatDictionary as _TransformToFlatDictionary
@@ -577,7 +577,7 @@ class AutoVectorizer(_TransformerBase, ExposeAttributesFromProxy):
 
         if not isinstance(column_interpretations, dict) or not all(
             isinstance(k, str) and isinstance(v, str)
-            for k, v in column_interpretations.items()
+            for k, v in list(column_interpretations.items())
         ):
 
             raise TypeError(
@@ -644,7 +644,7 @@ class AutoVectorizer(_TransformerBase, ExposeAttributesFromProxy):
         column_interpretations = self._get("column_interpretations").copy()
 
         # Make sure all the interpretations are valid.
-        for k, v in column_interpretations.items():
+        for k, v in list(column_interpretations.items()):
             if k not in all_col_names:
                 raise ValueError(
                     "Column '%s' in column_interpretations, but not found in `data`."

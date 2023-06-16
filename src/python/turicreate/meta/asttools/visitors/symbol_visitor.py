@@ -8,9 +8,9 @@ Created on Aug 3, 2011
 
 @author: sean
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from ...asttools.visitors import Visitor
 import ast
 

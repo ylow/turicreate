@@ -6,9 +6,9 @@
 """
 TuriCreate version information
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 # python egg version
 __version__ = "6.4.2"  # {{VERSION_STRING}}

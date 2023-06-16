@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import turicreate as tc
 import math
@@ -84,7 +84,7 @@ class DecisionTreeRegressionTest(unittest.TestCase):
             "disable_posttrain_evaluation": lambda x: x == False,
         }
         self.metrics = ["rmse", "max_error"]
-        self.fields_ans = self.get_ans.keys()
+        self.fields_ans = list(self.get_ans.keys())
 
     def test_create(self):
         model = tc.decision_tree_regression.create(
@@ -411,7 +411,7 @@ def binary_classification_integer_target(cls):
         "validation_roc_curve": lambda x: len(x) > 0,
         "disable_posttrain_evaluation": lambda x: x == False,
     }
-    cls.fields_ans = cls.get_ans.keys()
+    cls.fields_ans = list(cls.get_ans.keys())
 
 
 def binary_classification_string_target(cls):

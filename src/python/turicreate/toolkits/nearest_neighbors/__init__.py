@@ -70,9 +70,9 @@ In addition to the API documentation, please see the `nearest neighbors chapter 
 <https://apple.github.io/turicreate/docs/userguide/nearest_neighbors/nearest_neighbors.html>`_
 for more details and extended examples.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 from ._nearest_neighbors import create
 from ._nearest_neighbors import NearestNeighborsModel

@@ -7,9 +7,9 @@
 Methods for creating models that rank items according to their similarity
 to other items.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import turicreate as _turicreate
 from turicreate.toolkits.recommender.util import _Recommender
 from turicreate.toolkits._model import _get_default_options_wrapper

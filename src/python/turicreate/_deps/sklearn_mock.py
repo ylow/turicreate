@@ -9,6 +9,6 @@ When sklearn is not available we will import this module as turicreate._deps.skl
 and set HAS_SKLEARN to false. All methods that access sklearn should check the HAS_SKLEARN
 flag, therefore, attributes/class/methods in this module should never be actually used.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+

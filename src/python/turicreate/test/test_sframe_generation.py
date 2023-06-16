@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from ..util import generate_random_sframe
 from ..util import generate_random_regression_sframe
 from ..util import generate_random_classification_sframe
@@ -46,7 +46,7 @@ class SFrameGeneration(unittest.TestCase):
             "D": dict,
         }
 
-        test_codes = "".join(column_codes.keys())
+        test_codes = "".join(list(column_codes.keys()))
         X = generate_random_sframe(10, test_codes)
         column_names = X.column_names()
 
@@ -58,7 +58,7 @@ class SFrameGeneration(unittest.TestCase):
         for L in range(1, 10):
             X = generate_random_regression_sframe(100, "n" * L, target_noise_level=0)
             X["target_2"] = X.apply(
-                lambda d: sum(v for k, v in d.items() if k != "target")
+                lambda d: sum(v for k, v in list(d.items()) if k != "target")
             )
             X["target_2"] = X["target_2"] - X["target_2"].min()
             X["target_2"] = X["target_2"] / X["target_2"].max()
@@ -76,7 +76,7 @@ class SFrameGeneration(unittest.TestCase):
                 num_extra_class_bins=0,
             )
             X["target_2"] = X.apply(
-                lambda d: sum(v for k, v in d.items() if k != "target")
+                lambda d: sum(v for k, v in list(d.items()) if k != "target")
             )
             X["target_2"] = X["target_2"] - X["target_2"].min()
             X["target_2"] = X["target_2"] / X["target_2"].max()

@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import turicreate as tc
 from turicreate.toolkits._internal_utils import _raise_error_if_not_sframe
 from turicreate.toolkits._supervised_learning import select_default_missing_value_policy
@@ -165,7 +165,7 @@ class TreeModelMixin(object):
         )
 
         tree = self._get_tree(tree_id)
-        type_map = dict(zip(dataset.column_names(), dataset.column_types()))
+        type_map = dict(list(zip(dataset.column_names(), dataset.column_types())))
 
         def get_missing_features(row):
             x = row["leaf_id"]

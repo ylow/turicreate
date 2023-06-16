@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import unittest
 import tempfile
@@ -69,7 +69,7 @@ class TextClassifierTest(unittest.TestCase):
         }
 
         print(self.model)
-        for field, ans in correct_fields.items():
+        for field, ans in list(correct_fields.items()):
             self.assertEqual(self.model._get(field), ans, "{} failed".format(field))
 
     def test_model_access(self):

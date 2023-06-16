@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import copy
 import array
@@ -391,7 +391,7 @@ class KnnClassifierModelTest(unittest.TestCase):
             "num_classes": 3,
         }
 
-        for field, ans in correct_fields.items():
+        for field, ans in list(correct_fields.items()):
             self.assertEqual(self.model._get(field), ans, "{} failed".format(field))
 
         self.assertGreater(self.model.training_time, 0)
@@ -619,7 +619,7 @@ class KnnClassifierPredictTest(unittest.TestCase):
         ans = self.model.evaluate(self.sf)
 
         ## Check that the right keys are present in the results dict.
-        self.assertItemsEqual(ans.keys(), ["accuracy", "confusion_matrix"])
+        self.assertItemsEqual(list(ans.keys()), ["accuracy", "confusion_matrix"])
 
         ## Check plausibility of the accuracy.
         self.assertIsInstance(ans["accuracy"], float)

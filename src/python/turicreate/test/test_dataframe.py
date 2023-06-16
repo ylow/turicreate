@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import pandas
 import array
@@ -33,7 +33,7 @@ class DataFrameTest(unittest.TestCase):
         expected["float"] = [float(i) for i in range(10)]
         expected["str"] = [str(i) for i in range(10)]
         if version_info.major == 2:
-            expected["unicode"] = [unicode(i) for i in range(10)]
+            expected["unicode"] = [str(i) for i in range(10)]
         expected["array"] = [array.array("d", [i]) for i in range(10)]
         expected["ls"] = [[str(i)] for i in range(10)]
         assert_frame_equal(SFrame(expected).to_dataframe(), expected)

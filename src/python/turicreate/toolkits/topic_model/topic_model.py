@@ -6,9 +6,9 @@
 """
 Methods for creating a topic model and predicting the topics of new documents.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import turicreate as _turicreate
 from turicreate.toolkits._model import Model as _Model
@@ -29,7 +29,7 @@ if _sys.version_info.major == 3:
     _izip = zip
     _xrange = range
 else:
-    from itertools import izip as _izip
+    
 
     _xrange = xrange
 
@@ -591,7 +591,7 @@ class TopicModel(_Model):
         ret = response["top_words"]
 
         def sort_wordlist_by_prob(z):
-            words = sorted(z.items(), key=_operator.itemgetter(1), reverse=True)
+            words = sorted(list(z.items()), key=_operator.itemgetter(1), reverse=True)
             return [word for (word, prob) in words]
 
         if output_type != "topic_probabilities":

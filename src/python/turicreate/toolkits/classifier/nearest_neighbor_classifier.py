@@ -6,9 +6,9 @@
 """
 Methods for creating and using a nearest neighbor classifier model.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import time as _time
 import copy as _copy
@@ -35,7 +35,7 @@ def _sort_topk_votes(x, k):
     Sort a dictionary of classes and corresponding vote totals according to the
     votes, then truncate to the highest 'k' classes.
     """
-    y = sorted(x.items(), key=lambda x: x[1], reverse=True)[:k]
+    y = sorted(list(x.items()), key=lambda x: x[1], reverse=True)[:k]
     return [{"class": i[0], "votes": i[1]} for i in y]
 
 
@@ -523,7 +523,7 @@ class NearestNeighborClassifier(_CustomModel):
             ystar["probability"] = ystar["max_votes"] / ystar["total_votes"]
 
             ## Fill in 'None' for query points that don't have any near neighbors.
-            row_ids = _tc.SFrame({"query_label": range(n_query)})
+            row_ids = _tc.SFrame({"query_label": list(range(n_query))})
             ystar = ystar.join(row_ids, how="right")
 
             ## Sort by row number (because row number is not returned) and return

@@ -31,9 +31,9 @@ those classes/methods.
 
 """
 
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from .show import plot, show
 from .show import scatter
 from .show import categorical_heatmap

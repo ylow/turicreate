@@ -8,9 +8,9 @@ Decompiler module.
 
 This module can decompile arbitrary code objects into a python ast.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 from .instructions import make_module, make_function
 
@@ -57,7 +57,7 @@ def compile_func(ast_node, filename, globals, **defaults):
     function_name = ast_node.name
     module = _ast.Module(body=[ast_node])
 
-    ctx = {"%s_default" % key: arg for key, arg in defaults.items()}
+    ctx = {"%s_default" % key: arg for key, arg in list(defaults.items())}
 
     code = compile(module, filename, "exec")
 

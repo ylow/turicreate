@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import copy
 import unittest
 import numpy as np
@@ -352,8 +352,8 @@ class LocalDistancesTest(unittest.TestCase):
 ### -------------------------------------------------------------- ###
 def jaccard(a, b):
     if isinstance(a, dict) and isinstance(b, dict):
-        a = a.keys()
-        b = b.keys()
+        a = list(a.keys())
+        b = list(b.keys())
     a = set(a)
     b = set(b)
     ans = 1.0 - float(len(a.intersection(b))) / len(a.union(b))
@@ -382,7 +382,7 @@ def weighted_jaccard(a, b):
 def cosine(a, b):
     ks = set(a.keys()).intersection(set(b.keys()))
     num = sum([a[k] * b[k] for k in ks])
-    den = sum([v ** 2 for k, v in a.items()]) * sum([v ** 2 for k, v in b.items()])
+    den = sum([v ** 2 for k, v in list(a.items())]) * sum([v ** 2 for k, v in list(b.items())])
     den = den ** 0.5
     if den == 0:
         den = 0.0001

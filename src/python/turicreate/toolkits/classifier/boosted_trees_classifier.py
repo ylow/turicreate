@@ -6,9 +6,9 @@
 """
 This package contains the Gradient Boosted Trees model class and the create function.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 from turicreate.toolkits._supervised_learning import Classifier as _Classifier
 import turicreate.toolkits._supervised_learning as _sl

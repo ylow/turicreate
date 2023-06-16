@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from ..data_structures.sframe import SFrame
 from ..data_structures.sarray import SArray
 from ..data_structures.image import Image
@@ -55,7 +55,7 @@ class SFrameTest(unittest.TestCase):
             }
         )
 
-        self.int_data2 = range(50, 60)
+        self.int_data2 = list(range(50, 60))
         self.float_data2 = [1.0 * i for i in range(50, 60)]
         self.string_data2 = [str(i) for i in range(50, 60)]
         self.dataframe2 = pd.DataFrame(
@@ -82,7 +82,7 @@ class SFrameTest(unittest.TestCase):
             self.datetime_data * 5,
         ]
         self.sf_all_types = SFrame(
-            {"X" + str(i[0]): i[1] for i in zip(range(1, 8), self.all_type_cols)}
+            {"X" + str(i[0]): i[1] for i in zip(list(range(1, 8)), self.all_type_cols)}
         )
 
         # Taken from http://en.wikipedia.org/wiki/Join_(SQL) for fun.
@@ -376,7 +376,7 @@ class SFrameTest(unittest.TestCase):
         # when some file is in use, file should not be deleted
         with util.TempDirectory() as f:
             sf = SFrame()
-            sf["a"] = SArray(range(1, 1000000))
+            sf["a"] = SArray(list(range(1, 1000000)))
             sf.save(f)
 
             # many for each sarray, 1 sframe_idx, 1 object.bin, 1 ini
@@ -389,7 +389,7 @@ class SFrameTest(unittest.TestCase):
             # create another SFrame and save to the same location
             sf2 = SFrame()
             sf2["b"] = SArray([str(i) for i in range(1, 100000)])
-            sf2["c"] = SArray(range(1, 100000))
+            sf2["c"] = SArray(list(range(1, 100000)))
             sf2.save(f)
 
             file_count = len(os.listdir(f))
@@ -991,7 +991,7 @@ class SFrameTest(unittest.TestCase):
     def test_flatmap(self):
         # Correctness of typical usage
         n = 10
-        sf = SFrame({"id": range(n)})
+        sf = SFrame({"id": list(range(n))})
         new_sf = sf.flat_map(["id_range"], lambda x: [[str(i)] for i in range(x["id"])])
         self.assertEqual(new_sf.column_names(), ["id_range"])
         self.assertEqual(new_sf.column_types(), [str])
@@ -1004,7 +1004,7 @@ class SFrameTest(unittest.TestCase):
             new_sf = sf.flat_map(["id_range"], lambda x: [[i] for i in range(x["id"])])
 
         # Empty rows successfully removed
-        sf = SFrame({"id": range(15)})
+        sf = SFrame({"id": list(range(15))})
         new_sf = sf.flat_map(["id"], lambda x: [[x["id"]]] if x["id"] > 8 else [])
         self.assertEqual(new_sf.num_rows(), 6)
 
@@ -1075,12 +1075,12 @@ class SFrameTest(unittest.TestCase):
         # Test that order is preserved
         df2 = sf.topk("int_data").to_dataframe()
         df2_expected = self.dataframe.sort_values("int_data", ascending=False)
-        df2_expected.index = range(df2.shape[0])
+        df2_expected.index = list(range(df2.shape[0]))
         assert_frame_equal(df2, df2_expected)
 
         df2 = sf.topk("float_data", 3).to_dataframe()
         df2_expected = self.dataframe.sort_values("float_data", ascending=False).head(3)
-        df2_expected.index = range(3)
+        df2_expected.index = list(range(3))
         assert_frame_equal(df2, df2_expected)
 
         df2 = sf.topk("string_data", 3).to_dataframe()
@@ -1122,7 +1122,7 @@ class SFrameTest(unittest.TestCase):
         # slightly bigger size
         sf = SFrame()
         n = 1000000
-        sf["a"] = range(n)
+        sf["a"] = list(range(n))
         result = sf[sf["a"] == -1]
         self.assertEqual(len(result), 0)
 
@@ -1139,8 +1139,8 @@ class SFrameTest(unittest.TestCase):
             self.assertEqual(i, l[i])
 
         # map input type
-        toy_data = SFrame({"a": range(100)})
-        map_result = map(lambda x: x + 1, [1, 30])
+        toy_data = SFrame({"a": list(range(100))})
+        map_result = [x + 1 for x in [1, 30]]
         result = toy_data.filter_by(map_result, "a")
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0]["a"], 2)
@@ -1386,7 +1386,7 @@ class SFrameTest(unittest.TestCase):
         Test builtin groupby aggregators
         """
         for m in [1, 10, 20, 50, 100]:
-            values = range(m)
+            values = list(range(m))
             vector_values = [
                 [random.randint(1, 100) for num in range(10)] for y in range(m)
             ]
@@ -1490,7 +1490,7 @@ class SFrameTest(unittest.TestCase):
         Test builtin groupby aggregators
         """
         for m in [1, 10, 20, 50, 100]:
-            values = range(m)
+            values = list(range(m))
             vector_values = [
                 [random.randint(1, 100) for num in range(10)] for y in range(m)
             ]
@@ -1539,7 +1539,7 @@ class SFrameTest(unittest.TestCase):
         Test builtin groupby aggregators using explicit named columns
         """
         for m in [1, 10, 20, 50, 100]:
-            values = range(m)
+            values = list(range(m))
             vector_values = [
                 [random.randint(1, 100) for num in range(10)] for y in range(m)
             ]
@@ -1616,7 +1616,7 @@ class SFrameTest(unittest.TestCase):
         self.assertSetEqual(set(actual), set(expected))
         for row in sf_user_rating:
             uid = row["user_id"]
-            mids = range(1, uid + 1)
+            mids = list(range(1, uid + 1))
             ratings = [uid + i for i in mids]
             expected = [
                 len(ratings),
@@ -1661,7 +1661,7 @@ class SFrameTest(unittest.TestCase):
         self.assertSetEqual(set(actual), set(expected))
         for row in sf_movie_length:
             mid = row["movie_id"]
-            uids = range(int(mid), num_users + 1)
+            uids = list(range(int(mid), num_users + 1))
             values = [i - int(mid) for i in uids]
             expected = [
                 len(values),
@@ -1989,7 +1989,7 @@ class SFrameTest(unittest.TestCase):
             sf.__repr__()
             sf._repr_html_()
             try:
-                from StringIO import StringIO
+                from io import StringIO
             except ImportError:
                 from io import StringIO
             output = StringIO()
@@ -2532,27 +2532,27 @@ class SFrameTest(unittest.TestCase):
         self.__assert_join_results_equal(res, sf)
 
         # by generator, filter, map, range
-        res = sf.filter_by(range(10), "ints")
+        res = sf.filter_by(list(range(10)), "ints")
         self.assertEqual(len(res), 9)
         self.assertEqual(res["ints"][0], 1)
-        res = sf.filter_by(range(10), "ints", exclude=True)
+        res = sf.filter_by(list(range(10)), "ints", exclude=True)
         self.assertEqual(len(res), 1)
         self.assertEqual(res["ints"][0], 10)
 
-        res = sf.filter_by(map(lambda x: x - 5.0, self.float_data), "floats")
+        res = sf.filter_by([x - 5.0 for x in self.float_data], "floats")
         self.assertEqual(len(res), 5)
         self.assertEqual(res["floats"][0], self.float_data[0])
         res = sf.filter_by(
-            map(lambda x: x - 5.0, self.float_data), "floats", exclude=True
+            [x - 5.0 for x in self.float_data], "floats", exclude=True
         )
         self.assertEqual(len(res), 5)
         self.assertEqual(res["floats"][0], self.float_data[5])
 
-        res = sf.filter_by(filter(lambda x: len(x) > 1, self.string_data), "strings")
+        res = sf.filter_by([x for x in self.string_data if len(x) > 1], "strings")
         self.assertEqual(len(res), 1)
         self.assertEqual(res["strings"][0], self.string_data[-1])
         res = sf.filter_by(
-            filter(lambda x: len(x) > 1, self.string_data), "strings", exclude=True
+            [x for x in self.string_data if len(x) > 1], "strings", exclude=True
         )
         self.assertEqual(len(res), 9)
         self.assertEqual(res["strings"][0], self.string_data[0])
@@ -2852,8 +2852,8 @@ class SFrameTest(unittest.TestCase):
         # pack large number of rows
         sf = SFrame()
         num_rows = 100000
-        sf["a"] = range(0, num_rows)
-        sf["b"] = range(0, num_rows)
+        sf["a"] = list(range(0, num_rows))
+        sf["b"] = list(range(0, num_rows))
         result = sf.pack_columns(["a", "b"])
         self.assertEqual(len(result), num_rows)
 
@@ -2914,23 +2914,23 @@ class SFrameTest(unittest.TestCase):
         expected["c"] = [None, 2.0, 3.0, None, 5.0]
 
         result = sa.unpack()
-        result.rename(dict(zip(result.column_names(), ["a", "b", "c"])), inplace=True)
+        result.rename(dict(list(zip(result.column_names(), ["a", "b", "c"]))), inplace=True)
         assert_frame_equal(result.to_dataframe(), expected.to_dataframe())
 
         result = sa.unpack(column_name_prefix="ttt")
         self.assertEqual(result.column_names(), ["ttt.0", "ttt.1", "ttt.2"])
-        result.rename(dict(zip(result.column_names(), ["a", "b", "c"])), inplace=True)
+        result.rename(dict(list(zip(result.column_names(), ["a", "b", "c"]))), inplace=True)
         assert_frame_equal(result.to_dataframe(), expected.to_dataframe())
 
         # column types
         result = sa.unpack(column_types=[int, str, float])
-        result.rename(dict(zip(result.column_names(), ["a", "b", "c"])), inplace=True)
+        result.rename(dict(list(zip(result.column_names(), ["a", "b", "c"]))), inplace=True)
         assert_frame_equal(result.to_dataframe(), expected.to_dataframe())
 
         # more column types
         result = sa.unpack(column_types=[int, str, float, int])
         result.rename(
-            dict(zip(result.column_names(), ["a", "b", "c", "d"])), inplace=True
+            dict(list(zip(result.column_names(), ["a", "b", "c", "d"]))), inplace=True
         )
         e = expected.select_columns(["a", "b", "c"])
         e.add_column(SArray([None for i in range(5)], int), "d", inplace=True)
@@ -2938,7 +2938,7 @@ class SFrameTest(unittest.TestCase):
 
         # less column types
         result = sa.unpack(column_types=[int, str])
-        result.rename(dict(zip(result.column_names(), ["a", "b"])), inplace=True)
+        result.rename(dict(list(zip(result.column_names(), ["a", "b"]))), inplace=True)
         e = expected.select_columns(["a", "b"])
         assert_frame_equal(result.to_dataframe(), e.to_dataframe())
 
@@ -2948,7 +2948,7 @@ class SFrameTest(unittest.TestCase):
         e["b"] = [None, "2", "3", None, "5"]
         e["c"] = [None, 2.0, None, None, 5.0]
         result = sa.unpack(na_value=3)
-        result.rename(dict(zip(result.column_names(), ["a", "b", "c"])), inplace=True)
+        result.rename(dict(list(zip(result.column_names(), ["a", "b", "c"]))), inplace=True)
         assert_frame_equal(result.to_dataframe(), e.to_dataframe())
 
         # wrong length
@@ -3002,20 +3002,20 @@ class SFrameTest(unittest.TestCase):
         expected["c"] = [0.0, 1.0, 2.0, 3.0, 4.0]
 
         result = sa.unpack()
-        result.rename(dict(zip(result.column_names(), ["a", "b", "c"])), inplace=True)
+        result.rename(dict(list(zip(result.column_names(), ["a", "b", "c"]))), inplace=True)
         assert_frame_equal(result.to_dataframe(), expected.to_dataframe())
 
         # right amount column names
         result = sa.unpack(column_name_prefix="unpacked")
         result.rename(
-            dict(zip(result.column_names(), ["t.0", "t.1", "t.2"])), inplace=True
+            dict(list(zip(result.column_names(), ["t.0", "t.1", "t.2"]))), inplace=True
         )
-        result.rename(dict(zip(result.column_names(), ["a", "b", "c"])), inplace=True)
+        result.rename(dict(list(zip(result.column_names(), ["a", "b", "c"]))), inplace=True)
         assert_frame_equal(result.to_dataframe(), expected.to_dataframe())
 
         # column types
         result = sa.unpack(column_types=[int, str, float])
-        result.rename(dict(zip(result.column_names(), ["a", "b", "c"])), inplace=True)
+        result.rename(dict(list(zip(result.column_names(), ["a", "b", "c"]))), inplace=True)
         expected["a"] = expected["a"].astype(int)
         expected["b"] = expected["b"].astype(str)
         expected["c"] = expected["c"].astype(float)
@@ -3024,7 +3024,7 @@ class SFrameTest(unittest.TestCase):
         # more column types
         result = sa.unpack(column_types=[int, str, float, int])
         result.rename(
-            dict(zip(result.column_names(), ["a", "b", "c", "d"])), inplace=True
+            dict(list(zip(result.column_names(), ["a", "b", "c", "d"]))), inplace=True
         )
         e = expected.select_columns(["a", "b", "c"])
         e.add_column(SArray([None for i in range(5)], int), "d", inplace=True)
@@ -3032,7 +3032,7 @@ class SFrameTest(unittest.TestCase):
 
         # less column types
         result = sa.unpack(column_types=[int, str])
-        result.rename(dict(zip(result.column_names(), ["a", "b"])), inplace=True)
+        result.rename(dict(list(zip(result.column_names(), ["a", "b"]))), inplace=True)
         e = expected.select_columns(["a", "b"])
         assert_frame_equal(result.to_dataframe(), e.to_dataframe())
 
@@ -3042,7 +3042,7 @@ class SFrameTest(unittest.TestCase):
         e["b"] = SArray([1, None, 3, 2, 5], float)
         e["c"] = SArray([0, 1, 2, 3, 4], float)
         result = sa.unpack(na_value=-1)
-        result.rename(dict(zip(result.column_names(), ["a", "b", "c"])), inplace=True)
+        result.rename(dict(list(zip(result.column_names(), ["a", "b", "c"]))), inplace=True)
         assert_frame_equal(result.to_dataframe(), e.to_dataframe())
 
     def test_unpack_dict(self):
@@ -3202,7 +3202,7 @@ class SFrameTest(unittest.TestCase):
 
     def test_unpack_sframe(self):
         sf = SFrame()
-        sf["user_id"] = range(7)
+        sf["user_id"] = list(range(7))
         sf["category"] = [
             {"is_restaurant": 1, "is_electronics": "yes"},
             {"is_restaurant": 1, "is_retail": 1, "is_electronics": "no"},
@@ -3214,12 +3214,12 @@ class SFrameTest(unittest.TestCase):
         ]
         sf["list"] = [
             None,
-            range(1),
-            range(2),
-            range(3),
-            range(1),
-            range(2),
-            range(3),
+            list(range(1)),
+            list(range(2)),
+            list(range(3)),
+            list(range(1)),
+            list(range(2)),
+            list(range(3)),
         ]
 
         with self.assertRaises(TypeError):
@@ -3311,10 +3311,10 @@ class SFrameTest(unittest.TestCase):
 
         # auto resolving conflicting names
         sf = SFrame()
-        sf["a"] = range(100)
-        sf["b"] = [range(5) for i in range(100)]
-        sf["b.0"] = range(100)
-        sf["b.0.1"] = range(100)
+        sf["a"] = list(range(100))
+        sf["b"] = [list(range(5)) for i in range(100)]
+        sf["b.0"] = list(range(100))
+        sf["b.0.1"] = list(range(100))
         result = sf.unpack("b")
         self.assertEqual(
             result.column_names(),
@@ -3331,9 +3331,9 @@ class SFrameTest(unittest.TestCase):
         )
 
         sf = SFrame()
-        sf["a"] = range(100)
+        sf["a"] = list(range(100))
         sf["b"] = [{"str1": i, "str2": i + 1} for i in range(100)]
-        sf["b.str1"] = range(100)
+        sf["b.str1"] = list(range(100))
         result = sf.unpack("b")
         self.assertEqual(len(result.column_names()), 4)
 
@@ -3500,7 +3500,7 @@ class SFrameTest(unittest.TestCase):
 
         sf = SFrame()
         n = 1000000
-        sf["a"] = range(1, n)
+        sf["a"] = list(range(1, n))
         sf["b"] = [[str(i), str(i + 1)] for i in range(1, n)]
         result = sf.stack("b")
         self.assertTrue(len(result), n * 2)
@@ -3623,7 +3623,7 @@ class SFrameTest(unittest.TestCase):
     def test_unstack_list(self):
         sf = SFrame()
         sf["a"] = [1, 2, 3, 4]
-        sf["b"] = [range(10), range(20), range(30), range(50)]
+        sf["b"] = [list(range(10)), list(range(20)), list(range(30)), list(range(50))]
         stacked_sf = sf.stack("b", new_column_name="new_b")
         unstacked_sf = stacked_sf.unstack("new_b", new_column_name="b")
         self.__assert_concat_result_equal(sf.sort("a"), unstacked_sf.sort("a"), ["b"])
@@ -3684,13 +3684,13 @@ class SFrameTest(unittest.TestCase):
     def sort_n_rows(self, nrows=100):
         nrows += 1
         sf = SFrame()
-        sf["a"] = range(1, nrows)
+        sf["a"] = list(range(1, nrows))
         sf["b"] = [float(i) for i in range(1, nrows)]
         sf["c"] = [str(i) for i in range(1, nrows)]
         sf["d"] = [[i, i + 1] for i in range(1, nrows)]
 
         reversed_sf = SFrame()
-        reversed_sf["a"] = range(nrows - 1, 0, -1)
+        reversed_sf["a"] = list(range(nrows - 1, 0, -1))
         reversed_sf["b"] = [float(i) for i in range(nrows - 1, 0, -1)]
         reversed_sf["c"] = [str(i) for i in range(nrows - 1, 0, -1)]
         reversed_sf["d"] = [[i, i + 1] for i in range(nrows - 1, 0, -1)]
@@ -3981,7 +3981,7 @@ class SFrameTest(unittest.TestCase):
 
         # add column
         sf = SFrame(self.__create_test_df(1000))
-        newcol = SArray(range(1000))
+        newcol = SArray(list(range(1000)))
         sf2 = sf.add_column(newcol, "newcol", inplace=False)
         self.assertTrue(sf2 is not sf)
         self.assertTrue("newcol" in sf2.column_names())
@@ -3992,7 +3992,7 @@ class SFrameTest(unittest.TestCase):
 
         # add columns
         sf = SFrame(self.__create_test_df(1000))
-        newcols = SFrame({"newcol": range(1000), "newcol2": range(1000)})
+        newcols = SFrame({"newcol": list(range(1000)), "newcol2": list(range(1000))})
         sf2 = sf.add_columns(newcols, inplace=False)
         self.assertTrue(sf2 is not sf)
         self.assertTrue("newcol" in sf2.column_names())
@@ -4075,12 +4075,12 @@ class SFrameTest(unittest.TestCase):
         self.assertTrue(sf.__has_size__())
 
         # add one column, not materialized, has_size
-        sf["a"] = range(1000)
+        sf["a"] = list(range(1000))
         self.assertTrue(sf.__is_materialized__())
         self.assertTrue(sf.__has_size__())
 
         # materialize it, materialized, has_size
-        sf["a"] = range(1000)
+        sf["a"] = list(range(1000))
         sf.materialize()
         self.assertTrue(sf.__is_materialized__())
         self.assertTrue(sf.__has_size__())
@@ -4091,16 +4091,16 @@ class SFrameTest(unittest.TestCase):
         self.assertFalse(sf.__has_size__())
 
     def test_lazy_logical_filter_sarray(self):
-        g = SArray(range(10000))
-        g2 = SArray(range(10000))
+        g = SArray(list(range(10000)))
+        g2 = SArray(list(range(10000)))
         a = g[g > 10]
         a2 = g2[g > 10]
         z = a[a2 > 20]
         self.assertEqual(len(z), 9979)
 
     def test_lazy_logical_filter_sframe(self):
-        g = SFrame({"a": range(10000)})
-        g2 = SFrame({"a": range(10000)})
+        g = SFrame({"a": list(range(10000))})
+        g2 = SFrame({"a": list(range(10000))})
         a = g[g["a"] > 10]
         a2 = g2[g["a"] > 10]
         z = a[a2["a"] > 20]
@@ -4172,7 +4172,7 @@ class SFrameTest(unittest.TestCase):
         """save lazily evaluated SFrame should not materialize to target folder
         """
         data = SFrame()
-        data["x"] = range(100)
+        data["x"] = list(range(100))
         data["x"] = data["x"] > 50
         # lazy and good
         try:
@@ -4196,12 +4196,12 @@ class SFrameTest(unittest.TestCase):
     def test_cache_invalidation(self):
         # Changes to the SFrame should invalidate the indexing cache.
 
-        X = SFrame({"a": range(4000), "b": range(4000)})
+        X = SFrame({"a": list(range(4000)), "b": list(range(4000))})
 
         for i in range(0, 4000, 20):
             self.assertEqual(X[i], {"a": i, "b": i})
 
-        X["a"] = range(1000, 5000)
+        X["a"] = list(range(1000, 5000))
 
         for i in range(0, 4000, 20):
             self.assertEqual(X[i], {"a": 1000 + i, "b": i})
@@ -4222,11 +4222,11 @@ class SFrameTest(unittest.TestCase):
             self.assertEqual(X[i], {"a": 1000 + i, "c": 1000 + i})
 
     def test_to_numpy(self):
-        X = SFrame({"a": range(100), "b": range(100)})
+        X = SFrame({"a": list(range(100)), "b": list(range(100))})
         import numpy as np
         import numpy.testing as nptest
 
-        Y = np.transpose(np.array([range(100), range(100)]))
+        Y = np.transpose(np.array([list(range(100)), list(range(100))]))
         nptest.assert_array_equal(X.to_numpy(), Y)
 
         X["b"] = X["b"].astype(str)
@@ -4483,7 +4483,7 @@ class SFrameTest(unittest.TestCase):
             self.sf_all_types.to_sql(conn, "ins_test", dbapi_module=bad_paramstyle)
 
     def test_materialize(self):
-        sf = SFrame({"a": range(100)})
+        sf = SFrame({"a": list(range(100))})
         sf = sf[sf["a"] > 10]
         self.assertFalse(sf.is_materialized())
         sf.materialize()
@@ -4491,7 +4491,7 @@ class SFrameTest(unittest.TestCase):
 
     def test_materialization_slicing(self):
         # Has been known to fail.
-        g = SFrame({"a": range(100)})[:10]
+        g = SFrame({"a": list(range(100))})[:10]
         g["b"] = g["a"] + 1
         g["b"].materialize()
         g.materialize()
@@ -4546,10 +4546,10 @@ class SFrameTest(unittest.TestCase):
         if six.PY2:
             sf = sf.add_columns(
                 SFrame(
-                    {"long": [builtins.long(12)], "unicode": [builtins.unicode("foo")]}
+                    {"long": [builtins.long(12)], "unicode": [builtins.str("foo")]}
                 )
             )
-            sf2 = sf2.add_columns(SFrame({"long": [12], "unicode": [unicode("foo")]}))
+            sf2 = sf2.add_columns(SFrame({"long": [12], "unicode": [str("foo")]}))
 
         _assert_sframe_equal(sf, sf2)
 
@@ -4585,14 +4585,14 @@ class SFrameTest(unittest.TestCase):
 
     def test_filter_by_dict(self):
         # Check for dict in filter_by
-        sf = SFrame({"check": range(10)})
+        sf = SFrame({"check": list(range(10))})
         d = {1: 1}
 
-        sf = sf.filter_by(d.keys(), "check")
+        sf = sf.filter_by(list(d.keys()), "check")
         sf_test = sf.filter_by(list(d.keys()), "check")
         _assert_sframe_equal(sf, sf_test)
 
-        sf = sf.filter_by(d.values(), "check")
+        sf = sf.filter_by(list(d.values()), "check")
         sf_test = sf.filter_by(list(d.values()), "check")
         _assert_sframe_equal(sf, sf_test)
 

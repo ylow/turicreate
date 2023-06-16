@@ -7,8 +7,8 @@
 This toolkit contains methods for performing sentiment analysis on text
 data.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from ._text_classifier import create
 from ._text_classifier import TextClassifier

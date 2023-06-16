@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import turicreate as _tc
 
 # GLC Utils.
@@ -153,7 +153,7 @@ class TransformerChain(_TransformerBase):
 
         # Chains
         elif obj.__class__ == TransformerChain:
-            _step_classes = list(map(lambda x: x.__class__.__name__, obj.get("steps")))
+            _step_classes = list([x.__class__.__name__ for x in obj.get("steps")])
             _steps = _internal_utils.pretty_print_list(_step_classes, "steps", False)
             dict_str_list.append(_steps)
 

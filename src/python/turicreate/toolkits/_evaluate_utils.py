@@ -105,7 +105,7 @@ def hclusterSort(vectors, dist_fn):
 
         excluding_names = [min_dist["from"]["name"], min_dist["to"]["name"]]
 
-        vecs = list(filter(lambda v: v["name"] not in excluding_names, vecs))
+        vecs = list([v for v in vecs if v["name"] not in excluding_names])
         distances = list(
             filter(
                 lambda dist: (dist["from"]["name"] not in excluding_names)

@@ -8,9 +8,9 @@ Methods for performing doing matrix factorization and factorization machines
 for making a ranking-based recommender.  See
 turicreate.recommender.ranking_factorization_recommender.create for additional documentation.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import turicreate as _turicreate
 from turicreate.toolkits.recommender.util import _Recommender

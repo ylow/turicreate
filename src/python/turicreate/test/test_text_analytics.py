@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import math
 import unittest
 import warnings
@@ -573,13 +573,13 @@ class RandomWordSplitTest(unittest.TestCase):
             b = test[i]
 
             # Make sure there are no zero values
-            for (k, v) in a.items():
+            for (k, v) in list(a.items()):
                 assert v != 0
-            for (k, v) in b.items():
+            for (k, v) in list(b.items()):
                 assert v != 0
 
             # Make sure the counts add up to the original counts
-            for (k, v) in self.docs[i].items():
+            for (k, v) in list(self.docs[i].items()):
                 av = 0
                 bv = 0
                 if k in a:

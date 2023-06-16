@@ -6,9 +6,9 @@
 """
 Methods for creating and using an SVM model.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import turicreate.toolkits._supervised_learning as _sl
 from turicreate.toolkits._supervised_learning import Classifier as _Classifier

@@ -6,9 +6,9 @@
 """
 Methods for creating and using a linear regression model.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import turicreate.toolkits._supervised_learning as _sl
 from turicreate.toolkits._supervised_learning import (

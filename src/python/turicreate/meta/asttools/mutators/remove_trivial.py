@@ -8,9 +8,9 @@ Created on Aug 3, 2011
 
 @author: sean
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import _ast
 import ast
 
@@ -103,7 +103,7 @@ def remove_trivial(root):
 
     to_remove = []
 
-    for symbol, assignments in gen.assign_id_map.items():
+    for symbol, assignments in list(gen.assign_id_map.items()):
         if len(assignments) < 2:
             continue
 

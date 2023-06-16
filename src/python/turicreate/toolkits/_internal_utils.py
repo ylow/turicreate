@@ -8,9 +8,9 @@
 
 This module defines the (internal) utility functions used by the toolkits.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 from ..data_structures.sframe import SArray as _SArray
 from ..data_structures.sframe import SFrame as _SFrame
@@ -542,7 +542,7 @@ def _map_unity_proxy_to_object(value):
     elif vtype == list:
         return [_map_unity_proxy_to_object(v) for v in value]
     elif vtype == dict:
-        return {k: _map_unity_proxy_to_object(v) for k, v in value.items()}
+        return {k: _map_unity_proxy_to_object(v) for k, v in list(value.items())}
     else:
         return value
 
@@ -652,7 +652,7 @@ def _raise_error_evaluation_metric_is_valid(metric, allowed_metrics):
 
     if metric not in allowed_metrics:
         raise ToolkitError(
-            err_msg % (metric, ", ".join(map(lambda x: "'%s'" % x, allowed_metrics)))
+            err_msg % (metric, ", ".join(["'%s'" % x for x in allowed_metrics]))
         )
 
 
@@ -838,29 +838,3 @@ def _mac_ver():
         return ()
 
 
-def _print_neural_compute_device(
-    cuda_gpus, use_mps, cuda_mem_req=None, has_mps_impl=True
-):
-    """
-    Print a message making it clear to the user what compute resource is used in
-    neural network training.
-    """
-    num_cuda_gpus = len(cuda_gpus)
-    if num_cuda_gpus >= 1:
-        gpu_names = ", ".join(gpu["name"] for gpu in cuda_gpus)
-
-    if use_mps:
-        from ._mps_utils import mps_device_name
-
-        print("Using GPU to create model ({})".format(mps_device_name()))
-    elif num_cuda_gpus >= 1:
-        plural = "s" if num_cuda_gpus >= 2 else ""
-        print("Using GPU{} to create model ({})".format(plural, gpu_names))
-    else:
-        import sys
-
-        print("Using CPU to create model")
-        if sys.platform == "darwin" and _mac_ver() < (10, 14) and has_mps_impl:
-            print(
-                "NOTE: If available, an AMD GPU can be leveraged on macOS 10.14+ for faster model creation"
-            )

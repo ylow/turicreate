@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import os
 import unittest
 import tempfile
@@ -51,7 +51,7 @@ class UtilTests(unittest.TestCase):
         )
         # Check columns individually since there is no
         # guaranteed ordering among columns.
-        for k in d.keys():
+        for k in list(d.keys()):
             s._assert_sarray_equal(actual[k], expected[k])
 
     def _validate_gl_object_type(self, obj, expected):

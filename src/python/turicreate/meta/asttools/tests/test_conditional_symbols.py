@@ -8,9 +8,9 @@ Created on Aug 9, 2011
 
 @author: sean
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 from ...asttools.visitors.cond_symbol_visitor import conditional_symbols
 import ast

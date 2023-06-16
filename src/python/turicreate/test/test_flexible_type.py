@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import numpy as np
 from numpy import nan
@@ -35,7 +35,7 @@ import sys
 
 if sys.version_info.major > 2:
     long = int
-    unicode = str
+    str = str
 
 NoneType = type(None)
 
@@ -51,7 +51,7 @@ def from_lambda(v):
 
 special_types = set()
 
-IntegerValue = [int(0), long(1)] + [
+IntegerValue = [int(0), int(1)] + [
     _dt(0)
     for _dt in (np.sctypes["int"] + np.sctypes["uint"] + [np.bool, bool, np.bool_])
 ]
@@ -65,15 +65,15 @@ FloatValue = (
 special_types.add(id(FloatValue))
 
 StringValue = (
-    [str("bork"), unicode("bork"), b"bork", b""]
+    [str("bork"), str("bork"), b"bork", b""]
     + [
         _dt("bork")
-        for _dt in [np.unicode, np.unicode_, str, unicode, np.str, np.str_, np.string_]
+        for _dt in [np.str, np.unicode_, str, str, np.str, np.str_, np.string_]
     ]
-    + [str(""), unicode("")]
+    + [str(""), str("")]
     + [
         _dt("")
-        for _dt in [np.unicode, np.unicode_, str, unicode, np.str, np.str_, np.string_]
+        for _dt in [np.str, np.unicode_, str, str, np.str, np.str_, np.string_]
     ]
 )
 
@@ -117,33 +117,33 @@ special_types.add(id(FloatSequenceWithNone))
 # All the different integer sequences we support
 IntegerSequence = [
     [int(i) for i in range(3)],
-    [long(i) for i in range(3)],
+    [int(i) for i in range(3)],
     tuple(range(3)),
-    tuple(long(i) for i in range(3)),
+    tuple(int(i) for i in range(3)),
     set(range(3)),
-    frozenset(range(3)),
-] + [array.array(c, range(3)) for c in "bBhHiIlL"]
+    frozenset(list(range(3))),
+] + [array.array(c, list(range(3))) for c in "bBhHiIlL"]
 special_types.add(id(IntegerSequence))
 
 # All the different integer sequences we support, with a Nan
 IntegerSequenceWithNAN = [
     [int(i) for i in range(3)] + [nan],
-    [long(i) for i in range(3)] + [nan],
+    [int(i) for i in range(3)] + [nan],
     tuple(range(3)) + (nan,),
-    tuple(long(i) for i in range(3)) + (nan,),
-    set([long(i) for i in range(3)] + [nan]),
-    frozenset([long(i) for i in range(3)] + [nan]),
+    tuple(int(i) for i in range(3)) + (nan,),
+    set([int(i) for i in range(3)] + [nan]),
+    frozenset([int(i) for i in range(3)] + [nan]),
 ]
 special_types.add(id(IntegerSequenceWithNAN))
 
 # All the different types of string
 IntegerSequenceWithNone = [
     [int(i) for i in range(3)] + [None],
-    [long(i) for i in range(3)] + [None],
+    [int(i) for i in range(3)] + [None],
     tuple(range(3)) + (None,),
-    tuple(long(i) for i in range(3)) + (None,),
-    set([long(i) for i in range(3)] + [None]),
-    frozenset([long(i) for i in range(3)] + [None]),
+    tuple(int(i) for i in range(3)) + (None,),
+    set([int(i) for i in range(3)] + [None]),
+    frozenset([int(i) for i in range(3)] + [None]),
 ]
 special_types.add(id(IntegerSequenceWithNone))
 
@@ -205,7 +205,7 @@ def verify_inference(values, expected_type):
     def build_lookups(values, L):
         for v in values:
             if id(v) in special_types:
-                L.append(range(len(v)))
+                L.append(list(range(len(v))))
             elif type(v) is list:
                 build_lookups(v, L)
 
@@ -329,15 +329,15 @@ class FlexibleTypeInference(unittest.TestCase):
 
     def test_nparray(self):
         NPSequence = (
-            [np.array(range(3), "d"), None],
-            [np.array(range(3), "i"), None],
-            [np.array(range(3), "f"), None],
-            [np.array(range(3), "d"), array.array("d", [1, 2, 3])],
-            [np.array(range(3), "i"), array.array("d", [1, 2, 3])],
-            [np.array(range(3), "f"), array.array("d", [1, 2, 3])],
-            [np.array(range(3), "d"), array.array("d", [1, 2, 3]), None],
-            [np.array(range(3), "i"), array.array("d", [1, 2, 3]), None],
-            [np.array(range(3), "f"), array.array("d", [1, 2, 3]), None],
+            [np.array(list(range(3)), "d"), None],
+            [np.array(list(range(3)), "i"), None],
+            [np.array(list(range(3)), "f"), None],
+            [np.array(list(range(3)), "d"), array.array("d", [1, 2, 3])],
+            [np.array(list(range(3)), "i"), array.array("d", [1, 2, 3])],
+            [np.array(list(range(3)), "f"), array.array("d", [1, 2, 3])],
+            [np.array(list(range(3)), "d"), array.array("d", [1, 2, 3]), None],
+            [np.array(list(range(3)), "i"), array.array("d", [1, 2, 3]), None],
+            [np.array(list(range(3)), "f"), array.array("d", [1, 2, 3]), None],
         )
 
         # Run the tests
@@ -376,7 +376,7 @@ class FlexibleTypeTest(unittest.TestCase):
 
     def test_int(self):
         self.assert_equal_with_lambda_check(_flexible_type(1), 1)
-        self.assert_equal_with_lambda_check(_flexible_type(long(1)), 1)
+        self.assert_equal_with_lambda_check(_flexible_type(int(1)), 1)
         self.assert_equal_with_lambda_check(_flexible_type(True), 1)
         self.assert_equal_with_lambda_check(_flexible_type(False), 0)
         # numpy types
@@ -406,7 +406,7 @@ class FlexibleTypeTest(unittest.TestCase):
     def test_string(self):
         self.assert_equal_with_lambda_check(_flexible_type("a"), "a")
         if sys.version_info.major == 2:
-            self.assert_equal_with_lambda_check(_flexible_type(unicode("a")), "a")
+            self.assert_equal_with_lambda_check(_flexible_type(str("a")), "a")
         # numpy types
         self.assert_equal_with_lambda_check(_flexible_type(np.string_("a")), "a")
         self.assert_equal_with_lambda_check(_flexible_type(np.unicode_("a")), "a")
@@ -555,19 +555,19 @@ class FlexibleTypeTest(unittest.TestCase):
         self.assert_equal_with_lambda_check(_tr_flex_list(expected, str), expected)
 
         # test array list
-        expected = [array.array("d", range(5)), array.array("d", range(5)), None]
+        expected = [array.array("d", list(range(5))), array.array("d", list(range(5))), None]
         self.assert_equal_with_lambda_check(_tr_flex_list(expected), expected)
         self.assert_equal_with_lambda_check(
             _tr_flex_list(expected, array.array), expected
         )
-        expected = [[float(i) for i in range(5)], range(5), None]
+        expected = [[float(i) for i in range(5)], list(range(5)), None]
         self.assert_equal_with_lambda_check(
             _tr_flex_list(expected),
-            [array.array("d", range(5)), array.array("d", range(5)), None],
+            [array.array("d", list(range(5))), array.array("d", list(range(5))), None],
         )
 
         # test int array
-        expected = array.array("d", range(5))
+        expected = array.array("d", list(range(5)))
         self.assert_equal_with_lambda_check(_tr_flex_list(expected), list(range(5)))
 
         expected = [1, 1.0, "1", [1.0, 1.0, 1.0], ["a", "b", "c"], {}, {"a": 1}, None]
@@ -615,7 +615,7 @@ class FlexibleTypeTest(unittest.TestCase):
         )
         self.assertEqual(infer_type_of_list([0, 1, 2]), int)
         self.assertEqual(infer_type_of_list([0, 1, 2.0]), float)
-        self.assertEqual(infer_type_of_list(["foo", u"bar"]), str)
+        self.assertEqual(infer_type_of_list(["foo", "bar"]), str)
         self.assertEqual(
             infer_type_of_list(
                 [array.array("d", [1, 2, 3]), array.array("d", [1, 2, 3])]

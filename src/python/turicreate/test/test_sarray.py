@@ -5,9 +5,9 @@
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
 # This software may be modified and distributed under the terms
 # of the BSD license. See the LICENSE file for details.
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from ..data_structures.sarray import SArray
 from ..data_structures.sframe import SFrame
 from ..data_structures.sarray import load_sarray
@@ -151,45 +151,45 @@ class SArrayTest(unittest.TestCase):
 
         # test with map/filter type
         self.__test_creation_raw(
-            map(lambda x: x + 10, self.int_data), int, [x + 10 for x in self.int_data]
+            [x + 10 for x in self.int_data], int, [x + 10 for x in self.int_data]
         )
         self.__test_creation_raw(
-            map(lambda x: x * 10, self.int_data),
+            [x * 10 for x in self.int_data],
             float,
             [float(x) * 10 for x in self.int_data],
         )
         self.__test_creation_raw(
-            map(lambda x: x * 10, self.string_data),
+            [x * 10 for x in self.string_data],
             str,
             [x * 10 for x in self.string_data],
         )
 
         self.__test_creation_raw(
-            filter(lambda x: x < 5, self.int_data),
+            [x for x in self.int_data if x < 5],
             int,
-            list(filter(lambda x: x < 5, self.int_data)),
+            list([x for x in self.int_data if x < 5]),
         )
         self.__test_creation_raw(
-            filter(lambda x: x > 5, self.float_data),
+            [x for x in self.float_data if x > 5],
             float,
-            list(filter(lambda x: x > 5, self.float_data)),
+            list([x for x in self.float_data if x > 5]),
         )
         self.__test_creation_raw(
-            filter(lambda x: len(x) > 3, self.string_data),
+            [x for x in self.string_data if len(x) > 3],
             str,
-            list(filter(lambda x: len(x) > 3, self.string_data)),
+            list([x for x in self.string_data if len(x) > 3]),
         )
 
         self.__test_creation_pd(
-            map(lambda x: x + 10, self.int_data), int, [x + 10 for x in self.int_data]
+            [x + 10 for x in self.int_data], int, [x + 10 for x in self.int_data]
         )
         self.__test_creation_pd(
-            map(lambda x: x * 10, self.int_data),
+            [x * 10 for x in self.int_data],
             float,
             [float(x) * 10 for x in self.int_data],
         )
         self.__test_creation_pd(
-            map(lambda x: x * 10, self.string_data),
+            [x * 10 for x in self.string_data],
             str,
             [x * 10 for x in self.string_data],
         )
@@ -217,47 +217,47 @@ class SArrayTest(unittest.TestCase):
         self.__test_creation((1, 2, 3, 4), int, [1, 2, 3, 4])
 
         self.__test_creation_type_inference_raw(
-            map(lambda x: x + 10, self.int_data), int, [x + 10 for x in self.int_data]
+            [x + 10 for x in self.int_data], int, [x + 10 for x in self.int_data]
         )
         self.__test_creation_type_inference_raw(
-            map(lambda x: x * 10, self.float_data),
+            [x * 10 for x in self.float_data],
             float,
             [x * 10 for x in self.float_data],
         )
         self.__test_creation_type_inference_raw(
-            map(lambda x: x * 10, self.string_data),
+            [x * 10 for x in self.string_data],
             str,
             [x * 10 for x in self.string_data],
         )
 
         self.__test_creation_type_inference_pd(
-            map(lambda x: x + 10, self.int_data), int, [x + 10 for x in self.int_data]
+            [x + 10 for x in self.int_data], int, [x + 10 for x in self.int_data]
         )
         self.__test_creation_type_inference_pd(
-            map(lambda x: x * 10, self.float_data),
+            [x * 10 for x in self.float_data],
             float,
             [float(x) * 10 for x in self.float_data],
         )
         self.__test_creation_type_inference_pd(
-            map(lambda x: x * 10, self.string_data),
+            [x * 10 for x in self.string_data],
             str,
             [x * 10 for x in self.string_data],
         )
 
         self.__test_creation_type_inference_raw(
-            filter(lambda x: x < 5, self.int_data),
+            [x for x in self.int_data if x < 5],
             int,
-            list(filter(lambda x: x < 5, self.int_data)),
+            list([x for x in self.int_data if x < 5]),
         )
         self.__test_creation_type_inference_raw(
-            filter(lambda x: x > 5, self.float_data),
+            [x for x in self.float_data if x > 5],
             float,
-            list(filter(lambda x: x > 5, self.float_data)),
+            list([x for x in self.float_data if x > 5]),
         )
         self.__test_creation_type_inference_raw(
-            filter(lambda x: len(x) > 3, self.string_data),
+            [x for x in self.string_data if len(x) > 3],
             str,
-            list(filter(lambda x: len(x) > 3, self.string_data)),
+            list([x for x in self.string_data if len(x) > 3]),
         )
 
         # genertors
@@ -314,9 +314,9 @@ class SArrayTest(unittest.TestCase):
 
         # Test python 3
         self.__test_equal(
-            SArray(filter(lambda x: True, self.int_data)), self.int_data, int
+            SArray([x for x in self.int_data if True]), self.int_data, int
         )
-        self.__test_equal(SArray(map(lambda x: x, self.int_data)), self.int_data, int)
+        self.__test_equal(SArray([x for x in self.int_data]), self.int_data, int)
 
     def test_list_with_none_creation(self):
         tlist = [[2, 3, 4], [5, 6], [4, 5, 10, None]]
@@ -534,7 +534,7 @@ class SArrayTest(unittest.TestCase):
         self.__test_equal(sa_int, expected_output, int)
 
         # Test randomness across segments, randomized sarray should have different elements.
-        sa_random = SArray(range(0, 16), int).apply(
+        sa_random = SArray(list(range(0, 16)), int).apply(
             lambda x: random.randint(0, 1000), int
         )
         vec = list(sa_random.head(len(sa_random)))
@@ -581,7 +581,7 @@ class SArrayTest(unittest.TestCase):
         )
 
         # Test randomness across segments, randomized sarray should have different elements.
-        sa_random = SArray(range(0, 16), int).apply(lambda x: random.randint(0, 1000))
+        sa_random = SArray(list(range(0, 16)), int).apply(lambda x: random.randint(0, 1000))
         vec = list(sa_random.head(len(sa_random)))
         self.assertFalse(all([x == vec[0] for x in vec]))
 
@@ -719,7 +719,7 @@ class SArrayTest(unittest.TestCase):
         self.assertEqual(as_out.dtype, float)
 
         # test float -> int
-        s = SArray(list(map(lambda x: x + 0.2, self.float_data)), float)
+        s = SArray(list([x + 0.2 for x in self.float_data]), float)
         as_out = s.astype(int)
         self.assertEqual(list(as_out.head(10)), self.int_data)
 
@@ -727,7 +727,7 @@ class SArrayTest(unittest.TestCase):
         s = SArray(self.int_data, int)
         as_out = s.astype(str)
         self.assertEqual(
-            list(as_out.head(10)), list(map(lambda x: str(x), self.int_data))
+            list(as_out.head(10)), list([str(x) for x in self.int_data])
         )
 
         i_out = as_out.astype(int)
@@ -992,7 +992,7 @@ class SArrayTest(unittest.TestCase):
         self.assertAlmostEqual(s.mean(), 5.5)
 
         # test all negative
-        s = SArray(list(map(lambda x: x * -1, self.int_data)), int)
+        s = SArray(list([x * -1 for x in self.int_data]), int)
         self.assertEqual(s.max(), -1)
         self.assertEqual(s.min(), -10)
         self.assertEqual(s.sum(), -55)
@@ -1009,7 +1009,7 @@ class SArrayTest(unittest.TestCase):
         self.assertTrue(type(t) == float)
         self.assertTrue(t == 0.0)
         t = SArray([], int).sum()
-        self.assertTrue(type(t) == int or type(t) == long)
+        self.assertTrue(type(t) == int or type(t) == int)
         self.assertTrue(t == 0)
         self.assertTrue(SArray([], array.array).sum() == array.array("d", []))
 
@@ -1041,7 +1041,7 @@ class SArrayTest(unittest.TestCase):
 
         def check_correctness(l):
             sa = SArray(l)
-            l = list(filter(lambda x: x is not None, l))
+            l = list([x for x in l if x is not None])
             if(len(l) % 2 == 1):
                 self.assertAlmostEqual(sa.median(), np.median(l))
             else:
@@ -1131,7 +1131,7 @@ class SArrayTest(unittest.TestCase):
         self.assertEqual(sum3, realsum)
 
         # abs
-        s = np.array(range(-10, 10))
+        s = np.array(list(range(-10, 10)))
         t = SArray(s, int)
         self.__test_equal(abs(t), list(abs(s)), int)
         t = SArray(s, float)
@@ -1686,7 +1686,7 @@ class SArrayTest(unittest.TestCase):
 
     def test_element_slice(self):
         # string slicing
-        g = SArray(range(1, 1000, 10)).astype(str)
+        g = SArray(list(range(1, 1000, 10))).astype(str)
         self._slice_equality_test(g, 0, 2)
         self._slice_equality_test(g, 0, -1, 2)
         self._slice_equality_test(g, -1, -3)
@@ -1695,7 +1695,7 @@ class SArrayTest(unittest.TestCase):
         self._slice_equality_test(g, -100, -1)
 
         # list slicing
-        g = SArray(range(1, 10)).apply(lambda x: list(range(x)), list)
+        g = SArray(list(range(1, 10))).apply(lambda x: list(range(x)), list)
         self._slice_equality_test(g, 0, 2)
         self._slice_equality_test(g, 0, -1, 2)
         self._slice_equality_test(g, -1, -3)
@@ -1706,7 +1706,7 @@ class SArrayTest(unittest.TestCase):
         # array slicing
         import array
 
-        g = SArray(range(1, 10)).apply(lambda x: array.array("d", range(x)))
+        g = SArray(list(range(1, 10))).apply(lambda x: array.array("d", list(range(x))))
         self._slice_equality_test(g, 0, 2)
         self._slice_equality_test(g, 0, -1, 2)
         self._slice_equality_test(g, -1, -3)
@@ -1716,13 +1716,13 @@ class SArrayTest(unittest.TestCase):
 
         # this should fail
         with self.assertRaises(TypeError):
-            g = SArray(range(1, 1000)).element_slice(1)
+            g = SArray(list(range(1, 1000))).element_slice(1)
 
         with self.assertRaises(TypeError):
-            g = SArray(range(1, 1000)).astype(float).element_slice(1)
+            g = SArray(list(range(1, 1000))).astype(float).element_slice(1)
 
     def test_lazy_eval(self):
-        sa = SArray(range(-10, 10))
+        sa = SArray(list(range(-10, 10)))
         sa = sa + 1
         sa1 = sa >= 0
         sa2 = sa <= 0
@@ -1910,7 +1910,7 @@ class SArrayTest(unittest.TestCase):
     def test_save_load_cleanup_file(self):
         # similarly for SArray
         with util.TempDirectory() as f:
-            sa = SArray(range(1, 1000000))
+            sa = SArray(list(range(1, 1000000)))
             sa.save(f)
 
             # 17 for each sarray, 1 object.bin, 1 ini
@@ -2090,9 +2090,9 @@ class SArrayTest(unittest.TestCase):
             SArray([[1, 2], [2, 3]]).sort()
 
     def test_unicode_encode_should_not_fail(self):
-        g = SArray([{"a": u"\u2019"}])
-        g = SArray([u"123", u"\u2019"])
-        g = SArray(["123", u"\u2019"])
+        g = SArray([{"a": "\u2019"}])
+        g = SArray(["123", "\u2019"])
+        g = SArray(["123", "\u2019"])
 
     def test_from_const(self):
         g = SArray.from_const("a", 100)
@@ -2353,7 +2353,7 @@ class SArrayTest(unittest.TestCase):
             sa.argmin()
 
     def test_apply_with_recursion(self):
-        sa = SArray(range(1000))
+        sa = SArray(list(range(1000)))
         sastr = sa.astype(str)
         rets = sa.apply(lambda x: sastr[x])
         self.assertEqual(list(rets), list(sastr))
@@ -2361,7 +2361,7 @@ class SArrayTest(unittest.TestCase):
     def test_save_sarray(self):
         """save lazily evaluated SArray should not materialize to target folder
         """
-        data = SArray(range(1000))
+        data = SArray(list(range(1000)))
         data = data[data > 50]
         # lazy and good
         try:
@@ -2372,11 +2372,11 @@ class SArrayTest(unittest.TestCase):
         print(data)
 
     def test_to_numpy(self):
-        X = SArray(range(100))
+        X = SArray(list(range(100)))
         import numpy as np
         import numpy.testing as nptest
 
-        Y = np.array(range(100))
+        Y = np.array(list(range(100)))
         nptest.assert_array_equal(X.to_numpy(), Y)
 
         X = X.astype(str)
@@ -2384,8 +2384,8 @@ class SArrayTest(unittest.TestCase):
         nptest.assert_array_equal(X.to_numpy(), Y)
 
     def test_rolling_mean(self):
-        data = SArray(range(1000))
-        neg_data = SArray(range(-100, 100, 2))
+        data = SArray(list(range(1000)))
+        neg_data = SArray(list(range(-100, 100, 2)))
 
         ### Small backward window including current
         res = data.rolling_mean(-3, 0)
@@ -2542,7 +2542,7 @@ class SArrayTest(unittest.TestCase):
             res = data.rolling_mean(4, 2)
 
         ### Non-numeric
-        with self.assertRaisesRegexp(RuntimeError, ".*support.*type.*"):
+        with self.assertRaisesRegex(RuntimeError, ".*support.*type.*"):
             res = SArray(self.string_data).rolling_mean(0, 1)
 
         ### Empty SArray
@@ -2556,8 +2556,8 @@ class SArrayTest(unittest.TestCase):
         self.__test_equal(res, [1.5, 2.5, None], float)
 
     def test_rolling_sum(self):
-        data = SArray(range(1000))
-        neg_data = SArray(range(-100, 100, 2))
+        data = SArray(list(range(1000)))
+        neg_data = SArray(list(range(-100, 100, 2)))
 
         ### Small backward window including current
         res = data.rolling_sum(-3, 0)
@@ -2714,7 +2714,7 @@ class SArrayTest(unittest.TestCase):
             res = data.rolling_sum(4, 2)
 
         ### Non-numeric
-        with self.assertRaisesRegexp(RuntimeError, ".*support.*type.*"):
+        with self.assertRaisesRegex(RuntimeError, ".*support.*type.*"):
             res = SArray(self.string_data).rolling_sum(0, 1)
 
         ### Empty SArray
@@ -2728,7 +2728,7 @@ class SArrayTest(unittest.TestCase):
         self.__test_equal(res, [3, 5, None], int)
 
     def test_rolling_max(self):
-        data = SArray(range(1000))
+        data = SArray(list(range(1000)))
 
         ### Small backward window including current
         res = data.rolling_max(-3, 0)
@@ -2754,7 +2754,7 @@ class SArrayTest(unittest.TestCase):
             res = data.rolling_max(-3, 0, min_observations=-1)
 
         # Test vector input
-        with self.assertRaisesRegexp(RuntimeError, ".*support.*type.*"):
+        with self.assertRaisesRegex(RuntimeError, ".*support.*type.*"):
             res = SArray(self.vec_data).rolling_max(-3, 0)
 
         ### Small forward window including current
@@ -2779,7 +2779,7 @@ class SArrayTest(unittest.TestCase):
             res = data.rolling_max(4, 2)
 
         ### Non-numeric
-        with self.assertRaisesRegexp(RuntimeError, ".*support.*type.*"):
+        with self.assertRaisesRegex(RuntimeError, ".*support.*type.*"):
             res = SArray(self.string_data).rolling_max(0, 1)
 
         ### Empty SArray
@@ -2793,7 +2793,7 @@ class SArrayTest(unittest.TestCase):
         self.__test_equal(res, [2, 3, None], int)
 
     def test_rolling_min(self):
-        data = SArray(range(1000))
+        data = SArray(list(range(1000)))
 
         ### Small backward window including current
         res = data.rolling_min(-3, 0)
@@ -2819,7 +2819,7 @@ class SArrayTest(unittest.TestCase):
             res = data.rolling_min(-3, 0, min_observations=-1)
 
         # Test vector input
-        with self.assertRaisesRegexp(RuntimeError, ".*support.*type.*"):
+        with self.assertRaisesRegex(RuntimeError, ".*support.*type.*"):
             res = SArray(self.vec_data).rolling_min(-3, 0)
 
         ### Small forward window including current
@@ -2844,7 +2844,7 @@ class SArrayTest(unittest.TestCase):
             res = data.rolling_min(4, 2)
 
         ### Non-numeric
-        with self.assertRaisesRegexp(RuntimeError, ".*support.*type.*"):
+        with self.assertRaisesRegex(RuntimeError, ".*support.*type.*"):
             res = SArray(self.string_data).rolling_min(0, 1)
 
         ### Empty SArray
@@ -2858,7 +2858,7 @@ class SArrayTest(unittest.TestCase):
         self.__test_equal(res, [1, 2, None], int)
 
     def test_rolling_var(self):
-        data = SArray(range(1000))
+        data = SArray(list(range(1000)))
 
         ### Small backward window including current
         res = data.rolling_var(-3, 0)
@@ -2884,7 +2884,7 @@ class SArrayTest(unittest.TestCase):
             res = data.rolling_var(-3, 0, min_observations=-1)
 
         # Test vector input
-        with self.assertRaisesRegexp(RuntimeError, ".*support.*type.*"):
+        with self.assertRaisesRegex(RuntimeError, ".*support.*type.*"):
             res = SArray(self.vec_data).rolling_var(-3, 0)
 
         ### Small forward window including current
@@ -2904,7 +2904,7 @@ class SArrayTest(unittest.TestCase):
             res = data.rolling_var(4, 2)
 
         ### Non-numeric
-        with self.assertRaisesRegexp(RuntimeError, ".*support.*type.*"):
+        with self.assertRaisesRegex(RuntimeError, ".*support.*type.*"):
             res = SArray(self.string_data).rolling_var(0, 1)
 
         ### Empty SArray
@@ -2918,7 +2918,7 @@ class SArrayTest(unittest.TestCase):
         self.__test_equal(res, [0.25, 0.25, None], float)
 
     def test_rolling_stdv(self):
-        data = SArray(range(1000))
+        data = SArray(list(range(1000)))
 
         ### Small backward window including current
         res = data.rolling_stdv(-3, 0)
@@ -2944,7 +2944,7 @@ class SArrayTest(unittest.TestCase):
             res = data.rolling_stdv(-3, 0, min_observations=-1)
 
         # Test vector input
-        with self.assertRaisesRegexp(RuntimeError, ".*support.*type.*"):
+        with self.assertRaisesRegex(RuntimeError, ".*support.*type.*"):
             res = SArray(self.vec_data).rolling_stdv(-3, 0)
 
         ### Small forward window including current
@@ -2964,7 +2964,7 @@ class SArrayTest(unittest.TestCase):
             res = data.rolling_stdv(4, 2)
 
         ### Non-numeric
-        with self.assertRaisesRegexp(RuntimeError, ".*support.*type.*"):
+        with self.assertRaisesRegex(RuntimeError, ".*support.*type.*"):
             res = SArray(self.string_data).rolling_stdv(0, 1)
 
         ### Empty SArray
@@ -2978,7 +2978,7 @@ class SArrayTest(unittest.TestCase):
         self.__test_equal(res, [0.5, 0.5, None], float)
 
     def test_rolling_count(self):
-        data = SArray(range(100))
+        data = SArray(list(range(100)))
 
         ### Small backward window including current
         res = data.rolling_count(-3, 0)
@@ -3437,14 +3437,14 @@ class SArrayTest(unittest.TestCase):
         self.__test_equal(sa, expected, float)
 
     def test_materialize(self):
-        sa = SArray(range(100))
+        sa = SArray(list(range(100)))
         sa = sa[sa > 10]
         self.assertFalse(sa.is_materialized())
         sa.materialize()
         self.assertTrue(sa.is_materialized())
 
     def test_ternary(self):
-        lista = range(1000)
+        lista = list(range(1000))
         a = SArray(lista)
 
         # identity
@@ -3511,11 +3511,11 @@ class SArrayTest(unittest.TestCase):
         sa = SArray()
         self.assertEqual(sa.shape, (0,))
         for i in [0, 1, 2, 10, 345]:
-            sa = SArray(range(i))
+            sa = SArray(list(range(i)))
             self.assertEqual(sa.shape, (i,))
 
     def test_random_split(self):
-        sa = SArray(range(10))
+        sa = SArray(list(range(10)))
         (train, test) = sa.random_split(0.8, seed=12423)
         self.assertEqual(list(train), [0, 1, 2, 3, 5, 7, 8, 9])
         self.assertEqual(list(test), [4, 6])
@@ -3537,7 +3537,7 @@ class SArrayTest(unittest.TestCase):
     def test_copy(self):
         from copy import copy
 
-        sa = SArray(range(1000))
+        sa = SArray(list(range(1000)))
         sa_copy = copy(sa)
 
         assert sa is not sa_copy
@@ -3547,7 +3547,7 @@ class SArrayTest(unittest.TestCase):
     def test_deepcopy(self):
         from copy import deepcopy
 
-        sa = SArray(range(1000))
+        sa = SArray(list(range(1000)))
         sa_copy = deepcopy(sa)
 
         assert sa is not sa_copy

@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import os as _os
 import turicreate as _tc
@@ -59,7 +59,7 @@ class OneShotObjectDetectorBackgroundData(object):
             assert expected_extracted_files == extracted_files
 
             # Check each of the files is what we expect
-            for filename, expected_md5 in self.extracted_file_to_md5.items():
+            for filename, expected_md5 in list(self.extracted_file_to_md5.items()):
                 full_path = _os.path.join(_get_cache_dir("data"), filename)
                 md5 = hashlib.md5(full_path).hexdigest()
                 assert md5 == expected_md5

@@ -8,9 +8,9 @@ Created on Nov 3, 2011
 
 @author: sean
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import os
 import sys
 import struct
@@ -21,7 +21,7 @@ py3 = sys.version_info.major >= 3
 if py3:
     import builtins  # @UnresolvedImport
 else:
-    import __builtin__ as builtins
+    import builtins as builtins
 
 import marshal
 import imp

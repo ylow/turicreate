@@ -8,9 +8,9 @@ Created on Aug 2, 2011
 
 @author: sean
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import ast
 from ...asttools.visitors.graph_visitor import GraphGen

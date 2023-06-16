@@ -7,9 +7,9 @@
 Provides utility context managers related
 to executing cython functions
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import os
 

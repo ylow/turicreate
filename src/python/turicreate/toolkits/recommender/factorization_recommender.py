@@ -7,9 +7,9 @@
 Methods for using factorization-based models as a recommender system.  See
 turicreate.recommender.factorization_recommender.create for additional documentation.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from turicreate.toolkits._model import _get_default_options_wrapper
 import turicreate as _turicreate
 from turicreate.toolkits.recommender.util import _Recommender

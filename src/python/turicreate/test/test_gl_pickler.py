@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import os
 import uuid
@@ -212,7 +212,7 @@ class GLPicklingTest(unittest.TestCase):
 
     def test_relative_path(self):
         # Arrange
-        sf1 = tc.SFrame(range(10))
+        sf1 = tc.SFrame(list(range(10)))
         relative_path = "tmp/%s" % self.filename
 
         # Act

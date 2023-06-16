@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 from ..data_structures.sframe import SFrame
 import unittest
@@ -41,7 +41,7 @@ class SFrameBuilderTest(unittest.TestCase):
             self.datetime_data * 5,
         ]
         self.sf_all_types = SFrame(
-            {"X" + str(i[0]): i[1] for i in zip(range(1, 8), self.all_type_cols)}
+            {"X" + str(i[0]): i[1] for i in zip(list(range(1, 8)), self.all_type_cols)}
         )
         self.all_types = [int, float, str, array.array, list, dict, dt.datetime]
 
@@ -154,5 +154,5 @@ class SFrameBuilderTest(unittest.TestCase):
         self.assertSequenceEqual(hist, [[37], [38], [39]])
 
         sf = sb.close()
-        expected_sf = SFrame({"X1": range(40)})
+        expected_sf = SFrame({"X1": list(range(40))})
         _assert_sframe_equal(sf, expected_sf)

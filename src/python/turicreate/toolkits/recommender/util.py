@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import turicreate as _turicreate
 import random as _random
 import array as _array
@@ -295,7 +295,7 @@ def compare_models(
         raise TypeError('"dataset" must be of type SFrame.')
     if len(dataset) == 0:
         raise _ToolkitError("Unable to test on an empty dataset.")
-    if any(map(lambda m: not issubclass(type(m), BaseRecommender), models)):
+    if any([not issubclass(type(m), BaseRecommender) for m in models]):
         raise _ToolkitError("All models must be recommender models.")
 
     num_models = len(models)
@@ -867,7 +867,7 @@ class _Recommender(_Model):
 
             self._data_schema = {
                 k: _turicreate._cython.cy_flexible_type.pytype_from_type_name(v)
-                for k, v in response["schema"].items()
+                for k, v in list(response["schema"].items())
             }
 
         return self._data_schema

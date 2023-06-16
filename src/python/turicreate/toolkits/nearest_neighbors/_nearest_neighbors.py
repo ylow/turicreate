@@ -6,9 +6,9 @@
 """
 Methods for creating and querying a nearest neighbors model.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 import turicreate as _turicreate
 from turicreate.toolkits._model import Model as _Model
@@ -370,7 +370,7 @@ def create(
     allowed_kwargs = ["leaf_size", "num_tables", "num_projections_per_table"]
     _method_options = {}
 
-    for k, v in kwargs.items():
+    for k, v in list(kwargs.items()):
         if k in allowed_kwargs:
             _method_options[k] = v
         else:

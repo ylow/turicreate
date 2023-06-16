@@ -8,9 +8,9 @@ Created on Apr 28, 2012
 
 @author: sean
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from .disassembler_ import disassembler
 
 

@@ -13,17 +13,17 @@ class ProgressTablePrinter(object):
         num_columns = len(column_names)
 
         self.column_names = column_names
-        self.column_width = max(map(lambda x: len(x), column_display_names)) + 2
+        self.column_width = max([len(x) for x in column_display_names]) + 2
         self.hr = "+" + "+".join(["-" * self.column_width] * num_columns) + "+"
 
         # Print progress table header
-        print(self.hr)
-        print(
+        print((self.hr))
+        print((
             ("| {:<{width}}" * num_columns + "|").format(
                 *column_display_names, width=self.column_width - 1
             )
-        )
-        print(self.hr)
+        ))
+        print((self.hr))
 
     def print_row(self, **kwargs):
         """
@@ -37,5 +37,5 @@ class ProgressTablePrinter(object):
             meta_string += " {%s:<{width}%s}|" % (key, float_specifier)
         kwargs["width"] = self.column_width - 1
 
-        print(meta_string.format(**kwargs))
-        print(self.hr)
+        print((meta_string.format(**kwargs)))
+        print((self.hr))

@@ -6,9 +6,9 @@
 """
 Efficiently compute the approximate statistics over an SArray.
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 from .._cython.cy_sketch import UnitySketchProxy
 from .._cython.context import debug_trace as cython_context
 from .sarray import SArray
@@ -212,7 +212,7 @@ class Sketch(object):
                 frequent_strkeys[strkey] = frequent[key]
 
         sorted_freq = sorted(
-            frequent_strkeys.items(), key=operator.itemgetter(1), reverse=True
+            list(frequent_strkeys.items()), key=operator.itemgetter(1), reverse=True
         )
         if len(sorted_freq) == 0:
             s += " -- All elements appear with less than 0.01% frequency -- \n"

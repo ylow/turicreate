@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import turicreate
 from turicreate.toolkits._main import ToolkitError
@@ -1013,8 +1013,8 @@ class MetricsTest(unittest.TestCase):
         # Act [Average = 'macro']
         cls_skl_score = {}
         for i in range(3):
-            t = map(lambda x: x == i, list(targets))
-            p = map(lambda x: x == i, list(predictions))
+            t = [x == i for x in list(targets)]
+            p = [x == i for x in list(predictions)]
             cls_skl_score[i] = accuracy_score(list(t), list(p))
 
         macro_avg = sum(cls_skl_score.values()) * 1.0 / 3

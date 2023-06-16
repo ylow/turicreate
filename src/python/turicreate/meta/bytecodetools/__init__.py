@@ -7,9 +7,9 @@
 Python byte-code tools expands on the Python dis module.
 
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 
 from .instruction import Instruction

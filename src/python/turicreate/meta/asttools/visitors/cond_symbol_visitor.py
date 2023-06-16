@@ -8,9 +8,9 @@ Created on Aug 4, 2011
 
 @author: sean
 """
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 
 from ..visitors import Visitor, visit_children
 from ..visitors.symbol_visitor import get_symbols

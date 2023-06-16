@@ -3,9 +3,9 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import unittest
 import numpy as np
 import copy
@@ -264,7 +264,7 @@ class NearestNeighborsCreateTest(unittest.TestCase):
             "lsh": "lsh",
         }
 
-        for m, name in methods.items():
+        for m, name in list(methods.items()):
             self._test_create(
                 self.refs,
                 self.label,
@@ -339,7 +339,7 @@ class NearestNeighborsCreateTest(unittest.TestCase):
             "transformed_dot_product": tc.distances.transformed_dot_product,
         }
 
-        for dist_name, dist_fn in dense_dists.items():
+        for dist_name, dist_fn in list(dense_dists.items()):
 
             ans_dist = [[["array_ftr"], dist_name, 1.0]]
 
@@ -391,7 +391,7 @@ class NearestNeighborsCreateTest(unittest.TestCase):
             "transformed_dot_product": tc.distances.transformed_dot_product,
         }
 
-        for dist_name, dist_fn in sparse_dists.items():
+        for dist_name, dist_fn in list(sparse_dists.items()):
 
             ans_dist = [[["dict_ftr"], dist_name, 1.0]]
 
@@ -502,7 +502,7 @@ class NearestNeighborsCreateTest(unittest.TestCase):
 
         string_dists = {"levenshtein": tc.distances.levenshtein}
 
-        for dist_name, dist_fn in string_dists.items():
+        for dist_name, dist_fn in list(string_dists.items()):
 
             ans_dist = [[["str_ftr"], dist_name, 1.0]]
 
@@ -863,16 +863,16 @@ class NearestNeighborsBruteForceAPITest(unittest.TestCase):
 
         self.default_opts = {
             "leaf_size": {
-                u"default_value": 0,
-                u"lower_bound": 0,
-                u"upper_bound": 2147483647,
-                u"description": u"Max number of points in a leaf node of the ball tree",
-                u"parameter_type": u"INTEGER",
+                "default_value": 0,
+                "lower_bound": 0,
+                "upper_bound": 2147483647,
+                "description": "Max number of points in a leaf node of the ball tree",
+                "parameter_type": "INTEGER",
             },
             "label": {
-                u"default_value": u"",
-                u"description": u"Name of the reference dataset column with row labels.",
-                u"parameter_type": u"STRING",
+                "default_value": "",
+                "description": "Name of the reference dataset column with row labels.",
+                "parameter_type": "STRING",
             },
         }
 
@@ -901,7 +901,7 @@ class NearestNeighborsBruteForceAPITest(unittest.TestCase):
         """
         Check the get method against known answers for each field.
         """
-        for field in self.get_ans.keys():
+        for field in list(self.get_ans.keys()):
             ans = self.model._get(field)
             assert self.get_ans[field](
                 ans
@@ -1024,23 +1024,23 @@ class NearestNeighborsLshAPITest(unittest.TestCase):
 
         self.default_opts = {
             "num_tables": {
-                u"default_value": 10,
-                u"lower_bound": 1,
-                u"upper_bound": 2147483647,
-                u"description": u"number of hash tables for LSH",
-                u"parameter_type": u"INTEGER",
+                "default_value": 10,
+                "lower_bound": 1,
+                "upper_bound": 2147483647,
+                "description": "number of hash tables for LSH",
+                "parameter_type": "INTEGER",
             },
             "num_projections_per_table": {
-                u"default_value": 8,
-                u"lower_bound": 1,
-                u"upper_bound": 2147483647,
-                u"description": u"number of projections in each hash table",
-                u"parameter_type": u"INTEGER",
+                "default_value": 8,
+                "lower_bound": 1,
+                "upper_bound": 2147483647,
+                "description": "number of projections in each hash table",
+                "parameter_type": "INTEGER",
             },
             "label": {
-                u"default_value": u"",
-                u"description": u"Name of the reference dataset column with row labels.",
-                u"parameter_type": u"STRING",
+                "default_value": "",
+                "description": "Name of the reference dataset column with row labels.",
+                "parameter_type": "STRING",
             },
         }
 
@@ -1079,7 +1079,7 @@ class NearestNeighborsLshAPITest(unittest.TestCase):
         """
         Check the get method against known answers for each field.
         """
-        for field in self.get_ans.keys():
+        for field in list(self.get_ans.keys()):
             ans = self.model._get(field)
             assert self.get_ans[field](
                 ans
@@ -1189,16 +1189,16 @@ class NearestNeighborsBallTreeAPITest(unittest.TestCase):
 
         self.default_opts = {
             "leaf_size": {
-                u"default_value": 0,
-                u"lower_bound": 0,
-                u"upper_bound": 2147483647,
-                u"description": u"Max number of points in a leaf node of the ball tree",
-                u"parameter_type": u"INTEGER",
+                "default_value": 0,
+                "lower_bound": 0,
+                "upper_bound": 2147483647,
+                "description": "Max number of points in a leaf node of the ball tree",
+                "parameter_type": "INTEGER",
             },
             "label": {
-                u"default_value": u"",
-                u"description": u"Name of the reference dataset column with row labels.",
-                u"parameter_type": u"STRING",
+                "default_value": "",
+                "description": "Name of the reference dataset column with row labels.",
+                "parameter_type": "STRING",
             },
         }
 
@@ -1231,7 +1231,7 @@ class NearestNeighborsBallTreeAPITest(unittest.TestCase):
         """
         Check the get method against known answers for each field.
         """
-        for field in self.get_ans.keys():
+        for field in list(self.get_ans.keys()):
             ans = self.model._get(field)
             assert self.get_ans[field](
                 ans
@@ -1721,8 +1721,8 @@ class NearestNeighborsNumericQueryTest(unittest.TestCase):
 
         idx_col = np.argsort(D, axis=1)
         idx_row = np.array([[x] for x in range(n_query)])
-        query_labels = list(np.repeat(range(n_query), n))
-        ranks = np.tile(range(1, n + 1), n_query)
+        query_labels = list(np.repeat(list(range(n_query)), n))
+        ranks = np.tile(list(range(1, n + 1)), n_query)
 
         answer = tc.SFrame(
             {
@@ -2255,7 +2255,7 @@ class ValidateListUtilityTest(unittest.TestCase):
     def setUp(self):
         self.check_for_numeric_fixed_length_lists = partial(
             _validate_lists,
-            allowed_types=[int, float, long],
+            allowed_types=[int, float, int],
             require_equal_length=True,
             require_same_type=True,
         )
@@ -2416,8 +2416,8 @@ def scipy_dist(q, r, dist):
     D = spd.cdist(q, r, dist)
     idx_col = np.argsort(D, axis=1)
     idx_row = np.array([[x] for x in range(n_query)])
-    query_labels = list(np.repeat(range(n_query), n))
-    ranks = np.tile(range(1, n + 1), n_query)
+    query_labels = list(np.repeat(list(range(n_query)), n))
+    ranks = np.tile(list(range(1, n + 1)), n_query)
 
     answer = tc.SFrame(
         {

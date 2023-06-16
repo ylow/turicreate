@@ -3,15 +3,15 @@
 #
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
-from __future__ import print_function as _
-from __future__ import division as _
-from __future__ import absolute_import as _
+
+
+
 import sys
 
 if sys.version_info.major >= 3:
     import subprocess as commands
 else:
-    import commands
+    import subprocess
 
 import json
 import logging
@@ -35,7 +35,7 @@ elif sys.platform == "darwin":
     restricted_place = "/System"
 
 if sys.version_info.major >= 3:
-    unichr = chr
+    chr = chr
 
 
 def _test_save_load_object_helper(testcase, obj, path):
@@ -142,7 +142,7 @@ class HttpConnectorTests(unittest.TestCase):
         self.assertEqual(content_read, content_expected)
 
     def test_read(self):
-        expected = "\n".join([str(unichr(i + ord("a"))) for i in range(26)])
+        expected = "\n".join([str(chr(i + ord("a"))) for i in range(26)])
         expected = expected + "\n"
         self._test_read_helper(self.url, expected)
 
@@ -168,9 +168,9 @@ class HDFSConnectorTests(unittest.TestCase):
         content_read = glconnect.get_unity().__read__(url)
         self.assertEqual(content_read, content_expected)
         # clean up the file we wrote
-        status, output = commands.getstatusoutput("hadoop fs -test -e " + url)
+        status, output = subprocess.getstatusoutput("hadoop fs -test -e " + url)
         if status is 0:
-            commands.getstatusoutput("hadoop fs -rm " + url)
+            subprocess.getstatusoutput("hadoop fs -rm " + url)
 
     def test_basic(self):
         if self.has_hdfs:
@@ -232,7 +232,7 @@ class S3ConnectorTests(unittest.TestCase):
     # This test requires aws cli to be installed. If not, the tests will be skipped.
     @classmethod
     def setUpClass(self):
-        status, output = commands.getstatusoutput("aws s3api list-buckets")
+        status, output = subprocess.getstatusoutput("aws s3api list-buckets")
         self.has_s3 = status is 0
         self.standard_bucket = None
         self.regional_bucket = None
@@ -259,7 +259,7 @@ class S3ConnectorTests(unittest.TestCase):
         glconnect.get_unity().__write__(s3url, content_expected)
         content_read = glconnect.get_unity().__read__(s3url)
         self.assertEqual(content_read, content_expected)
-        (status, output) = commands.getstatusoutput(
+        (status, output) = subprocess.getstatusoutput(
             "aws s3 rm --region us-west-2 " + url
         )
         if status is not 0:
