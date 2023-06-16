@@ -1,2 +1,1 @@
-subdirs(style_transfer)
 

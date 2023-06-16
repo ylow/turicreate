@@ -471,6 +471,20 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
     set(_TC_COMMON_REQUIREMENTS # External dependencies (from deps)
         ${_TC_COMMON_REQUIREMENTS} ${_TC_APPLE_DEPENDENCIES})
   endif()
+  set(_TC_COMMON_OBJECTS ${_TC_COMMON_OBJECTS} "$<TARGET_OBJECTS:visualization>")
+
+  if(APPLE)
+    set(_TC_COMMON_OBJECTS ${_TC_COMMON_OBJECTS}
+        "$<TARGET_OBJECTS:platform_config>")
+    set(_TC_COMMON_REQUIREMENTS ${_TC_COMMON_REQUIREMENTS} 
+                                ${FOUNDATION})
+    if(NOT ${TC_BUILD_IOS})
+      set(_TC_COMMON_OBJECTS ${_TC_COMMON_OBJECTS}
+                             "$<TARGET_OBJECTS:vega_renderer>")
+      set(_TC_COMMON_REQUIREMENTS ${_TC_COMMON_REQUIREMENTS} ${APPKIT}
+                                  ${CORE_GRAPHICS} ${JAVASCRIPT_CORE})
+    endif()
+  endif()
 
   if(TC_BUILD_REMOTEFS)
     # object targets that should be included in all APPLE and non-APPLE

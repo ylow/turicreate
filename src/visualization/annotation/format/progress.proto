@@ -1,8 +1,0 @@
-syntax = "proto3";
-option optimize_for = LITE_RUNTIME;
-
-package TuriCreate.Annotation.Specification;
-
-message ProgressMeta {
-  double percentage = 1;
-}
