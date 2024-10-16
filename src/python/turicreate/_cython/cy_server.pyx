@@ -14,7 +14,7 @@ import logging
 import os
 import sys
 from libcpp.string cimport string
-from cy_cpp_utils cimport str_to_cpp, cpp_to_str
+from .cy_cpp_utils cimport str_to_cpp, cpp_to_str
 from .python_printer_callback import print_callback
 from .. import _connect
 
@@ -68,7 +68,7 @@ class GraphLabServer(object):
         raise NotImplementedError
 
 
-cdef void print_status(const string& status_string) nogil:
+cdef void print_status(const string& status_string) nogil noexcept:
     with gil:
         print_callback(cpp_to_str(status_string).rstrip())
 

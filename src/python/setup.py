@@ -171,6 +171,7 @@ if __name__ == "__main__":
         "requests >= 2.9.1",
         "scipy >= 1.1.0",
         "six >= 1.10.0",
+        "cloudpickle >= 3.1.0"
     ]
 
     setup(

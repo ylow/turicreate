@@ -57,6 +57,7 @@ void run_alias_benchmark(size_t num_samples, std::vector<double> probs) {
   std::cout << std::setw(20) << "alias setup time: " 
             << ti.current_time() << std::endl;
   ti.start();
+  size_t k = 0;
   for (size_t i=0; i < num_samples; ++i) {
     k += A.sample();
   }

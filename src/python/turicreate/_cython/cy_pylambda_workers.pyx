@@ -5,11 +5,11 @@
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
 #cython: boundscheck=False, wraparound=False
 
-from cy_flexible_type cimport flexible_type, flex_type_enum, UNDEFINED, flex_int
-from cy_flexible_type cimport flexible_type_from_pyobject
-from cy_flexible_type cimport process_common_typed_list
-from cy_flexible_type cimport pyobject_from_flexible_type
-from cy_callback cimport register_exception
+from .cy_flexible_type cimport flexible_type, flex_type_enum, UNDEFINED, flex_int
+from .cy_flexible_type cimport flexible_type_from_pyobject
+from .cy_flexible_type cimport process_common_typed_list
+from .cy_flexible_type cimport pyobject_from_flexible_type
+from .cy_callback cimport register_exception
 from .._gl_pickle import GLUnpickler
 
 from libcpp.string cimport string
@@ -18,7 +18,7 @@ import os
 cimport cython
 
 from random import seed as set_random_seed
-from cy_cpp_utils cimport str_to_cpp, cpp_to_str
+from .cy_cpp_utils cimport str_to_cpp, cpp_to_str
 
 from cpython.version cimport PY_MAJOR_VERSION
 
@@ -366,7 +366,7 @@ cdef pylambda_evaluation_functions eval_functions
 #########################################
 # Random seed
 
-cdef void _set_random_seed(size_t seed):
+cdef void _set_random_seed(size_t seed) noexcept:
     set_random_seed(seed)
 
 eval_functions.set_random_seed = _set_random_seed
@@ -374,7 +374,7 @@ eval_functions.set_random_seed = _set_random_seed
 ########################################
 # Initialization function.
 
-cdef size_t _init_lambda(const string& _lambda_string):
+cdef size_t _init_lambda(const string& _lambda_string) noexcept:
     global _lambda_id_to_evaluator
     global _lambda_function_string_to_id
 
@@ -405,7 +405,7 @@ eval_functions.init_lambda = _init_lambda
 ########################################
 # Release
 
-cdef void _release_lambda(size_t lmfunc_id):
+cdef void _release_lambda(size_t lmfunc_id) noexcept:
 
     try:
         try:
@@ -422,7 +422,7 @@ eval_functions.release_lambda = _release_lambda
 ########################################
 # Single column evaluation
 
-cdef void _eval_lambda(size_t lmfunc_id, lambda_call_data* lcd):
+cdef void _eval_lambda(size_t lmfunc_id, lambda_call_data* lcd) noexcept:
     try:
         _get_lambda_class(lmfunc_id).eval_simple(lcd)
     except Exception, e:
@@ -435,7 +435,7 @@ eval_functions.eval_lambda = _eval_lambda
 ########################################
 # Multiple column evaluation
 
-cdef void _eval_lambda_by_dict(size_t lmfunc_id, lambda_call_by_dict_data* lcd):
+cdef void _eval_lambda_by_dict(size_t lmfunc_id, lambda_call_by_dict_data* lcd) noexcept:
     try:
         _get_lambda_class(lmfunc_id).eval_multiple_rows(lcd)
     except Exception, e:
@@ -446,7 +446,7 @@ eval_functions.eval_lambda_by_dict = _eval_lambda_by_dict
 ########################################
 # Multiple column evaluation
 
-cdef void _eval_lambda_by_sframe_rows(size_t lmfunc_id, lambda_call_by_sframe_rows_data* lcd):
+cdef void _eval_lambda_by_sframe_rows(size_t lmfunc_id, lambda_call_by_sframe_rows_data* lcd) noexcept:
     try:
         _get_lambda_class(lmfunc_id).eval_sframe_rows(lcd)
     except Exception, e:
@@ -457,7 +457,7 @@ eval_functions.eval_lambda_by_sframe_rows = _eval_lambda_by_sframe_rows
 ########################################
 # Triple Apply stuff
 
-cdef void _eval_graph_triple_apply(size_t lmfunc_id, lambda_graph_triple_apply_data* lcd):
+cdef void _eval_graph_triple_apply(size_t lmfunc_id, lambda_graph_triple_apply_data* lcd) noexcept:
     try:
         _get_lambda_class(lmfunc_id).eval_graph_triple_apply(lcd)
     except Exception, e:

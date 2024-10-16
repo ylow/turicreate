@@ -62,8 +62,9 @@ else
 fi
 
 echo "run 'ln -Ffs' files from ${SRC_INCLUDE_DIR}"
-for f in $SRC_INCLUDE_DIR/*; do
-  ln -Ffs "$f" "$(basename "$f")"
+for f in `ls $SRC_INCLUDE_DIR`; do
+  rm -f "$(basename "$f")"
+  ln -Ffs "${SRC_INCLUDE_DIR}/$f" "$(basename "$f")"
 done
 
 popd

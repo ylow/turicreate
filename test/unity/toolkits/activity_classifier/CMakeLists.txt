@@ -1,3 +1,0 @@
-project(unity_test_toolkits)
-
-make_boost_test(test_activity_classifier.cxx REQUIRES unity_shared_for_testing)

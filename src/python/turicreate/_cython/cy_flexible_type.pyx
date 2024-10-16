@@ -131,13 +131,20 @@ from cython.operator cimport preincrement as inc
 from libcpp cimport bool as cbool
 from cpython cimport array
 
-from cy_cpp_utils cimport str_to_cpp, cpp_to_str, unsafe_str_to_cpp, unsafe_unicode_to_cpp
+from .cy_cpp_utils cimport str_to_cpp, cpp_to_str, unsafe_str_to_cpp, unsafe_unicode_to_cpp
 
 from cpython.ref cimport PyObject, PyTypeObject
 import itertools
 import datetime
 import calendar
-import collections
+try:
+    from collections import Iterable
+except:
+    pass
+try:
+    from collections.abc import Iterable
+except:
+    pass
 import types
 import decimal
 
@@ -458,7 +465,7 @@ cdef int _secondary_get_translation_code(type t, object v = None):
         return FT_BUFFER_TYPE
 
     # If it's iterable, then it can be cast to a list.
-    if isinstance(v, collections.Iterable):
+    if isinstance(v, Iterable):
         _code_by_type_lookup[<object_ptr>t] = FT_LIST_TYPE + FT_SAFE
         return FT_LIST_TYPE + FT_SAFE
 
@@ -2021,7 +2028,7 @@ cdef inline flex_type_enum tr_buffer_to_flex_list(
         return tr_listlike_to_flex_list(retl, object_buffer, common_type, ignore_translation_errors)
 
     # Numpy array that is not an object array?
-    if isinstance(v, collections.Iterable) or (HAS_NUMPY and type(v) is np_ndarray):
+    if isinstance(v, Iterable) or (HAS_NUMPY and type(v) is np_ndarray):
         return tr_listlike_to_flex_list(retl, list(v), common_type, ignore_translation_errors)
 
     # Error if there are no more options.

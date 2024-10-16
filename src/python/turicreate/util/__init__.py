@@ -21,7 +21,7 @@ from ._sframe_generation import generate_random_classification_sframe
 from ._type_checks import _raise_error_if_not_of_type
 from ._type_checks import _is_non_string_iterable
 from ._progress_table_printer import ProgressTablePrinter as _ProgressTablePrinter
-
+import cloudpickle
 try:
     import configparser as _ConfigParser
 except ImportError:
@@ -459,7 +459,7 @@ def _pickle_to_temp_location_or_memory(obj):
         the directory name. This directory will not have lifespan greater than
         that of unity_server.
         """
-    from . import _cloudpickle as cloudpickle
+    #from . import _cloudpickle as cloudpickle
 
     try:
         # try cloudpickle first and see if that works

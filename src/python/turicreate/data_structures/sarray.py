@@ -470,7 +470,7 @@ class SArray(object):
                     dtype = str
                 elif isinstance(data, array.array):
                     dtype = pytype_from_array_typecode(data.typecode)
-                elif isinstance(data, collections.Sequence):
+                elif isinstance(data, collections.abc.Sequence):
                     # Covers any ordered python container and arrays.
                     # Convert it to a list first.
                     dtype = infer_type_of_sequence(data)
@@ -491,7 +491,7 @@ class SArray(object):
             elif (
                 (HAS_NUMPY and isinstance(data, numpy.ndarray))
                 or isinstance(data, array.array)
-                or isinstance(data, collections.Sequence)
+                or isinstance(data, collections.abc.Sequence)
             ):
 
                 with cython_context():
