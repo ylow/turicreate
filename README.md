@@ -14,6 +14,7 @@ There are many places for improvement:
  - lambda workers can probably use PyInterpreter in the same process rather
  than subprocess.
  - Vectorized query execution
+ - Parquet support
 
 # Turi Create
 
