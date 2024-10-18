@@ -8,11 +8,8 @@
 #include <core/parallel/lambda_omp.hpp>
 #include <core/parallel/pthread_tools.hpp>
 #include <core/data/sframe/gl_sframe.hpp>
-#include <model_server/lib/image_util.hpp>
 #include <model_server/lib/toolkit_function_macros.hpp>
 #include <core/storage/sframe_data/sframe_config.hpp>
-#include <core/data/image/image_type.hpp>
-#include <core/data/image/io.hpp>
 #include "additional_sframe_utilities.hpp"
 
 using namespace turi;
@@ -27,14 +24,8 @@ void copy_to_memory(const sframe_rows::row& data,
     ASSERT_NE((int)data[i].get_type(), (int)flex_type_enum::UNDEFINED);
   }
 
-  // Case 1: Image type
   auto type = data[0].get_type();
-  if (type == flex_type_enum::IMAGE) {
-    ASSERT_MSG(data.size() == 1, "Image data only support one input field");
-    const image_type& img = data[0].get<flex_image>();
-    image_util::copy_image_to_memory(img, outptr, outstrides, outshape, false);
-    return;
-  } else if (data.size() == 1 && (type == flex_type_enum::FLOAT || type == flex_type_enum::INTEGER)) {
+  if (data.size() == 1 && (type == flex_type_enum::FLOAT || type == flex_type_enum::INTEGER)) {
     // Case 2: Single value type (should really get rid of this special case)
     ASSERT_EQ(outstrides.size(), 0);
     (*outptr) = (float)(data[0]);
@@ -130,17 +121,7 @@ void sframe_load_to_numpy(turi::gl_sframe input, size_t outptr_addr,
   });
 }
 
-// Loads image into row-major array with shape HWC (height, width, channel)
-void image_load_to_numpy(const image_type& img, size_t outptr_addr,
-                         const std::vector<size_t>& outstrides) {
-  unsigned char *outptr = reinterpret_cast<unsigned char *>(outptr_addr);
-  image_util::copy_image_to_memory(img, outptr, outstrides,
-                                   {img.m_height, img.m_width, img.m_channels},
-                                   true);
-}
-
 
 BEGIN_FUNCTION_REGISTRATION
 REGISTER_FUNCTION(sframe_load_to_numpy, "input", "outptr_addr", "outstrides", "outshape", "begin", "end");
-REGISTER_FUNCTION(image_load_to_numpy, "img", "outptr_addr", "outstrides");
 END_FUNCTION_REGISTRATION

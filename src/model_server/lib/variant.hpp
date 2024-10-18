@@ -204,12 +204,6 @@ inline bool variant_is<flex_dict>(const variant_type& t) {
 
 template <>
 GL_HOT_INLINE_FLATTEN
-inline bool variant_is<flex_image>(const variant_type& t) {
-   return variant_is<flexible_type>(t) && (variant_get_ref<flexible_type>(t).get_type() == flex_type_enum::IMAGE);
-}
-
-template <>
-GL_HOT_INLINE_FLATTEN
 inline bool variant_is<flex_date_time>(const variant_type& t) {
    return variant_is<flexible_type>(t) && (variant_get_ref<flexible_type>(t).get_type() == flex_type_enum::DATETIME);
 }

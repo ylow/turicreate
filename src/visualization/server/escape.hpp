@@ -10,7 +10,6 @@
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/data/flexible_type/ndarray.hpp>
 #include <visualization/server/vega_data.hpp>
-#include <model_server/lib/image_util.hpp>
 #include <string>
 #include <vector>
 #include <queue>
@@ -27,9 +26,6 @@ namespace visualization {
   > to_base64;
 
   std::string escape_float(flex_float value);
-  std::string escape_image(flex_image value, size_t resized_height,
-                              size_t row_index,
-                              const std::string& columnName);
 
   std::string escapeForTable( const flexible_type& value,
                               size_t row_index = -1,

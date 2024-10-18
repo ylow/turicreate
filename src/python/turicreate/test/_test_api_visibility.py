@@ -310,10 +310,6 @@ class TabCompleteVisibilityTests(unittest.TestCase):
 
 
 class ModuleVisibilityTests(unittest.TestCase):
-    def test_Image_type(self):
-        expected = ["Image", "show"]
-        actual = [x for x in dir(turicreate.data_structures.image) if "_" not in x]
-        self.assertTrue(set(actual) == set(expected))
 
     def test_recommender(self):
         recommenders = [
@@ -496,7 +492,6 @@ class ModuleVisibilityTests(unittest.TestCase):
             "evaluation",
             "feature_engineering",
             "graph_analytics",
-            "image_analysis",
             "lead_scoring",
             "model_parameter_search",
             "nearest_neighbors",

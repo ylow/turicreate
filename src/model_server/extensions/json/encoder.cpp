@@ -104,34 +104,6 @@ static void _to_serializable(flexible_type& data, schema_t& schema, const flex_d
   data = ret;
 }
 
-static void _to_serializable(flexible_type& data, schema_t& schema, const flex_image& input) {
-  schema.insert(std::make_pair("type", JSON::types::IMAGE));
-  flex_dict ret;
-  typedef boost::archive::iterators::base64_from_binary<
-    // retrieve 6 bit integers from a sequence of 8 bit bytes
-    boost::archive::iterators::transform_width<
-      const unsigned char *,
-      6,
-      8
-    >
-  > to_base64;
-  std::stringstream ss;
-  const unsigned char * image_data = input.get_image_data();
-  size_t image_data_size = input.m_image_data_size;
-  std::copy(
-    to_base64(image_data),
-    to_base64(image_data + image_data_size),
-    std::ostream_iterator<char>(ss)
-  );
-  ret.push_back(std::make_pair("image_data", ss.str()));
-  ret.push_back(std::make_pair("height", input.m_height));
-  ret.push_back(std::make_pair("width", input.m_width));
-  ret.push_back(std::make_pair("channels", input.m_channels));
-  ret.push_back(std::make_pair("size", image_data_size));
-  ret.push_back(std::make_pair("version", input.m_version));
-  ret.push_back(std::make_pair("format", static_cast<flex_int>(input.m_format)));
-  data = ret;
-}
 
 static void _to_serializable(flexible_type& data, schema_t& schema, const flexible_type& input) {
   switch (input.get_type()) {
@@ -157,9 +129,6 @@ static void _to_serializable(flexible_type& data, schema_t& schema, const flexib
       break;
     case flex_type_enum::DATETIME:
       _to_serializable(data, schema, input.get<flex_date_time>());
-      break;
-    case flex_type_enum::IMAGE:
-      _to_serializable(data, schema, input.get<flex_image>());
       break;
     case flex_type_enum::UNDEFINED:
       data = FLEX_UNDEFINED;

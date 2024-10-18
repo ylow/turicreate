@@ -4,7 +4,6 @@ evaluation
 factorization
 feature_engineering
 graph_analytics
-image
 ml_data_2
 ml_model
 nearest_neighbors

@@ -441,16 +441,7 @@ def display_table_in_notebook(sf, title=None):
     import base64
     from io import BytesIO
     from IPython.display import HTML
-    from ..data_structures.image import Image as _Image
 
-    def image_formatter(im):
-        image_buffer = BytesIO()
-        im.save(image_buffer, format="PNG")
-        return (
-            '<img src="data:image/png;base64,'
-            + base64.b64encode(image_buffer.getvalue()).decode()
-            + '"/>'
-        )
 
     import pandas as pd
 
@@ -461,11 +452,6 @@ def display_table_in_notebook(sf, title=None):
         warnings.warn("Displaying only the first {} rows.".format(maximum_rows))
         sf = sf[:maximum_rows]
 
-    check_image_column = [_Image == x for x in sf.column_types()]
-    zipped_image_columns = list(zip(sf.column_names(), check_image_column))
-    image_columns = [a for a in zipped_image_columns if a[1]]
-    image_key = [x[0] for x in image_columns]
-    image_column_formatter = dict.fromkeys(image_key, image_formatter)
 
     with pd.option_context(
         "display.max_rows",
@@ -557,7 +543,7 @@ def display_table_in_notebook(sf, title=None):
             + " </h1>                 \
                             "
             + df.to_html(
-                formatters=image_column_formatter, escape=False, classes="sframe"
+                formatters={}, escape=False, classes="sframe"
             )
             + "\
                           </body>                                  \

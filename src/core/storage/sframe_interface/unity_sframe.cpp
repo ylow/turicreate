@@ -47,7 +47,6 @@
 #include <visualization/server/summary_view.hpp>
 #include <visualization/server/table.hpp>
 
-#include <model_server/lib/image_util.hpp>
 #include <algorithm>
 #include <random>
 #include <string>

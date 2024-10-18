@@ -349,9 +349,6 @@ include(BuildUtilities)
 
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/deps/local/include)
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/src/external/boost/boost_1_68_0/)
-include_directories(SYSTEM
-                    ${CMAKE_SOURCE_DIR}/src/external/libpng/libpng-1.6.37/)
-include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/src/external/libjpeg/jpeg-8d/)
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/src/external/bzip2/)
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/src/external/zlib/zlib-1.2.11/)
 
@@ -403,9 +400,7 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
 
   set(_TC_COMMON_OBJECTS
       # External dependencies (built from src/external)
-      "$<TARGET_OBJECTS:libjpeg>"
       "$<TARGET_OBJECTS:libjson>"
-      "$<TARGET_OBJECTS:libpng>"
       "$<TARGET_OBJECTS:lz4>"
       "$<TARGET_OBJECTS:protobuf>"
       "$<TARGET_OBJECTS:uuid>"
@@ -418,8 +413,6 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
       "$<TARGET_OBJECTS:flexible_type>"
       "$<TARGET_OBJECTS:globals>"
       "$<TARGET_OBJECTS:fileio>"
-      "$<TARGET_OBJECTS:image_io>"
-      "$<TARGET_OBJECTS:image_type>"
       "$<TARGET_OBJECTS:logger>"
       "$<TARGET_OBJECTS:minipsutil>"
       "$<TARGET_OBJECTS:ml_data>"
@@ -449,7 +442,6 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
       "$<TARGET_OBJECTS:unity_factorization>"
       "$<TARGET_OBJECTS:unity_feature_engineering>"
       "$<TARGET_OBJECTS:unity_graph_analytics>"
-      "$<TARGET_OBJECTS:unity_image_export>"
       "$<TARGET_OBJECTS:unity_ml_data_2>"
       "$<TARGET_OBJECTS:unity_ml_model>"
       "$<TARGET_OBJECTS:unity_nearest_neighbors>"

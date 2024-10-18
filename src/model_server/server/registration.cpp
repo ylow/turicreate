@@ -25,7 +25,6 @@
 #include <model_server/lib/extensions/model_base.hpp>
 
 #include <toolkits/ml_model/python_model.hpp>
-#include <toolkits/image/image_fn_export.hpp>
 
 #include <toolkits/nearest_neighbors/distances.hpp>
 #include <toolkits/nearest_neighbors/unity_nearest_neighbors.hpp>
@@ -53,7 +52,6 @@ void register_functions(toolkit_function_registry& registry) {
   registry.register_toolkit_function(turi::evaluation::get_toolkit_function_registration());
   registry.register_toolkit_function(turi::supervised::get_toolkit_function_registration());
 
-  registry.register_toolkit_function(image_util::get_toolkit_function_registration());
   registry.register_toolkit_function(visualization::get_toolkit_function_registration());
 
   // Register proprietary toolkits
@@ -74,7 +72,6 @@ void register_functions(toolkit_function_registry& registry) {
   registry.register_toolkit_function(turi::supervised::get_toolkit_function_registration(), "_supervised_learning");
   registry.register_toolkit_function(turi::nearest_neighbors::get_toolkit_function_registration(), "_nearest_neighbors");
   registry.register_toolkit_function(turi::distances::get_toolkit_function_registration(), "_distances");
-  registry.register_toolkit_function(turi::image_util::get_toolkit_function_registration());
   registry.register_toolkit_function(turi::ml_model_sdk::get_toolkit_function_registration());
   registry.register_toolkit_function(turi::pattern_mining::get_toolkit_function_registration());
   registry.register_toolkit_function(turi::util::get_toolkit_function_registration());

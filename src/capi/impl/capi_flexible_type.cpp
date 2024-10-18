@@ -111,18 +111,6 @@ EXPORT tc_flexible_type* tc_ft_create_from_flex_dict(const tc_flex_dict* fd, tc_
   ERROR_HANDLE_END(error, NULL);
 }
 
-// Create a flexible type from an image
-EXPORT tc_flexible_type* tc_ft_create_from_image(const tc_flex_image* image, tc_error** error) {
-  ERROR_HANDLE_START();
-  turi::ensure_server_initialized();
-
-  CHECK_NOT_NULL(error, image, "tc_flex_image", NULL);
-
-  return new_tc_flexible_type(image->value);
-
-  ERROR_HANDLE_END(error, NULL);
-}
-
 // Create a flexible type from an ndarray
 EXPORT tc_flexible_type* tc_ft_create_from_ndarray(const tc_ndarray* nda, tc_error** error) {
   ERROR_HANDLE_START();
@@ -153,9 +141,6 @@ EXPORT bool tc_ft_is_int64(const tc_flexible_type* ft) {
   return (ft != NULL) && (ft->value.get_type() == turi::flex_type_enum::INTEGER);
 }
 
-EXPORT bool tc_ft_is_image(const tc_flexible_type* ft) {
-  return (ft != NULL) && (ft->value.get_type() == turi::flex_type_enum::IMAGE);
-}
 
 EXPORT bool tc_ft_is_array(const tc_flexible_type* ft) {
   return (ft != NULL) && (ft->value.get_type() == turi::flex_type_enum::VECTOR);
@@ -307,22 +292,6 @@ EXPORT tc_flex_dict* tc_ft_flex_dict(const tc_flexible_type* ft, tc_error **erro
   }
 
   return new_tc_flex_dict(ft->value.get<turi::flex_dict>());
-
-  ERROR_HANDLE_END(error, NULL);
-}
-
-EXPORT tc_flex_image* tc_ft_flex_image(const tc_flexible_type* ft, tc_error **error) {
-  ERROR_HANDLE_START();
-  turi::ensure_server_initialized();
-
-  CHECK_NOT_NULL(error, ft, "Flexible type", NULL);
-
-  if (ft->value.get_type() != turi::flex_type_enum::IMAGE) {
-    set_error(error, "Flexible type not an image.");
-    return NULL;
-  }
-
-  return new_tc_flex_image(ft->value.get<turi::flex_image>());
 
   ERROR_HANDLE_END(error, NULL);
 }

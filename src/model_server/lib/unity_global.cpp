@@ -10,7 +10,6 @@
 #endif
 
 #include <core/util/syserr_reporting.hpp>
-#include <core/data/image/io.hpp>
 #include <core/logging/logger.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>

@@ -119,7 +119,6 @@ template <> struct ft_converter<CVTR__FLEXIBLE_TYPE_EXACT> {
         || std::is_same<T, flex_vec>::value
         || std::is_same<T, flex_list>::value
         || std::is_same<T, flex_dict>::value
-        || std::is_same<T, flex_image>::value
         || std::is_same<T, flex_date_time>::value);
 
   }

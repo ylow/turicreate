@@ -31,7 +31,7 @@ class SFrameBuilder(object):
     column_types : list[type]
         The column types of the result SFrame. Types must be of the python
         types that are supported by SFrame (int, float, str, array.array, list,
-        dict, datetime.datetime, image). Column types are strictly enforced
+        dict, datetime.datetime). Column types are strictly enforced
         while appending.
 
     column_names : list[str], optional

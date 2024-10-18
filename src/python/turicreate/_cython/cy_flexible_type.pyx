@@ -291,8 +291,6 @@ timedelta_type = datetime.timedelta
 ################################################################################
 # In some contexts, we need to be able to use the
 
-cdef object _image_type
-cdef bint have_imagetype
 
 cdef bint HAS_NUMPY = True
 cdef bint HAS_PANDAS = False
@@ -310,18 +308,6 @@ cdef type np_matrix
 np_ndarray = np.ndarray
 np_matrix = np.matrix
 
-class __bad_image(object):
-    def __init__(*args, **kwargs):
-        raise TypeError("Image type not supported outside of full sframe/turicreate package.")
-
-try:
-    from ..data_structures import image
-    _image_type = image.Image
-    have_imagetype = True
-except Exception:  # relative import can raise ValueError or
-                   #ImportError, so catch anything
-    have_imagetype = False
-    _image_type = __bad_image
 
 
 # Get the appropriate type mappings of things
@@ -336,8 +322,7 @@ DEF FT_BUFFER_TYPE    = 7
 DEF FT_ARRAY_TYPE     = 8
 DEF FT_NONE_TYPE      = 9
 DEF FT_DATETIME_TYPE  = 10
-DEF FT_IMAGE_TYPE     = 11
-DEF FT_NDARRAY_TYPE   = 12
+DEF FT_NDARRAY_TYPE   = 11
 
 # The robust versions of the previous ones, which perform extra checks
 # and possible casting.  The robust versions of the above are FT_SAFE
@@ -363,7 +348,6 @@ _code_by_type_lookup[<object_ptr>(unicode)]             = FT_UNICODE_TYPE
 _code_by_type_lookup[<object_ptr>(array_type)]          = FT_ARRAY_TYPE
 _code_by_type_lookup[<object_ptr>(xrange_type)]         = FT_LIST_TYPE + FT_SAFE
 _code_by_type_lookup[<object_ptr>(datetime_type)]       = FT_DATETIME_TYPE
-_code_by_type_lookup[<object_ptr>(_image_type)]         = FT_IMAGE_TYPE
 _code_by_type_lookup[<object_ptr>(np_ndarray)]          = FT_NDARRAY_TYPE
 _code_by_type_lookup[<object_ptr>(np_matrix)]           = FT_NDARRAY_TYPE
 
@@ -394,7 +378,6 @@ _code_by_map_force[<object_ptr>(list)]          = FT_LIST_TYPE      + FT_SAFE
 _code_by_map_force[<object_ptr>(dict)]          = FT_DICT_TYPE      + FT_SAFE
 _code_by_map_force[<object_ptr>(datetime_type)] = FT_DATETIME_TYPE  + FT_SAFE
 _code_by_map_force[<object_ptr>(none_type)]     = FT_NONE_TYPE
-_code_by_map_force[<object_ptr>(_image_type)]   = FT_IMAGE_TYPE     + FT_SAFE
 _code_by_map_force[<object_ptr>(np_ndarray)]    = FT_NDARRAY_TYPE
 _code_by_map_force[<object_ptr>(np_matrix)]     = FT_NDARRAY_TYPE
 
@@ -521,7 +504,6 @@ _type_lookup_by_type_enum[<int>LIST]      = list
 _type_lookup_by_type_enum[<int>DICT]      = dict
 _type_lookup_by_type_enum[<int>DATETIME]  = datetime_type
 _type_lookup_by_type_enum[<int>UNDEFINED] = none_type
-_type_lookup_by_type_enum[<int>IMAGE]     = _image_type
 _type_lookup_by_type_enum[<int>ND_VECTOR] = np_ndarray
 
 cdef type pytype_from_flex_type_enum(flex_type_enum e):
@@ -538,7 +520,6 @@ cdef dict _type_lookup_by_type_enum_name = {
     "string"     : str,
     "array"      : array_type,
     "list"       : list,
-    "image"      : _image_type,
     "undefined"  : none_type}
 
 # Also add in the names of each of the types in order to recognize
@@ -572,7 +553,6 @@ _enum_tr_codes[FT_ARRAY_TYPE]              = VECTOR
 _enum_tr_codes[FT_NDARRAY_TYPE]            = ND_VECTOR
 _enum_tr_codes[FT_NONE_TYPE]               = UNDEFINED
 _enum_tr_codes[FT_DATETIME_TYPE]           = DATETIME
-_enum_tr_codes[FT_IMAGE_TYPE]              = IMAGE
 _enum_tr_codes[FT_SAFE + FT_INT_TYPE]      = INTEGER
 _enum_tr_codes[FT_SAFE + FT_FLOAT_TYPE]    = FLOAT
 _enum_tr_codes[FT_SAFE + FT_STR_TYPE]      = STRING
@@ -584,7 +564,6 @@ _enum_tr_codes[FT_SAFE + FT_BUFFER_TYPE]   = VECTOR
 _enum_tr_codes[FT_SAFE + FT_ARRAY_TYPE]    = VECTOR
 _enum_tr_codes[FT_SAFE + FT_NONE_TYPE]     = UNDEFINED
 _enum_tr_codes[FT_SAFE + FT_DATETIME_TYPE] = DATETIME
-_enum_tr_codes[FT_SAFE + FT_IMAGE_TYPE]    = IMAGE
 _enum_tr_codes[FT_SAFE + FT_NDARRAY_TYPE]            = ND_VECTOR
 _enum_tr_codes[FT_FAILURE]                 = UNDEFINED
 
@@ -789,8 +768,7 @@ DEF FTI_LIST           = 16
 DEF FTI_DICT           = 32
 DEF FTI_DATETIME       = 64
 DEF FTI_NONE           = 128
-DEF FTI_IMAGE          = 256
-DEF FTI_NDARRAY        = 512
+DEF FTI_NDARRAY        = 256
 
 # additional things that are handled specially
 DEF FTI_NUMERIC_LIST   = 1024
@@ -810,7 +788,6 @@ _common_type_inference_rules[FTI_LIST]         = LIST
 _common_type_inference_rules[FTI_DICT]         = DICT
 _common_type_inference_rules[FTI_DATETIME]     = DATETIME
 _common_type_inference_rules[FTI_NONE]         = INTEGER
-_common_type_inference_rules[FTI_IMAGE]        = IMAGE
 _common_type_inference_rules[FTI_NUMERIC_LIST] = VECTOR
 _common_type_inference_rules[FTI_EMPTY_LIST]   = LIST
 _common_type_inference_rules[FTI_NDARRAY]      = ND_VECTOR
@@ -873,7 +850,6 @@ _inference_code_from_tr_code[FT_BUFFER_TYPE]             = 0
 _inference_code_from_tr_code[FT_ARRAY_TYPE]              = FTI_VECTOR
 _inference_code_from_tr_code[FT_NONE_TYPE]               = FTI_NONE
 _inference_code_from_tr_code[FT_DATETIME_TYPE]           = FTI_DATETIME
-_inference_code_from_tr_code[FT_IMAGE_TYPE]              = FTI_IMAGE
 _inference_code_from_tr_code[FT_NDARRAY_TYPE]            = FTI_NDARRAY
 _inference_code_from_tr_code[FT_SAFE + FT_INT_TYPE]      = 0
 _inference_code_from_tr_code[FT_SAFE + FT_FLOAT_TYPE]    = FTI_FLOAT
@@ -886,7 +862,6 @@ _inference_code_from_tr_code[FT_SAFE + FT_BUFFER_TYPE]   = 0
 _inference_code_from_tr_code[FT_SAFE + FT_ARRAY_TYPE]    = FTI_VECTOR
 _inference_code_from_tr_code[FT_SAFE + FT_NONE_TYPE]     = FTI_NONE
 _inference_code_from_tr_code[FT_SAFE + FT_DATETIME_TYPE] = FTI_DATETIME
-_inference_code_from_tr_code[FT_SAFE + FT_IMAGE_TYPE]    = FTI_IMAGE
 _inference_code_from_tr_code[FT_SAFE + FT_NDARRAY_TYPE]  = FTI_NDARRAY
 _inference_code_from_tr_code[FT_FAILURE]                 = <size_t>(-1)
 
@@ -899,7 +874,6 @@ _inference_code_from_flex_type_enum[<int>STRING]    = FTI_STRING
 _inference_code_from_flex_type_enum[<int>LIST]      = 0 # More work needed
 _inference_code_from_flex_type_enum[<int>VECTOR]    = FTI_VECTOR
 _inference_code_from_flex_type_enum[<int>DICT]      = FTI_DICT
-_inference_code_from_flex_type_enum[<int>IMAGE]     = FTI_IMAGE
 _inference_code_from_flex_type_enum[<int>DATETIME]  = FTI_DATETIME
 _inference_code_from_flex_type_enum[<int>UNDEFINED] = FTI_NONE
 _inference_code_from_flex_type_enum[<int>ND_VECTOR] = FTI_NDARRAY
@@ -1019,9 +993,6 @@ cdef inline flex_type_enum infer_common_type(size_t present_types, bint undefine
             if (present_types & FTI_NONE) != 0:
                 types.append(flex_type_enum_to_name(UNDEFINED))
                 present_types -= FTI_NONE
-            if (present_types & FTI_IMAGE) != 0:
-                types.append(flex_type_enum_to_name(IMAGE))
-                present_types -= FTI_IMAGE
             if (present_types & FTI_EMPTY_LIST) != 0:
                 types.append("empty list")
                 present_types -= FTI_EMPTY_LIST
@@ -1394,17 +1365,6 @@ cdef tr_dict_to_ft(flexible_type& ret, dict d):
 
     ret.set_dict(_ft_dict)
 
-################################################################################
-# Translate image type
-
-cdef inline translate_image(flexible_type& ret, object v):
-    """ Convert a python value v to flex image """
-    cdef flex_image ret_i
-
-    ret_i = flex_image(v._image_data, v._height, v._width, v._channels,
-                       v._image_data_size, <char> v._version, v._format_enum)
-
-    ret.set_img(ret_i)
 
 
 ################################################################################
@@ -1587,9 +1547,6 @@ cdef flexible_type _ft_translate(object v, int tr_code) except *:
     elif tr_code == FT_DATETIME_TYPE:
         tr_datetime_to_ft(ret, v)
         return ret
-    elif tr_code == FT_IMAGE_TYPE:
-        translate_image(ret, v)
-        return ret
     elif tr_code == FT_NDARRAY_TYPE:
         translate_ndarray(ret, v)
         return ret
@@ -1665,11 +1622,6 @@ cdef flexible_type _ft_translate(object v, int tr_code) except *:
           # datetime.datetime is before it
           tr_datetime_to_ft(ret, datetime.datetime(v.year, v.month, v.day))
         return ret
-    elif tr_code == (FT_IMAGE_TYPE + FT_SAFE):
-        if type(v) != _image_type:
-            raise TypeError("Cannot interpret type '" + str(type(v)) + "' as turicreate.Image type.")
-        translate_image(ret, v)
-        return ret
     elif tr_code == FT_FAILURE:
         raise TypeError("Cannot convert type '" + type(v).__name__ + "' into flexible type.")
     else:
@@ -1700,7 +1652,7 @@ cdef flexible_type flexible_type_from_pyobject_hint(object v, type t) except *:
     """
     Converting python object into flexible_type, with type hint.
     Possible types are int, float, dict, list, str, array.array,
-    datetime.datetime, type(None), and image.Image.
+    datetime.datetime, type(None)
     """
 
     cdef object_ptr optr = <object_ptr>t
@@ -1783,24 +1735,6 @@ cdef inline dict pydict_from_flex_dict(const flex_dict& fd):
 
     return ret
 
-cdef inline pyimage_from_image(const flex_image& c_image):
-
-    cdef const char* c_image_data = <const char*>c_image.get_image_data()
-
-    from ..data_structures import image
-
-    if c_image.m_image_data_size == 0:
-        image_data =  <bytearray> ()
-    else:
-        assert c_image_data != NULL, "image_data is Null"
-        image_data =  <bytearray> c_image_data[:c_image.m_image_data_size]
-
-    ret = _image_type(_image_data = image_data, _height = c_image.m_height,
-                      _width = c_image.m_width, _channels = c_image.m_channels,
-                      _image_data_size = c_image.m_image_data_size,
-                      _version = <int>c_image.m_version, _format_enum = <int>c_image.m_format)
-
-    return ret
 
 cdef inline pydatetime_from_flex_datetime(const pflex_date_time& dt, int us):
     utc = datetime.datetime(1970,1,1) + datetime.timedelta(seconds=dt.first, microseconds=us)
@@ -1836,8 +1770,6 @@ cdef pyobject_from_flexible_type(const flexible_type& v):
         return pyndarray_from_flex_nd_vec(v.get_nd_vec())
     elif f_type == DICT:
         return pydict_from_flex_dict(v.get_dict())
-    elif f_type == IMAGE:
-        return pyimage_from_image(v.get_img())
     elif f_type == DATETIME:
         return pydatetime_from_flex_datetime(v.get_date_time(), v.get_microsecond())
     elif f_type == UNDEFINED:

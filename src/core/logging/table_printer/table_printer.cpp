@@ -348,7 +348,6 @@ void table_printer::os_log_value(size_t column_index, const flexible_type& value
     case flex_type_enum::ND_VECTOR:
     case flex_type_enum::LIST:
     case flex_type_enum::DICT:
-    case flex_type_enum::IMAGE:
     default:
       _os_log_value_impl("event: %lu, column: %lu, value: instance of complex type %{public}s", column_index, flex_type_enum_to_name(value.get_type()));
       break;

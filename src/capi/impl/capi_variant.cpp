@@ -107,17 +107,6 @@ EXPORT tc_variant* tc_variant_create_from_datetime(const tc_datetime* dt, tc_err
   ERROR_HANDLE_END(error, NULL);
 }
 
-EXPORT tc_variant* tc_variant_create_from_image(const tc_flex_image* fi, tc_error** error){
-  ERROR_HANDLE_START();
-  turi::ensure_server_initialized();
-
-  CHECK_NOT_NULL(error, turi::flexible_type(fi->value), "Flex Image", NULL);
-
-  return new_tc_variant(turi::flexible_type(fi->value));
-
-  ERROR_HANDLE_END(error, NULL);
-}
-
 
 EXPORT tc_variant* tc_variant_create_from_flexible_type(const tc_flexible_type* ft, tc_error** error){
   ERROR_HANDLE_START();
@@ -221,9 +210,6 @@ EXPORT bool tc_variant_is_datetime(const tc_variant* ft){
   return turi::variant_get_ref<turi::flexible_type>(ft->value).get_type() == turi::flex_type_enum::DATETIME;
 }
 
-EXPORT bool tc_variant_is_image(const tc_variant* ft){
-  return turi::variant_get_ref<turi::flexible_type>(ft->value).get_type() == turi::flex_type_enum::IMAGE;
-}
 
 EXPORT bool tc_variant_is_flexible_type(const tc_variant* ft){
   return (ft->value).which() == 0;
@@ -363,21 +349,6 @@ EXPORT tc_flex_dict* tc_variant_flex_dict(const tc_variant* ft, tc_error** error
   ERROR_HANDLE_END(error, NULL);
 }
 
-EXPORT tc_flex_image* tc_variant_flex_image(const tc_variant* ft, tc_error** error){
-  ERROR_HANDLE_START();
-  turi::ensure_server_initialized();
-
-  CHECK_NOT_NULL(error, ft, "Flexible type", NULL);
-
-  if (turi::variant_get_ref<turi::flexible_type>(ft->value).get_type() != turi::flex_type_enum::IMAGE) {
-    set_error(error, "Flexible type not an image.");
-    return NULL;
-  }
-
-  return new_tc_flex_image(turi::variant_get_ref<turi::flexible_type>(ft->value).get<turi::flex_image>());
-
-  ERROR_HANDLE_END(error, NULL);
-}
 EXPORT tc_datetime* tc_variant_datetime(const tc_variant* ft, tc_error** error){
   ERROR_HANDLE_START();
   turi::ensure_server_initialized();

@@ -8,7 +8,6 @@
 
 from ..data_structures.sframe import SFrame
 from ..data_structures.sarray import SArray
-from ..data_structures.image import Image
 from ..util import _assert_sframe_equal, generate_random_sframe
 from .. import _launch, load_sframe, aggregate
 from . import util
@@ -2005,7 +2004,6 @@ class SFrameTest(unittest.TestCase):
         sf["list"] = [[i, float(i), [i]] for i in range(n)]
         utc = dt.datetime.strptime("2011-01-21 02:37:21", "%Y-%m-%d %H:%M:%S")
         sf["dt"] = [utc for i in range(n)]
-        sf["img"] = [Image() for i in range(n)]
         sf["long_str"] = ["".join([str(i)] * 50) for i in range(n)]
         sf["long_unicode"] = ["".join([uc] * 50) for i in range(n)]
         sf["bad_unicode"] = ["\x9d" + uc for i in range(n)]

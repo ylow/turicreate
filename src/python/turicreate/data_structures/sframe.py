@@ -23,7 +23,6 @@ from ..util import _get_module_from_object, _pytype_to_printf
 from ..visualization import _get_client_app_path
 from .sarray import SArray, _create_sequential_sarray
 from .. import aggregate
-from .image import Image as _Image
 from .._deps import pandas, numpy, HAS_PANDAS, HAS_NUMPY
 from ..visualization import Plot
 
@@ -2288,7 +2287,7 @@ class SFrame(object):
 
         max_row_width = max(max_row_width, max_column_width + 1)
 
-        printed_sf = self._imagecols_to_stringcols(num_rows)
+        printed_sf = self.head(num_rows)
         row_of_tables = printed_sf.__get_pretty_tables__(
             wrap_text=False,
             max_rows_to_display=num_rows,
@@ -2302,22 +2301,6 @@ class SFrame(object):
             file=output_file,
         )
 
-    def _imagecols_to_stringcols(self, num_rows=10):
-        # A list of column types
-        types = self.column_types()
-        # A list of indexable column names
-        names = self.column_names()
-
-        # Constructing names of sframe columns that are of image type
-        image_column_names = [names[i] for i in range(len(names)) if types[i] == _Image]
-
-        # If there are image-type columns, copy the SFrame and cast the top MAX_NUM_ROWS_TO_DISPLAY of those columns to string
-        printed_sf = self.__copy__()
-        if len(image_column_names) > 0:
-            for t in names:
-                if t in image_column_names:
-                    printed_sf[t] = self[t].astype(str)
-        return printed_sf.head(num_rows)
 
     def drop_duplicates(self, subset):
         """
@@ -2369,7 +2352,7 @@ class SFrame(object):
         """
         MAX_ROWS_TO_DISPLAY = num_rows
 
-        printed_sf = self._imagecols_to_stringcols(MAX_ROWS_TO_DISPLAY)
+        printed_sf = self.head(MAX_ROWS_TO_DISPLAY)
 
         row_of_tables = printed_sf.__get_pretty_tables__(
             wrap_text=False, max_rows_to_display=MAX_ROWS_TO_DISPLAY
@@ -2398,7 +2381,7 @@ class SFrame(object):
     def _repr_html_(self):
         MAX_ROWS_TO_DISPLAY = 10
 
-        printed_sf = self._imagecols_to_stringcols(MAX_ROWS_TO_DISPLAY)
+        printed_sf = self.head(MAX_ROWS_TO_DISPLAY)
 
         row_of_tables = printed_sf.__get_pretty_tables__(
             wrap_text=True,
@@ -2584,19 +2567,11 @@ class SFrame(object):
             The dataframe which contains all rows of SFrame
         """
 
-        from ..toolkits.image_classifier._evaluation import _image_resize
-
         assert HAS_PANDAS, "pandas is not installed."
         df = pandas.DataFrame()
         for i in range(self.num_columns()):
             column_name = self.column_names()[i]
-            if self.column_types()[i] == _Image:
-                df[column_name] = [
-                    _image_resize(x[column_name])._to_pil_image()
-                    for x in self.select_columns([column_name])
-                ]
-            else:
-                df[column_name] = list(self[column_name])
+            df[column_name] = list(self[column_name])
             if len(df[column_name]) == 0:
                 column_type = self.column_types()[i]
                 if column_type in (array.array, type(None)):

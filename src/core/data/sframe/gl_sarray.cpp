@@ -11,7 +11,6 @@
 #include <core/storage/sframe_data/sarray.hpp>
 #include <core/storage/sframe_data/sarray_reader.hpp>
 #include <core/storage/sframe_data/sarray_reader_buffer.hpp>
-#include <model_server/lib/image_util.hpp>
 #include <core/storage/query_engine/planning/planner.hpp>
 #include <visualization/server/histogram.hpp>
 #include <visualization/server/item_frequency.hpp>
@@ -491,13 +490,6 @@ gl_sarray gl_sarray::datetime_to_str(const std::string& str_format) const {
 gl_sarray gl_sarray::str_to_datetime(const std::string& str_format) const {
   return get_proxy()->str_to_datetime(str_format);
 }
-gl_sarray gl_sarray::pixel_array_to_image(size_t width, size_t height, size_t channels,
-                                          bool undefined_on_failure) const {
-  return image_util:: vector_sarray_to_image_sarray(
-      std::dynamic_pointer_cast<unity_sarray>(get_proxy()),
-      width, height, channels, undefined_on_failure);
-}
-
 gl_sarray gl_sarray::astype(flex_type_enum dtype, bool undefined_on_failure) const {
   return get_proxy()->astype(dtype, undefined_on_failure);
 }

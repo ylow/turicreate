@@ -8,17 +8,16 @@
 
 using namespace turi;
 
-/** Identical to flatten_to_dict, except that image_policy and
- *  datetime_policy determine the handling of image and datetime types
+/** Identical to flatten_to_dict, except that 
+ *  datetime_policy determine the handling of datetime types
  *  rather than a custom function.  Currently, the only possible value
  *  for this is "error".
  */
 EXPORT flex_dict _to_flat_dict(const flexible_type& input,
                                const flex_string& sep_string,
                                const flex_string& undefined_string,
-                               const std::string& image_policy,
                                const std::string& datetime_policy) {
-  return to_flat_dict(input, sep_string, undefined_string, image_policy, datetime_policy);
+  return to_flat_dict(input, sep_string, undefined_string, datetime_policy);
 }
 
 /** Applies flatten_to_dict to all elements in an sarray, returning
@@ -27,18 +26,17 @@ EXPORT flex_dict _to_flat_dict(const flexible_type& input,
 EXPORT gl_sarray _to_sarray_of_flat_dictionaries(gl_sarray input,
                                                  const flex_string& sep,
                                                  const flex_string& undefined_string,
-                                                 const std::string& image_policy,
                                                  const std::string& datetime_policy) {
 
   return to_sarray_of_flat_dictionaries(input, sep, undefined_string,
-                                        image_policy, datetime_policy);
+                                        datetime_policy);
 }
 
 BEGIN_FUNCTION_REGISTRATION
 REGISTER_FUNCTION(_to_flat_dict, "input", "seperator", "none_tag",
-                  "image_value_policy", "datetime_value_policy");
+                  "datetime_value_policy");
 
 REGISTER_FUNCTION(_to_sarray_of_flat_dictionaries, "data", "seperator", "none_tag",
-                  "image_value_policy", "datetime_value_policy");
+                  "datetime_value_policy");
 
 END_FUNCTION_REGISTRATION

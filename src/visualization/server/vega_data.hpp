@@ -19,12 +19,6 @@ namespace turi {
       public:
         vega_data();
 
-        struct Image {
-          size_t idx;
-          std::string column;
-          flex_image img;
-        };
-
         virtual vega_data& operator<<(const std::string&);
         virtual std::string get_data_spec(double progress);
     };

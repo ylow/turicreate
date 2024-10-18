@@ -11,7 +11,6 @@ import numpy as np
 from numpy import nan
 import array
 import datetime as dt
-from ..data_structures import image
 from .. import SArray
 import os
 from .._cython.cy_flexible_type import (
@@ -435,81 +434,6 @@ class FlexibleTypeTest(unittest.TestCase):
             list(from_lambda(expected)), array.array("d", expected)
         )
 
-    def test_dict(self):
-        d = dt.datetime(2010, 10, 10, 10, 10, 10)
-        img = image.Image(current_file_dir + "/images/nested/sample_grey.jpg", "JPG")
-        expected = {
-            "int": 0,
-            "float": 0.1,
-            "str": "str",
-            "list": ["a", "b", "c"],
-            "array": array.array("d", [1, 2, 3]),
-            "datetime": [d],
-            "image": img,
-            "none": None,
-        }
-        self.assert_equal_with_lambda_check(_flexible_type(expected), expected)
-        self.assert_equal_with_lambda_check(_flexible_type({}), {})
-
-        expected = [{"a": 1, "b": 20, "c": None}, {"b": 4, None: 5}, None, {"a": 0}]
-        self.assert_equal_with_lambda_check(_flexible_type(expected), expected)
-
-    def test_list(self):
-        d = dt.datetime(2010, 10, 10, 10, 10, 10)
-        img = image.Image(current_file_dir + "/images/nested/sample_grey.jpg", "JPG")
-        expected = [
-            None,
-            img,
-            1,
-            0.1,
-            "1",
-            d,
-            array.array("d", [1, 2, 3]),
-            {"foo": array.array("d", [1, 2, 3])},
-        ]
-
-        self.assert_equal_with_lambda_check(_flexible_type(expected), expected)
-        self.assert_equal_with_lambda_check(_flexible_type([]), [])
-        self.assert_equal_with_lambda_check(_flexible_type([[], []]), [[], []])
-
-    def test_image(self):
-        img_gray_jpg = image.Image(
-            current_file_dir + "/images/nested/sample_grey.jpg", "JPG"
-        )
-        img_gray_png = image.Image(
-            current_file_dir + "/images/nested/sample_grey.png", "PNG"
-        )
-        img_gray_auto_jpg = image.Image(
-            current_file_dir + "/images/nested/sample_grey.jpg"
-        )
-        img_gray_auto_png = image.Image(
-            current_file_dir + "/images/nested/sample_grey.png"
-        )
-        img_color_jpg = image.Image(current_file_dir + "/images/sample.jpg", "JPG")
-        img_color_png = image.Image(current_file_dir + "/images/sample.png", "PNG")
-        img_color_auto_jpg = image.Image(current_file_dir + "/images/sample.jpg")
-        img_color_auto_png = image.Image(current_file_dir + "/images/sample.png")
-
-        self.assert_equal_with_lambda_check(_flexible_type(img_gray_jpg), img_gray_jpg)
-        self.assert_equal_with_lambda_check(_flexible_type(img_gray_png), img_gray_png)
-        self.assert_equal_with_lambda_check(
-            _flexible_type(img_gray_auto_jpg), img_gray_auto_jpg
-        )
-        self.assert_equal_with_lambda_check(
-            _flexible_type(img_gray_auto_png), img_gray_png
-        )
-        self.assert_equal_with_lambda_check(
-            _flexible_type(img_color_jpg), img_color_jpg
-        )
-        self.assert_equal_with_lambda_check(
-            _flexible_type(img_color_png), img_color_png
-        )
-        self.assert_equal_with_lambda_check(
-            _flexible_type(img_color_auto_jpg), img_color_auto_jpg
-        )
-        self.assert_equal_with_lambda_check(
-            _flexible_type(img_color_auto_png), img_color_auto_png
-        )
 
     def test_tr_flex_list(self):
         expected = []
@@ -535,19 +459,6 @@ class FlexibleTypeTest(unittest.TestCase):
         )
         self.assert_equal_with_lambda_check(
             _tr_flex_list(expected, dt.datetime, ignore_cast_failure=True), expected
-        )
-        # test image list
-        img_gray_auto_png = image.Image(
-            current_file_dir + "/images/nested/sample_grey.png"
-        )
-        img_color_jpg = image.Image(current_file_dir + "/images/sample.jpg", "JPG")
-        expected = [img_gray_auto_png, img_color_jpg, None]
-        self.assert_equal_with_lambda_check(_tr_flex_list(expected), expected)
-        self.assert_equal_with_lambda_check(
-            _tr_flex_list(expected, image.Image), expected
-        )
-        self.assert_equal_with_lambda_check(
-            _tr_flex_list(expected, image.Image, ignore_cast_failure=True), expected
         )
         # test str list
         expected = ["a", "b", "c", None]
@@ -593,16 +504,6 @@ class FlexibleTypeTest(unittest.TestCase):
         )
 
     def test_infer_list_type(self):
-        self.assertEqual(
-            infer_type_of_list(
-                [
-                    image.Image(current_file_dir + "/images/nested/sample_grey.png"),
-                    image.Image(current_file_dir + "/images/sample.jpg", "JPG"),
-                    image.Image(current_file_dir + "/images/sample.png"),
-                ]
-            ),
-            image.Image,
-        )
         self.assertEqual(
             infer_type_of_list(
                 [
@@ -671,7 +572,6 @@ class FlexibleTypeTest(unittest.TestCase):
         self.assertEqual(pytype_from_type_name("string"), str)
         self.assertEqual(pytype_from_type_name("float"), float)
         self.assertEqual(pytype_from_type_name("datetime"), datetime.datetime)
-        self.assertEqual(pytype_from_type_name("image"), image.Image)
         self.assertEqual(pytype_from_type_name("list"), list)
         self.assertEqual(pytype_from_type_name("undefined"), type(None))
 

@@ -16,7 +16,6 @@ namespace turi {
       static const std::string DICT = flex_type_enum_to_name(flex_type_enum::DICT);
       static const std::string DATETIME = flex_type_enum_to_name(flex_type_enum::DATETIME);
       static const std::string UNDEFINED = flex_type_enum_to_name(flex_type_enum::UNDEFINED);
-      static const std::string IMAGE = flex_type_enum_to_name(flex_type_enum::IMAGE);
       static const std::string SARRAY = "SArray";
       static const std::string SFRAME = "SFrame";
       static const std::string SGRAPH = "SGraph";

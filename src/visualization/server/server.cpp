@@ -240,38 +240,6 @@ void handle_request(
             std::string table_id = req_target.substr(data_url_length).to_string();
 
             std::string image_row, image_column;
-            size_t image_url_pos = table_id.find("/image/");
-            if (image_url_pos != std::string::npos) {
-                // Found image URL request
-                DASSERT_EQ(req.method(), http::verb::get);
-
-                // chop off everything after /image/
-                std::string image_requested = table_id.substr(image_url_pos + sizeof("/image/") - 1);
-
-                // chop off everything before /image/
-                table_id = table_id.substr(0, image_url_pos);
-                size_t idx = std::stoul(table_id);
-                if (idx >= tables.size()) {
-                    return server_error("Expected table " + table_id + " was not found");
-                }
-                const WebServer::table& container = tables[idx];
-                const std::shared_ptr<turi::unity_sframe>& table = container.sf;
-
-                // extract row and column
-                size_t slash_pos = image_requested.find("/");
-                if (slash_pos == std::string::npos) {
-                    return server_error("Could not parse image URL requested: " + req_target.to_string());
-                }
-                std::string row = image_requested.substr(0, slash_pos);
-                size_t row_index = std::stoul(row);
-                std::string column_name = image_requested.substr(slash_pos + 1);
-
-                // find the image and return it as PNG data
-                turi::gl_sarray gl_sa(table->select_column(column_name));
-                turi::flex_image value = gl_sa[row_index].get<turi::flex_image>();
-                std::string png_data = image_png_data(value, 200 /* resized_height */);
-                return respond(png_data, "image/png");
-            }
 
             size_t idx = std::stoul(table_id);
             if (idx >= tables.size()) {

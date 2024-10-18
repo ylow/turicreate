@@ -33,7 +33,7 @@ make_library(boost
   SOURCES
   ${boost_src_files}
   REQUIRES
-  libbz2 z libjpeg libpng)
+  libbz2 z)
 
 
 target_include_directories(boost SYSTEM PUBLIC ${__boost_src_dir})

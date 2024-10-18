@@ -22,19 +22,6 @@ ctypedef vector[flexible_type] flex_list
 ctypedef vector[pair[flexible_type, flexible_type]] flex_dict
 
 
-####Flex_image externs
-cdef extern from "<core/data/image/image_type.hpp>" namespace "turi":
-   cdef cppclass flex_image:
-        flex_image()
-        flex_image(char* image_data, size_t height, size_t width, size_t channels, \
-                   size_t image_data_size, int version, int format)
-        const char* get_image_data()
-        size_t m_height
-        size_t m_width
-        size_t m_channels
-        size_t m_image_data_size
-        char m_format
-        char m_version
 
 #### Externs from flexible_type.hpp
 cdef extern from "<core/data/flexible_type/flexible_type.hpp>" namespace "turi":
@@ -48,8 +35,7 @@ cdef extern from "<core/data/flexible_type/flexible_type.hpp>" namespace "turi":
         DICT            "turi::flex_type_enum::DICT"     = 5
         DATETIME        "turi::flex_type_enum::DATETIME" = 6
         UNDEFINED       "turi::flex_type_enum::UNDEFINED"= 7
-        IMAGE           "turi::flex_type_enum::IMAGE"    = 8
-        ND_VECTOR       "turi::flex_type_enum::ND_VECTOR"   = 9
+        ND_VECTOR       "turi::flex_type_enum::ND_VECTOR"   = 8
 
     cdef cppclass flexible_type:
         flexible_type()
@@ -73,7 +59,6 @@ cdef extern from "<core/data/flexible_type/flexible_type.hpp>" namespace "turi":
         flex_list& get_list_m "mutable_get<turi::flex_list>"()
         const flex_dict& get_dict "get<turi::flex_dict>"()
         flex_dict& get_dict_m "mutable_get<turi::flex_dict>"()
-        const flex_image& get_img "get<turi::flex_image>"()
 
         flex_float as_double "to<turi::flex_float>"()
         flex_list as_list "to<turi::flex_list>"()
@@ -87,7 +72,6 @@ cdef extern from "<core/data/flexible_type/flexible_type.hpp>" namespace "turi":
         flexible_type& set_nd_vec "operator=<turi::flex_nd_vec>"(const flex_nd_vec& other)
         flexible_type& set_list "operator=<turi::flex_list>"(const flex_list& other)
         flexible_type& set_dict "operator=<turi::flex_dict>"(const flex_dict& other)
-        flexible_type& set_img "operator=<turi::flex_image>"(const flex_image& other)
         void reset()
 
     cdef flexible_type FLEX_UNDEFINED

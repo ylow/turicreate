@@ -197,7 +197,6 @@ struct equality_operator {
   inline FLEX_ALWAYS_INLINE_FLATTEN bool operator()(const flex_int t, const flex_int u) const { return t == u; }
   inline FLEX_ALWAYS_INLINE_FLATTEN bool operator()(const flex_float t, const flex_float u) const { return t == u; }
   inline FLEX_ALWAYS_INLINE_FLATTEN bool operator()(const flex_string& t, const flex_string& u) const { return t == u; }
-  inline FLEX_ALWAYS_INLINE_FLATTEN bool operator()(const flex_image& t, const flex_image& u) const { return t == u; }
   inline FLEX_ALWAYS_INLINE_FLATTEN bool operator()(const flex_vec& t, const flex_vec& u) const {
     if (t.size() != u.size()) return false;
     for (size_t i = 0;i < t.size(); ++i) if (t[i] != u[i]) return false;
@@ -246,7 +245,6 @@ struct approx_equality_operator {
   inline FLEX_ALWAYS_INLINE_FLATTEN bool operator()(const flex_int t, const flex_float u) const { return t == u; }
   inline FLEX_ALWAYS_INLINE_FLATTEN bool operator()(const flex_float t, const flex_int u) const { return t == u; }
   inline FLEX_ALWAYS_INLINE_FLATTEN bool operator()(const flex_string& t, const flex_string& u) const { return t == u; }
-  inline FLEX_ALWAYS_INLINE_FLATTEN bool operator()(const flex_image& t, const flex_image& u) const { return t == u; }
   inline FLEX_ALWAYS_INLINE_FLATTEN bool operator()(const flex_vec& t, const flex_vec& u) const {
     if (t.size() != u.size()) return false;
     for (size_t i = 0;i < t.size(); ++i) if (t[i] != u[i]) return false;
@@ -616,7 +614,6 @@ struct get_string_visitor {
   flex_string operator()(const flex_vec& vec) const;
   flex_string operator()(const flex_list& vec) const;
   flex_string operator()(const flex_dict& vec) const;
-  flex_string operator()(const flex_image& vec) const;
   flex_string operator()(const flex_nd_vec& vec) const;
 };
 
@@ -643,7 +640,6 @@ struct get_vec_visitor {
     }
   }
 
-  flex_vec operator()(const flex_image& img) const;
 };
 
 
@@ -662,7 +658,6 @@ struct get_ndvec_visitor {
   inline FLEX_ALWAYS_INLINE_FLATTEN flex_nd_vec operator()(flex_date_time i) const {return flex_nd_vec({get_float_visitor()(i)}); }
   inline FLEX_ALWAYS_INLINE_FLATTEN flex_nd_vec operator()(const flex_nd_vec& i) const { return i; }
   flex_nd_vec operator()(flex_list i) const;
-  flex_nd_vec operator()(const flex_image& img) const;
 };
 
 /**
@@ -708,20 +703,6 @@ struct get_dict_visitor {
 /**
  * \ingroup group_gl_flexible_type
  * \internal
- * Converts the stored value to a flex_image
- */
-struct get_img_visitor {
-  template <typename T>
-  inline FLEX_ALWAYS_INLINE_FLATTEN flex_image operator()(T t) const { FLEX_TYPE_ASSERT(false); return flex_image(); }
-  inline FLEX_ALWAYS_INLINE_FLATTEN flex_image operator()(flex_undefined t) const { return flex_image(); }
-  inline FLEX_ALWAYS_INLINE_FLATTEN flex_image operator()(const flex_image& v) const { return v; }
-  flex_image operator()(const flex_nd_vec& v) const;
-
-};
-
-/**
- * \ingroup group_gl_flexible_type
- * \internal
  * Soft assignment between flexible types
  *
  * \note Changes to this should update \ref flex_type_is_convertible.
@@ -754,12 +735,9 @@ struct soft_assignment_visitor {
   inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_dict& t, const flex_dict& u) const { t = u; }
   inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_undefined& t, const flex_undefined& u) const { t = u; }
   inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_float& t, const flex_undefined& u) const { t = NAN; }
-  inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_vec& t, const flex_image& u) const { t = get_vec_visitor()(u); }
   inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_nd_vec& t, const flex_nd_vec& u) const { t = u; }
   inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_nd_vec& t, const flex_vec& u) const { t = get_ndvec_visitor()(u); }
   FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_nd_vec& t, const flex_list& u) const { t= get_ndvec_visitor()(u); }
-  FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_nd_vec& t, const flex_image& u) const { t= get_ndvec_visitor()(u); }
-  FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_image& t, const flex_nd_vec& u) const { t= get_img_visitor()(u); }
   inline FLEX_ALWAYS_INLINE_FLATTEN void operator()(flex_vec& t, const flex_nd_vec& u) const {
     if (u.is_full()) {
       t = u.elements();

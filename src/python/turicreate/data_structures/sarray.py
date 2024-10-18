@@ -21,7 +21,6 @@ from .._cython.cy_sarray import UnitySArrayProxy
 from .._cython.context import debug_trace as cython_context
 from ..util import _is_non_string_iterable, _make_internal_url
 from ..visualization import Plot, LABEL_DEFAULT
-from .image import Image as _Image
 from .. import aggregate as _aggregate
 from .._deps import numpy, HAS_NUMPY
 from .._deps import pandas, HAS_PANDAS
@@ -109,7 +108,7 @@ class SArray(object):
         saved, this is loaded as an SArray read directly out of that
         directory.
 
-    dtype : {None, int, float, str, list, array.array, dict, datetime.datetime, turicreate.Image}, optional
+    dtype : {None, int, float, str, list, array.array, dict, datetime.datetime}, optional
         The data type of the SArray. If not specified (None), we attempt to
         infer it from the input. If it is a numpy array or a Pandas series, the
         dtype of the array/series is used. If it is a list, the dtype is
@@ -858,17 +857,13 @@ class SArray(object):
         Returns a string containing the first 100 elements of the array.
         """
 
-        # If sarray is image, take head of elements casted to string.
-        if self.dtype == _Image:
-            headln = str(list(self.astype(str).head(100)))
+        if sys.version_info.major < 3:
+            headln = str(list(self.head(100)))
+            headln = str(
+                headln.decode("string_escape"), "utf-8", errors="replace"
+            ).encode("utf-8")
         else:
-            if sys.version_info.major < 3:
-                headln = str(list(self.head(100)))
-                headln = str(
-                    headln.decode("string_escape"), "utf-8", errors="replace"
-                ).encode("utf-8")
-            else:
-                headln = str(list(self.head(100)))
+            headln = str(list(self.head(100)))
         if self.__proxy__.has_size() is False or len(self) > 100:
             # cut the last close bracket
             # and replace it with ...
@@ -1386,7 +1381,7 @@ class SArray(object):
 
             # Not in cache, need to grab it
             block_size = 1024 * (32 if self.dtype in [int, int, float] else 4)
-            if self.dtype in [numpy.ndarray, _Image, dict, list]:
+            if self.dtype in [numpy.ndarray, dict, list]:
                 block_size = 16
 
             block_num = int(other // block_size)
@@ -1865,7 +1860,7 @@ class SArray(object):
             as a native shared library using SDK.
 
 
-        dtype : {None, int, float, str, list, array.array, dict, turicreate.Image}, optional
+        dtype : {None, int, float, str, list, array.array, dict}, optional
             The data type of the new SArray. If ``None``, the first 100 elements
             of the array are used to guess the target data type.
 
@@ -2275,28 +2270,22 @@ class SArray(object):
 
     def mean(self):
         """
-        Mean of all the values in the SArray, or mean image.
+        Mean of all the values in the SArray.
 
         Returns None on an empty SArray. Raises an exception if called on an
-        SArray with non-numeric type or non-Image type.
+        SArray with non-numeric type.
 
         Returns
         -------
-        out : float | turicreate.Image
-            Mean of all values in SArray, or image holding per-pixel mean
-            across the input SArray.
+        out : float
+            Mean of all values in SArray 
 
         See Also
         --------
         median
         """
         with cython_context():
-            if self.dtype == _Image:
-                from .. import extensions
-
-                return extensions.generate_mean(self)
-            else:
-                return self.__proxy__.mean()
+            return self.__proxy__.mean()
 
     def median(self, approximate=False):
         """
@@ -2315,7 +2304,7 @@ class SArray(object):
 
         Returns
         -------
-        out : float | turicreate.Image
+        out : float
             Median of all values in SArray
 
         See Also
@@ -2470,80 +2459,6 @@ class SArray(object):
         with cython_context():
             return SArray(_proxy=self.__proxy__.str_to_datetime(format))
 
-    def pixel_array_to_image(
-        self, width, height, channels, undefined_on_failure=True, allow_rounding=False
-    ):
-        """
-        Create a new SArray with all the values cast to :py:class:`turicreate.image.Image`
-        of uniform size.
-
-        Parameters
-        ----------
-        width: int
-            The width of the new images.
-
-        height: int
-            The height of the new images.
-
-        channels: int.
-            Number of channels of the new images.
-
-        undefined_on_failure: bool , optional , default True
-            If True, return None type instead of Image type in failure instances.
-            If False, raises error upon failure.
-
-        allow_rounding: bool, optional , default False
-            If True, rounds non-integer values when converting to Image type.
-            If False, raises error upon rounding.
-
-        Returns
-        -------
-        out : SArray[turicreate.Image]
-            The SArray converted to the type 'turicreate.Image'.
-
-        See Also
-        --------
-        astype, str_to_datetime, datetime_to_str
-
-        Examples
-        --------
-        The MNIST data is scaled from 0 to 1, but our image type only loads integer  pixel values
-        from 0 to 255. If we just convert without scaling, all values below one would be cast to
-        0.
-
-        >>> mnist_array = turicreate.SArray('https://static.turi.com/datasets/mnist/mnist_vec_sarray')
-        >>> scaled_mnist_array = mnist_array * 255
-        >>> mnist_img_sarray = tc.SArray.pixel_array_to_image(scaled_mnist_array, 28, 28, 1, allow_rounding = True)
-
-        """
-        if self.dtype != array.array:
-            raise TypeError("array_to_img expects SArray of arrays as input SArray")
-
-        num_to_test = 10
-
-        num_test = min(len(self), num_to_test)
-
-        mod_values = [val % 1 for x in range(num_test) for val in self[x]]
-
-        out_of_range_values = [
-            (val > 255 or val < 0) for x in range(num_test) for val in self[x]
-        ]
-
-        if sum(mod_values) != 0.0 and not allow_rounding:
-            raise ValueError(
-                "There are non-integer values in the array data. Images only support integer data values between 0 and 255. To permit rounding, set the 'allow_rounding' parameter to 1."
-            )
-
-        if sum(out_of_range_values) != 0:
-            raise ValueError(
-                "There are values outside the range of 0 to 255. Images only support integer data values between 0 and 255."
-            )
-
-        from .. import extensions
-
-        return extensions.vector_sarray_to_image_sarray(
-            self, width, height, channels, undefined_on_failure
-        )
 
     def astype(self, dtype, undefined_on_failure=False):
         """
@@ -2572,7 +2487,6 @@ class SArray(object):
           interpreted as a list or a dictionary type. See the examples below.
         - For datetime-to-string  and string-to-datetime conversions,
           use sa.datetime_to_str() and sa.str_to_datetime() functions.
-        - For array.array to turicreate.Image conversions, use sa.pixel_array_to_image()
 
         Examples
         --------
@@ -2591,11 +2505,6 @@ class SArray(object):
         Rows: 2
         [{1: 2, 3: 4}, {'a': 'b', 'c': 'd'}]
         """
-
-        if (dtype == _Image) and (self.dtype == array.array):
-            raise TypeError(
-                "Cannot cast from image type to array with sarray.astype(). Please use sarray.pixel_array_to_image() instead."
-            )
 
         if float("nan") in self:
             import turicreate as _tc
@@ -2824,8 +2733,6 @@ class SArray(object):
         """
         from ..data_structures.sketch import Sketch
 
-        if self.dtype == _Image:
-            raise TypeError("summary() is not supported for arrays of image type")
         if type(background) != bool:
             raise TypeError("'background' parameter has to be a boolean value")
         if sub_sketch_keys is not None:

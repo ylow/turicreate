@@ -53,7 +53,6 @@ namespace turi {
  *  - \ref flex_nd_vec
  *  - \ref flex_list
  *  - \ref flex_dict
- *  - \ref flex_image
  *  - \ref flex_undefined
  *
  * It is nearly every operator overloaded which
@@ -771,11 +770,6 @@ class flexible_type {
   operator flex_date_time() const;
 
   /**
-   * Implicit cast to flex_image
-   */
-  operator flex_image() const;
-
-  /**
    * negation operator.
    * - negation operator.
    * - If the value is a numeric, the negation will return a negated value
@@ -1244,7 +1238,6 @@ class flexible_type {
     std::pair<atomic<size_t>, flex_nd_vec>* ndvecval;
     std::pair<atomic<size_t>, flex_list>* recval;
     std::pair<atomic<size_t>, flex_dict>* dictval;
-    std::pair<atomic<size_t>, flex_image>* imgval;
     flex_date_time dtval;
 
     struct {
@@ -1307,16 +1300,6 @@ class flexible_type {
          decref(prev, flex_type_enum::DICT);
        }
        break;
-     case flex_type_enum::IMAGE:
-       if (val.imgval->first.value == 1) return;
-       else {
-         union_type prev;
-         prev = val;
-         val.imgval = new std::pair<atomic<size_t>, flex_image>(*(val.imgval));
-         val.imgval->first.value = 1;
-         decref(prev, flex_type_enum::IMAGE);
-       }
-       break;
      default:
        break;
        // do nothing
@@ -1355,12 +1338,6 @@ class flexible_type {
          v.dictval = NULL;
        }
        break;
-     case flex_type_enum::IMAGE:
-       if (v.imgval->first.dec() == 0) {
-         delete v.imgval;
-         v.imgval = NULL;
-       }
-       break;
      default:
        break;
        // do nothing
@@ -1384,8 +1361,6 @@ class flexible_type {
      case flex_type_enum::DICT:
        v.dictval->first.inc();
        break;
-     case flex_type_enum::IMAGE:
-       v.imgval->first.inc();
      default:
        break;
        // do nothing
@@ -1618,21 +1593,6 @@ inline FLEX_ALWAYS_INLINE const flex_dict& flexible_type::get<flex_dict>() const
 }
 
 
-// IMAGE
-template <>
-inline FLEX_ALWAYS_INLINE flex_image& flexible_type::mutable_get<flex_image>() {
-  FLEX_TYPE_DASSERT(get_type() == flex_type_enum::IMAGE);
-  ensure_unique();
-  return val.imgval->second;
-}
-
-template <>
-inline FLEX_ALWAYS_INLINE const flex_image& flexible_type::get<flex_image>() const {
-  FLEX_TYPE_DASSERT(get_type() == flex_type_enum::IMAGE);
-  return val.imgval->second;
-}
-
-
 
 inline FLEX_ALWAYS_INLINE void flexible_type::clear_memory_internal() {
   static_assert(sizeof(flex_date_time) == 12, "sizeof(flex_date_time)");
@@ -1812,10 +1772,6 @@ inline FLEX_ALWAYS_INLINE_FLATTEN void flexible_type::reset(flex_type_enum targe
    case flex_type_enum::DATETIME:
      new (&val.dtval) flex_date_time(0,0); // placement new to create flex_date_time
      break;
-   case flex_type_enum::IMAGE:
-     val.imgval = new std::pair<atomic<size_t>, flex_image>;
-     val.imgval->first.value = 1;
-     break;
    default:
      break;
   }
@@ -1911,8 +1867,6 @@ inline FLEX_ALWAYS_INLINE_FLATTEN auto flexible_type::apply_mutating_visitor(Vis
      return visitor(mutable_get<flex_dict>());
    case flex_type_enum::DATETIME:
      return visitor(mutable_get<flex_date_time>());
-   case flex_type_enum::IMAGE:
-     return visitor(mutable_get<flex_image>());
    case flex_type_enum::UNDEFINED:
      flex_undefined undef;
      return visitor(undef);
@@ -1943,8 +1897,6 @@ inline FLEX_ALWAYS_INLINE_FLATTEN auto flexible_type::apply_visitor(Visitor visi
      return visitor(get<flex_dict>());
    case flex_type_enum::DATETIME:
      return visitor(get<flex_date_time>());
-   case flex_type_enum::IMAGE:
-     return visitor(get<flex_image>());
    case flex_type_enum::UNDEFINED:
      flex_undefined undef;
      return visitor(undef);
@@ -1983,10 +1935,6 @@ inline FLEX_ALWAYS_INLINE_FLATTEN auto flexible_type::apply_mutating_visitor(Vis
    case flex_type_enum::DATETIME:
      return apply_mutating_visitor(const_visitor_wrapper<Visitor,
                                          flex_date_time>{visitor, other.get<flex_date_time>()});
-   case flex_type_enum::IMAGE:
-     return apply_mutating_visitor(const_visitor_wrapper<Visitor,
-                                         flex_image>{visitor, other.get<flex_image>()});
-
    case flex_type_enum::UNDEFINED:
      flex_undefined undef;
      return apply_mutating_visitor(const_visitor_wrapper<Visitor,
@@ -2026,9 +1974,6 @@ inline FLEX_ALWAYS_INLINE_FLATTEN auto flexible_type::apply_visitor(Visitor visi
    case flex_type_enum::DATETIME:
      return apply_visitor(const_visitor_wrapper<Visitor,
                                          flex_date_time>{visitor, other.get<flex_date_time>()});
-   case flex_type_enum::IMAGE:
-     return apply_visitor(const_visitor_wrapper<Visitor,
-                                         flex_image>{visitor, other.get<flex_image>()});
    case flex_type_enum::UNDEFINED:
      flex_undefined undef;
      return apply_visitor(const_visitor_wrapper<Visitor,
@@ -2087,11 +2032,6 @@ inline FLEX_ALWAYS_INLINE_FLATTEN flex_date_time flexible_type::to<flex_date_tim
   return apply_visitor(flexible_type_impl::get_datetime_visitor());
 }
 
-template <>
-inline FLEX_ALWAYS_INLINE_FLATTEN flex_image flexible_type::to<flex_image>() const {
-  return apply_visitor(flexible_type_impl::get_img_visitor());
-}
-
 /**************************************************************************/
 /*                                                                        */
 /*                   Convenience Operator Overloads                       */
@@ -2120,10 +2060,6 @@ inline FLEX_ALWAYS_INLINE_FLATTEN flexible_type::operator flex_dict() const {
 
 inline FLEX_ALWAYS_INLINE_FLATTEN flexible_type::operator flex_date_time() const {
   return to<flex_date_time>();
-}
-
-inline FLEX_ALWAYS_INLINE_FLATTEN flexible_type::operator flex_image() const {
-  return to<flex_image>();
 }
 
 inline FLEX_ALWAYS_INLINE_FLATTEN flexible_type flexible_type::operator-() const {
@@ -2658,8 +2594,6 @@ bool FLEX_ALWAYS_INLINE_FLATTEN flexible_type::is_zero() const {
       return get<flex_list>().empty();
     case flex_type_enum::DICT:
       return get<flex_dict>().empty();
-    case flex_type_enum::IMAGE:
-      return get<flex_image>().m_format == Format::UNDEFINED;
     case flex_type_enum::UNDEFINED:
       return true;
     default:

@@ -7,8 +7,6 @@ add_compile_options("-w")
 # Zlib is a core dependency; it should go first.
 add_subdirectory(zlib)
 add_subdirectory(libjson)
-add_subdirectory(libjpeg)
-add_subdirectory(libpng)
 add_subdirectory(Eigen)
 add_subdirectory(sparsehash)
 add_subdirectory(google)

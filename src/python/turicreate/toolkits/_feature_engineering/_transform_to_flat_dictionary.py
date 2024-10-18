@@ -126,8 +126,7 @@ class TransformToFlatDictionary(Transformer):
     - None values are handled by replacing them with the
       string contents of `none_tag`.
 
-    - image and datetime values are currently not supported and raise an
-      error.
+    - datetime values are currently not supported and raise an error.
 
 
     Parameters

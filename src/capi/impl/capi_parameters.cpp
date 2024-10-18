@@ -165,18 +165,6 @@ EXPORT void tc_parameters_add_datetime(tc_parameters* params, const char* name, 
   ERROR_HANDLE_END(error); 
 }
 
-EXPORT void tc_parameters_add_image(tc_parameters* params, const char* name, const tc_flex_image* fi, tc_error** error) {
-  ERROR_HANDLE_START();
-  turi::ensure_server_initialized();
-
-  CHECK_NOT_NULL(error, params, "tc_parameters");
-  CHECK_NOT_NULL(error, fi, "tc_flex_image");
-
-  params->value[name] = turi::to_variant(turi::flexible_type(fi->value));
-
-  ERROR_HANDLE_END(error); 
-}
-
 EXPORT void tc_parameters_add_flexible_type(tc_parameters* params, const char* name, const tc_flexible_type* ft, tc_error** error) {
   ERROR_HANDLE_START();
   turi::ensure_server_initialized();
@@ -349,20 +337,6 @@ EXPORT bool tc_parameters_is_datetime(const tc_parameters* params, const char* n
 }
 
 
-EXPORT bool tc_parameters_is_image(const tc_parameters* params, const char* name, tc_error** error) {
-  ERROR_HANDLE_START();
-  turi::ensure_server_initialized();
-
-  CHECK_NOT_NULL(error, params, "tc_parameters", false);
-
-  // TODO: Make less ugly!
-  const turi::variant_type& v = params->value.at(name);
-  return v.which() == 0 && turi::variant_get_ref<turi::flexible_type>(v).get_type() == turi::flex_type_enum::IMAGE;
-
-  ERROR_HANDLE_END(error, false); 
-}
-
-
 // Query the type of the parameter 
 EXPORT bool tc_parameters_is_flexible_type(const tc_parameters* params,
     const char* name, tc_error** error) {  
@@ -512,18 +486,6 @@ EXPORT tc_datetime* tc_parameters_retrieve_datetime(const tc_parameters* params,
 
   const turi::variant_type& v = params->value.at(name);
   return new_tc_datetime(turi::variant_get_ref<turi::flexible_type>(v).get<turi::flex_date_time>());
-
-  ERROR_HANDLE_END(error, NULL); 
-}
-
-EXPORT tc_flex_image* tc_parameters_retrieve_image(const tc_parameters* params, const char* name, tc_error** error) {
-  ERROR_HANDLE_START();
-  turi::ensure_server_initialized();
-
-  CHECK_NOT_NULL(error, params, "tc_parameters", NULL);
-
-  const turi::variant_type& v = params->value.at(name);
-  return new_tc_flex_image(turi::variant_get_ref<turi::flexible_type>(v).get<turi::flex_image>());
 
   ERROR_HANDLE_END(error, NULL); 
 }

@@ -32,12 +32,12 @@ def dumps(obj):
         - SFrame
         - SArray
         - SGraph
-        - single flexible_type (Image, int, long, float, datetime.datetime)
+        - single flexible_type (int, long, float, datetime.datetime)
         - recursive flexible_type (list, dict, array.array)
         - recursive variant_type (list or dict of all of the above)
     * Serialized result includes both data and schema. Deserialization requires
       valid schema information to disambiguate various other wrapped types
-      (like Image) from dict.
+      from dict.
     """
     (data, schema) = to_serializable(obj)
     return _json.dumps({"data": data, "schema": schema})

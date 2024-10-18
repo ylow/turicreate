@@ -25,7 +25,6 @@ static inline flexible_type get_index_key(const flex_int& key) {
  *  v -- the value to add to the dictionary.
  *  separator -- the separator string.
  *  undefined_string -- what to call undefined values.
- *  process_image_value -- how to process images.
  *  process_datetime_value -- how to process datetime values.
  */
 GL_HOT_FLATTEN
@@ -35,7 +34,6 @@ static void _to_flat_dict_recursion(
     const flexible_type& v,
     const flex_string& separator,
     const flex_string& undefined_string,
-    const std::function<flexible_type(const flex_image&)>& process_image_value,
     const std::function<flexible_type(const flex_date_time&)>& process_datetime_value,
     size_t depth) {
 
@@ -71,7 +69,7 @@ static void _to_flat_dict_recursion(
 
     _to_flat_dict_recursion(out, key, recurse_v,
                             separator, undefined_string,
-                            process_image_value, process_datetime_value, depth + 1);
+                            process_datetime_value, depth + 1);
   };
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -163,17 +161,6 @@ static void _to_flat_dict_recursion(
       break;
     }
 
-    case flex_type_enum::IMAGE: {
-      flexible_type ft_out = process_image_value(v.get<flex_image>());
-
-      ASSERT_MSG(ft_out.get_type() != flex_type_enum::IMAGE,
-                 "Handling function for image types returned an image type.");
-
-      if(ft_out.get_type() != flex_type_enum::UNDEFINED) {
-        recurse_on_value(ft_out);
-      }
-      break;
-    }
     case flex_type_enum::DATETIME: {
 
       flexible_type ft_out = process_datetime_value(v.get<flex_date_time>());
@@ -222,8 +209,8 @@ static void _to_flat_dict_recursion(
  *   - FLEX_UNDEFINED values are handled by replacing them with the
  *     string contents of `undefined_string`.
  *
- *   - image and datetime types are handled by calling
- *     process_image_value and process_datetime_value.  These
+ *   - datetime types are handled by calling
+ *     process_datetime_value.  These
  *     functions must either throw an exception, which propegates up,
  *     return any other flexible type (e.g. dict, list, vector, etc.),
  *     or return FLEX_UNDEFINED, in which case that value is ignored.
@@ -233,7 +220,6 @@ GL_HOT flex_dict to_flat_dict(
     const flexible_type& input,
     const flex_string& separator,
     const flex_string& undefined_string,
-    std::function<flexible_type(const flex_image&)> process_image_value,
     std::function<flexible_type(const flex_date_time&)> process_datetime_value) {
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -294,21 +280,13 @@ GL_HOT flex_dict to_flat_dict(
     case flex_type_enum::FLOAT: {
       return flex_dict{ {get_index_key(0), input} };
     }
-    case flex_type_enum::IMAGE: {
-      // This can recurse a maximum of once, as the return value of
-      // process_image_value cannot be an image or datetime type,
-      // and this is the only place we recurse.
-      return to_flat_dict(process_image_value(input),
-                          separator, undefined_string,
-                          process_image_value, process_datetime_value);
-    }
     case flex_type_enum::DATETIME: {
       // This can recurse a maximum of once, as the return value of
-      // process_datetime_value cannot be an image or datetime type,
+      // process_datetime_value cannot be a datetime type,
       // and this is the only place we recurse.
       return to_flat_dict(process_datetime_value(input),
                           separator, undefined_string,
-                          process_image_value, process_datetime_value);
+                          process_datetime_value);
     }
     case flex_type_enum::UNDEFINED: {
       return flex_dict{ {undefined_string, 1} };
@@ -335,31 +313,12 @@ GL_HOT flex_dict to_flat_dict(
 
   _to_flat_dict_recursion(out, key, input,
                           separator, undefined_string,
-                          process_image_value, process_datetime_value, 0);
+                          process_datetime_value, 0);
 
   return out;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-static std::function<flexible_type(const flex_image&)> _get_image_handler(
-    const std::string& image_policy) {
-
-  if(image_policy == "error") {
-    return [](const flex_image&) -> flexible_type {
-      log_and_throw("Image types are not allowed when flattening dictionaries.");
-    };
-  } else if (image_policy == "ignore") {
-    return [](const flex_image&) -> flexible_type {
-      return FLEX_UNDEFINED;
-    };
-  } else {
-    log_and_throw("At this time, only \"error\" and \"ignore\" are "
-                  "implemented for handling of image types.");
-
-    return [](const flex_image&) -> flexible_type { return FLEX_UNDEFINED; };
-  }
-}
 
 static std::function<flexible_type(const flex_date_time&)> _get_datetime_handler(
     const std::string& datetime_policy) {
@@ -403,8 +362,8 @@ static std::function<flexible_type(const flex_date_time&)> _get_datetime_handler
  *   - FLEX_UNDEFINED values are handled by replacing them with the
  *     string contents of `undefined_string`.
  *
- *   - image and datetime types are handled by calling
- *     process_image_value and process_datetime_value.  These
+ *   - datetime types are handled by calling
+ *     process_datetime_value.  These
  *     functions must either throw an exception, which propegates up,
  *     return any other flexible type (e.g. dict, list, vector, etc.),
  *     or return FLEX_UNDEFINED, in which case that value is ignored.
@@ -413,11 +372,9 @@ static std::function<flexible_type(const flex_date_time&)> _get_datetime_handler
 EXPORT flex_dict to_flat_dict(const flexible_type& input,
                               const flex_string& separator,
                               const flex_string& undefined_string,
-                              const std::string& image_policy,
                               const std::string& datetime_policy) {
 
   return to_flat_dict(input, separator, undefined_string,
-                      _get_image_handler(image_policy),
                       _get_datetime_handler(datetime_policy));
 }
 
@@ -427,16 +384,14 @@ EXPORT flex_dict to_flat_dict(const flexible_type& input,
 EXPORT gl_sarray to_sarray_of_flat_dictionaries(gl_sarray input,
                                                 const flex_string& sep,
                                                 const flex_string& undefined_string,
-                                                const std::string& image_policy,
                                                 const std::string& datetime_policy) {
 
-  auto image_handler = _get_image_handler(image_policy);
   auto datetime_handler = _get_datetime_handler(datetime_policy);
 
   std::function<flexible_type(const flexible_type& dt)> flatten_it
       = [=](const flexible_type& x) -> flexible_type GL_GCC_ONLY(GL_HOT_FLATTEN) {
 
-    return to_flat_dict(x, sep, undefined_string, image_handler, datetime_handler);
+    return to_flat_dict(x, sep, undefined_string, datetime_handler);
   };
 
   return input.apply(flatten_it, flex_type_enum::DICT);

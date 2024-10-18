@@ -105,22 +105,6 @@ static variant_type _list_from_serializable(const flexible_type& data, const sch
   }
 }
 
-static flex_string _decode_image(const flex_string &encoded) {
-  typedef boost::archive::iterators::transform_width<
-    boost::archive::iterators::binary_from_base64<
-      flex_string::const_iterator
-    >,
-    8,
-    6
-  > from_base64;
-
-  return boost::algorithm::trim_right_copy_if(
-    std::string(from_base64(std::begin(encoded)), from_base64(std::end(encoded))),
-    [](char c) {
-      return c == '\0';
-    }
-  );
-}
 
 static variant_type _dict_from_serializable(const flexible_type& data, const schema_t& schema) {
   // TODO distinguish dict from SGraph
@@ -140,25 +124,6 @@ static variant_type _dict_from_serializable(const flexible_type& data, const sch
       posix_timestamp,
       tz_15_min_offset,
       microsecond
-    );
-  } else if (_is_type(schema, JSON::types::IMAGE)) {
-    flex_string image_data_str = _dict_get(data_dict, "image_data");
-    image_data_str = _decode_image(image_data_str);
-    const char * image_data = image_data_str.c_str();
-    flex_int height = _dict_get(data_dict, "height");
-    flex_int width = _dict_get(data_dict, "width");
-    flex_int channels = _dict_get(data_dict, "channels");
-    flex_int image_data_size = _dict_get(data_dict, "size");
-    flex_int version = _dict_get(data_dict, "version");
-    flex_int format = _dict_get(data_dict, "format");
-    return flex_image(
-      image_data,
-      height,
-      width,
-      channels,
-      image_data_size,
-      version,
-      format
     );
   } else if (_is_type(schema, JSON::types::SARRAY)) {
     std::string dtype_str = _dict_get(data_dict, "dtype");
@@ -276,8 +241,7 @@ static variant_type _any_from_serializable(const flexible_type& data, const sche
     case flex_type_enum::DICT:
       return _dict_from_serializable(data, schema);
     case flex_type_enum::DATETIME:
-    case flex_type_enum::IMAGE:
-      log_and_throw("Unexpected input to _any_from_serializable: serializable flex_type does not include datetime or Image types.");
+      log_and_throw("Unexpected input to _any_from_serializable: serializable flex_type does not include datetime types.");
     case flex_type_enum::ND_VECTOR:
       log_and_throw("Unsupported flex_type_enum case: ND_VECTOR");
       break;

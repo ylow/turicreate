@@ -174,7 +174,7 @@ gl_sframe transform_to_flat_dictionary::transform(gl_sframe data) {
     std::string out_c = (output_column_prefix.empty() ? s : (output_column_prefix + "." + s));
 
     ret_sf[out_c] = to_sarray_of_flat_dictionaries(
-        data[s], separator, undefined_tag, "error", "error");
+        data[s], separator, undefined_tag, "error");
   }
 
   // Do the actual transformations.

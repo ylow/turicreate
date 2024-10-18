@@ -6,7 +6,6 @@
 from .cy_flexible_type cimport flexible_type
 from .cy_flexible_type cimport flex_list
 from .cy_flexible_type cimport gl_options_map
-from .cy_flexible_type cimport flex_image
 
 from libcpp.vector cimport vector
 from libcpp.string cimport string

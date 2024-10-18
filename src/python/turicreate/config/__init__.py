@@ -109,7 +109,6 @@ def set_num_gpus(num_gpus):
     .. sourcecode:: python
 
       >> turicreate.config.set_num_gpus(1)
-      >> turicreate.image_classifier.create(data, target='label')
     """
     # Currently TuriCreate only supports using one GPU. See:
     # https://github.com/apple/turicreate/issues/2797

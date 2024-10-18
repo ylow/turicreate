@@ -28,7 +28,7 @@ extern "C" {
 struct tc_error_struct;
 typedef struct tc_error_struct tc_error;
 
-// Flexible type -- holds numeric, string, array, list, datetime, and image
+// Flexible type -- holds numeric, string, array, list, datetime
 // types for use in SFrame or SArray.
 struct tc_flexible_type_struct;
 typedef struct tc_flexible_type_struct tc_flexible_type;
@@ -48,10 +48,6 @@ typedef struct tc_groupby_aggregator_struct tc_groupby_aggregator;
 // datetime
 struct tc_datetime_struct;
 typedef struct tc_datetime_struct tc_datetime;
-
-// Image
-struct tc_flex_image_struct;
-typedef struct tc_flex_image_struct tc_flex_image;
 
 // NDArray
 struct tc_ndarray_struct;
@@ -168,7 +164,6 @@ tc_flexible_type* tc_ft_create_from_double_array(const double* data, uint64_t n,
 tc_flexible_type* tc_ft_create_from_flex_list(const tc_flex_list*, tc_error** error);
 tc_flexible_type* tc_ft_create_from_flex_dict(const tc_flex_dict*, tc_error** error);
 tc_flexible_type* tc_ft_create_from_datetime(const tc_datetime* dt, tc_error**);
-tc_flexible_type* tc_ft_create_from_image(const tc_flex_image*, tc_error** error);
 tc_flexible_type* tc_ft_create_from_ndarray(const tc_ndarray*, tc_error** error);
 
 /*****************************************************/
@@ -185,7 +180,6 @@ bool tc_ft_is_list(const tc_flexible_type*);
 bool tc_ft_is_dict(const tc_flexible_type*);
 bool tc_ft_is_datetime(const tc_flexible_type*);
 bool tc_ft_is_undefined(const tc_flexible_type*);
-bool tc_ft_is_image(const tc_flexible_type*);
 bool tc_ft_is_datetime(const tc_flexible_type*);
 bool tc_ft_is_ndarray(const tc_flexible_type*);
 bool tc_ft_is_type(const tc_flexible_type*, tc_ft_type_enum);
@@ -207,7 +201,6 @@ const double* tc_ft_array_data(const tc_flexible_type* ft, tc_error** error);
 tc_flex_list* tc_ft_flex_list(const tc_flexible_type*, tc_error**);
 tc_flex_dict* tc_ft_flex_dict(const tc_flexible_type*, tc_error**);
 tc_datetime* tc_ft_datetime(const tc_flexible_type* dt, tc_error**);
-tc_flex_image* tc_ft_flex_image(const tc_flexible_type*, tc_error**);
 tc_ndarray* tc_ft_ndarray(const tc_flexible_type*, tc_error**);
 
 /*****************************************************/
@@ -311,28 +304,6 @@ bool tc_datetime_equal(const tc_datetime* dt1, const tc_datetime* dt2, tc_error*
 
 
 
-/******************************************************************************/
-/*                                                                            */
-/*    flex_image                                                              */
-/*                                                                            */
-/******************************************************************************/
-
-// Load an image into a flexible type from a path
-tc_flex_image* tc_flex_image_create_from_path(
-    const char* path, const char* format, tc_error** error);
-
-// Load an image into a flexible type from raw data
-tc_flex_image* tc_flex_image_create_from_data(
-    const char* data, uint64_t height, uint64_t width, uint64_t channels,
-    uint64_t total_data_size, const char* format, tc_error** error);
-
-// Methods to query the image size and width
-uint64_t tc_flex_image_width(const tc_flex_image*, tc_error**);
-uint64_t tc_flex_image_height(const tc_flex_image*, tc_error**);
-uint64_t tc_flex_image_num_channels(const tc_flex_image*, tc_error**);
-uint64_t tc_flex_image_data_size(const tc_flex_image*, tc_error**);
-const char* tc_flex_image_data(const tc_flex_image*, tc_error**);
-const char* tc_flex_image_format(const tc_flex_image*, tc_error**);
 
 /******************************************************************************/
 /*                                                                            */
@@ -703,7 +674,6 @@ tc_variant* tc_variant_create_from_double_array(const double* data, uint64_t n, 
 tc_variant* tc_variant_create_from_flex_list(const tc_flex_list*, tc_error** error);
 tc_variant* tc_variant_create_from_flex_dict(const tc_flex_dict*, tc_error** error);
 tc_variant* tc_variant_create_from_datetime(const tc_datetime* dt, tc_error**);
-tc_variant* tc_variant_create_from_image(const tc_flex_image*, tc_error** error);
 tc_variant* tc_variant_create_from_flexible_type(const tc_flexible_type*, tc_error** error);
 tc_variant* tc_variant_create_from_sarray(const tc_sarray*, tc_error** error);
 tc_variant* tc_variant_create_from_sframe(const tc_sframe*, tc_error** error);
@@ -719,7 +689,6 @@ bool tc_variant_is_double_array(const tc_variant*);
 bool tc_variant_is_flex_list(const tc_variant*);
 bool tc_variant_is_flex_dict(const tc_variant*);
 bool tc_variant_is_datetime(const tc_variant*);
-bool tc_variant_is_image(const tc_variant*);
 bool tc_variant_is_flexible_type(const tc_variant*);
 bool tc_variant_is_sarray(const tc_variant*);
 bool tc_variant_is_sframe(const tc_variant*);
@@ -740,7 +709,6 @@ const double* tc_variant_array_data(const tc_variant* ft, tc_error** error);
 tc_flex_list* tc_variant_flex_list(const tc_variant*, tc_error**);
 tc_flex_dict* tc_variant_flex_dict(const tc_variant*, tc_error**);
 tc_datetime* tc_variant_datetime(const tc_variant* dt, tc_error**);
-tc_flex_image* tc_variant_flex_image(const tc_variant*, tc_error**);
 tc_flexible_type* tc_variant_flexible_type(const tc_variant*, tc_error**);
 tc_sarray* tc_variant_sarray(const tc_variant*, tc_error**);
 tc_sframe* tc_variant_sframe(const tc_variant*, tc_error**);
@@ -773,7 +741,6 @@ void tc_parameters_add_double_array(tc_parameters*, const char* name, const doub
 void tc_parameters_add_flex_list(tc_parameters*, const char* name, const tc_flex_list* value, tc_error** error);
 void tc_parameters_add_flex_dict(tc_parameters*, const char* name, const tc_flex_dict* value, tc_error** error);
 void tc_parameters_add_datetime(tc_parameters*, const char* name, const tc_datetime* dt, tc_error**);
-void tc_parameters_add_image(tc_parameters*, const char* name, const tc_flex_image*, tc_error** error);
 void tc_parameters_add_flexible_type(tc_parameters*, const char* name, const tc_flexible_type*, tc_error** error);
 void tc_parameters_add_sarray(tc_parameters*, const char* name, const tc_sarray*, tc_error** error);
 void tc_parameters_add_sframe(tc_parameters*, const char* name, const tc_sframe*, tc_error** error);
@@ -788,7 +755,6 @@ bool tc_parameters_is_double_array(const tc_parameters*, const char* name, tc_er
 bool tc_parameters_is_flex_list(const tc_parameters*, const char* name, tc_error** error);
 bool tc_parameters_is_flex_dict(const tc_parameters*, const char* name, tc_error** error);
 bool tc_parameters_is_datetime(const tc_parameters*, const char* name, tc_error** error);
-bool tc_parameters_is_image(const tc_parameters*, const char* name, tc_error** error);
 bool tc_parameters_is_flexible_type(const tc_parameters*, const char* name, tc_error** error);
 bool tc_parameters_is_sarray(const tc_parameters*, const char* name, tc_error** error);
 bool tc_parameters_is_sframe(const tc_parameters*, const char* name, tc_error** error);
@@ -802,7 +768,6 @@ tc_flexible_type* tc_parameters_retrieve_array(const tc_parameters*, const char*
 tc_flex_list* tc_parameters_retrieve_flex_list(const tc_parameters*, const char* name, tc_error**);
 tc_flex_dict* tc_parameters_retrieve_flex_dict(const tc_parameters*, const char* name, tc_error**);
 tc_datetime* tc_parameters_retrieve_datetime(const tc_parameters*, const char* name, tc_error**);
-tc_flex_image* tc_parameters_retrieve_image(const tc_parameters*, const char* name, tc_error**);
 tc_flexible_type* tc_parameters_retrieve_flexible_type(const tc_parameters*, const char* name, tc_error**);
 tc_sarray* tc_parameters_retrieve_sarray(const tc_parameters*, const char* name, tc_error**);
 tc_sframe* tc_parameters_retrieve_sframe(const tc_parameters*, const char* name, tc_error**);

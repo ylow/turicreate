@@ -12,7 +12,6 @@
 #include <iostream>
 #include <core/storage/serialization/serialization_includes.hpp>
 #include <core/data/flexible_type/ndarray.hpp>
-#include <core/data/image/image_type.hpp>
 #include <core/util/bitops.hpp>
 
 namespace turi {
@@ -55,11 +54,6 @@ typedef std::vector<flexible_type> flex_list;
  * Corresponds to the type enum \ref flex_type_enum::DICT.
  */
 typedef std::vector<std::pair<flexible_type, flexible_type>> flex_dict;
-/**
- * An \ref image_type "image type" that can be stored in a flexible_type.
- * Corresponds to the type enum \ref flex_type_enum::IMAGE.
- */
-typedef image_type flex_image;
 
 /**
  * A ND-array double type that can be stored in a flexible_type.
@@ -338,8 +332,7 @@ enum class flex_type_enum: char {
   DICT = 5,     /**< Recursive Dictionary type. Stored type is the \ref flex_dict */
   DATETIME = 6, /**< Date-Time type. Stored type is the \ref flex_date_time */
   UNDEFINED = 7,/**< Undefined / Missing Value type. Stored type is the \ref flex_undefined */
-  IMAGE = 8,    /**< Image type. Stored type is the \ref flex_image */
-  ND_VECTOR = 9,   /**< Numeric vector type. Stored type is the \ref flex_nd_vec */
+  ND_VECTOR = 8,   /**< Numeric vector type. Stored type is the \ref flex_nd_vec */
   // types >= 128 are reserved.
   // (Or rather more accurately, they should not be used without a lot of
   //  thought and care.)
@@ -351,18 +344,17 @@ enum class flex_type_enum: char {
  * Check if one flexible type is convertable to the other.
  */
 inline bool flex_type_is_convertible(flex_type_enum from, flex_type_enum to) {
-  static constexpr bool castable[10][10] =
-        // int flt str vec rec dic dtime undef img ndvec
-/*int*/  {{1,  1,  1,  0,  0,  0,  1,  0,  0, 0},  // integer casts to self, float and string
-/*flt*/   {1,  1,  1,  0,  0,  0,  1,  0,  0, 0},  // float casts to integer, self, string
-/*str*/   {0,  0,  1,  0,  0,  0,  0,  0,  0, 0},  // string casts to string only
-/*vec*/   {0,  0,  1,  1,  1,  0,  0,  0,  0, 1},  // vector casts to string and self and recursive, ndvec
-/*rec*/   {0,  0,  1,  0,  1,  0,  0,  0,  0, 0},  // recursive casts to string vec, rec, ndvec, and self.
-/*dic*/   {0,  0,  1,  0,  0,  1,  0,  0,  0, 0},  // dict casts to self
-/*dtime*/ {1,  1,  1,  0,  0,  0,  1,  0,  0, 0},  // dtime casts to string and self
-/*undef*/ {0,  0,  1,  0,  0,  0,  0,  1,  0, 0},  //UNDEFINED casts to string and UNDEFINED
-/*img*/   {0,  0,  1,  1,  0,  0,  0,  0,  1, 1},  // img casts to string, ndvec, vec, and self.
-/*ndvec*/ {0,  0,  1,  1,  0,  0,  0,  0,  1, 1}}; // ndvec casts to str and flattens to vec, img, self
+  static constexpr bool castable[9][9] =
+        // int flt str vec rec dic dtime undef ndvec
+/*int*/  {{1,  1,  1,  0,  0,  0,  1,  0, 0},  // integer casts to self, float and string
+/*flt*/   {1,  1,  1,  0,  0,  0,  1,  0, 0},  // float casts to integer, self, string
+/*str*/   {0,  0,  1,  0,  0,  0,  0,  0, 0},  // string casts to string only
+/*vec*/   {0,  0,  1,  1,  1,  0,  0,  0, 1},  // vector casts to string and self and recursive, ndvec
+/*rec*/   {0,  0,  1,  0,  1,  0,  0,  0, 0},  // recursive casts to string vec, rec, ndvec, and self.
+/*dic*/   {0,  0,  1,  0,  0,  1,  0,  0, 0},  // dict casts to self
+/*dtime*/ {1,  1,  1,  0,  0,  0,  1,  0, 0},  // dtime casts to string and self
+/*undef*/ {0,  0,  1,  0,  0,  0,  0,  1, 0},  //UNDEFINED casts to string and UNDEFINED
+/*ndvec*/ {0,  0,  1,  1,  0,  0,  0,  0, 1}}; // ndvec casts to str and flattens to vec, self
   return castable[static_cast<int>(from)][static_cast<int>(to)];
 }
 
@@ -393,70 +385,65 @@ inline bool flex_type_is_convertible(flex_type_enum from, flex_type_enum to) {
 inline bool flex_type_has_binary_op(flex_type_enum left,
                                     flex_type_enum right,
                                     char op) {
-  static constexpr bool plus_operator[10][10] =     // '+' operator
-        // int flt str vec rec cel dtime undef img ndvec
-/*int*/  {{1,  1,  0,  0,  0,  0,  0,  0,  0,  0},
-/*flt*/   {1,  1,  0,  0,  0,  0,  0,  0,  0,  0},
-/*str*/   {0,  0,  1,  0,  0,  0,  0,  0,  0,  0},
-/*vec*/   {1,  1,  0,  1,  0,  0,  0,  0,  0,  0},
-/*rec*/   {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*cel*/   {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*dtime*/ {1,  1,  0,  0,  0,  0,  0,  0,  0,  0},
-/*undef*/ {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*img*/   {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*ndvec*/ {1,  1,  0,  0,  0,  0,  0,  0,  0,  1}};
-
-  static constexpr bool minus_operator[10][10] =  // '-' operator
-        // int flt str vec rec cel dtime undef img ndvec
-/*int*/  {{1,  1,  0,  0,  0,  0,  0,  0,  0,  0},
-/*flt*/   {1,  1,  0,  0,  0,  0,  0,  0,  0,  0},
-/*str*/   {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*vec*/   {1,  1,  0,  1,  0,  0,  0,  0,  0,  0},
-/*rec*/   {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*cel*/   {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*dtime*/ {1,  1,  0,  0,  0,  0,  0,  0,  0,  0},
-/*undef*/ {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*img*/   {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*ndvec*/ {1,  1,  0,  0,  0,  0,  0,  0,  0,  1}};
-
-  static constexpr bool other_numeric_operators[10][10] =  // '*','/','%' operator
-        // int flt str vec rec cel dtime undef img ndvec
-/*int*/  {{1,  1,  0,  0,  0,  0,  0,  0,  0,  0},
-/*flt*/   {1,  1,  0,  0,  0,  0,  0,  0,  0,  0},
-/*str*/   {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*vec*/   {1,  1,  0,  1,  0,  0,  0,  0,  0,  0},
-/*rec*/   {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*cel*/   {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*dtime*/ {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*undef*/ {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*img*/   {0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*ndvec*/ {1,  1,  0,  0,  0,  0,  0,  0,  0,  1}};
-
-  static constexpr bool comparison_operators[10][10] =  // < or > operator
-        // int flt str vec rec cel dtime undef img ndvec
-/*int*/  {{1,  1,  0,  0,  0,  0,  1,  0,  0},
-/*flt*/   {1,  1,  0,  0,  0,  0,  1,  0,  0},
+  static constexpr bool plus_operator[9][9] =     // '+' operator
+        // int flt str vec rec cel dtime undef ndvec
+/*int*/  {{1,  1,  0,  0,  0,  0,  0,  0,  0},
+/*flt*/   {1,  1,  0,  0,  0,  0,  0,  0,  0},
 /*str*/   {0,  0,  1,  0,  0,  0,  0,  0,  0},
-/*vec*/   {0,  0,  0,  0,  0,  0,  0,  0,  0},
+/*vec*/   {1,  1,  0,  1,  0,  0,  0,  0,  0},
 /*rec*/   {0,  0,  0,  0,  0,  0,  0,  0,  0},
 /*cel*/   {0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*dtime*/ {1,  1,  0,  0,  0,  0,  1,  0,  0},
+/*dtime*/ {1,  1,  0,  0,  0,  0,  0,  0,  0},
 /*undef*/ {0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*img*/   {0,  0,  0,  0,  0,  0,  0,  0,  0},
-/*ndvec*/ {0,  0,  0,  0,  0,  0,  0,  0,  0}};
+/*ndvec*/ {1,  1,  0,  0,  0,  0,  0,  0,  1}};
 
-  static constexpr bool equality_operators[10][10] =  // = operator
-        // int flt str vec rec cel dtime undef img ndvec
-/*int*/  {{1,  1,  0,  0,  0,  0,  1,  1,  0,  0},
-/*flt*/   {1,  1,  0,  0,  0,  0,  1,  1,  0,  0},
-/*str*/   {0,  0,  1,  0,  0,  0,  0,  1,  0,  0},
-/*vec*/   {0,  0,  0,  1,  0,  0,  0,  1,  0,  0},
-/*rec*/   {0,  0,  0,  0,  0,  0,  0,  1,  0,  0},
-/*cel*/   {0,  0,  0,  0,  0,  0,  0,  1,  0,  0},
-/*dtime*/ {1,  1,  0,  0,  0,  0,  1,  1,  0,  0},
-/*undef*/ {1,  1,  1,  1,  1,  1,  1,  1,  1,  0},
-/*img*/   {0,  0,  0,  0,  0,  0,  0,  1,  0,  0},
-/*ndvec*/ {0,  0,  0,  0,  0,  0,  0,  0,  0,  1}};
+  static constexpr bool minus_operator[9][9] =  // '-' operator
+        // int flt str vec rec cel dtime undef ndvec
+/*int*/  {{1,  1,  0,  0,  0,  0,  0,  0,  0},
+/*flt*/   {1,  1,  0,  0,  0,  0,  0,  0,  0},
+/*str*/   {0,  0,  0,  0,  0,  0,  0,  0,  0},
+/*vec*/   {1,  1,  0,  1,  0,  0,  0,  0,  0},
+/*rec*/   {0,  0,  0,  0,  0,  0,  0,  0,  0},
+/*cel*/   {0,  0,  0,  0,  0,  0,  0,  0,  0},
+/*dtime*/ {1,  1,  0,  0,  0,  0,  0,  0,  0},
+/*undef*/ {0,  0,  0,  0,  0,  0,  0,  0,  0},
+/*ndvec*/ {1,  1,  0,  0,  0,  0,  0,  0,  1}};
+
+  static constexpr bool other_numeric_operators[9][9] =  // '*','/','%' operator
+        // int flt str vec rec cel dtime undef ndvec
+/*int*/  {{1,  1,  0,  0,  0,  0,  0,  0,  0},
+/*flt*/   {1,  1,  0,  0,  0,  0,  0,  0,  0},
+/*str*/   {0,  0,  0,  0,  0,  0,  0,  0,  0},
+/*vec*/   {1,  1,  0,  1,  0,  0,  0,  0,  0},
+/*rec*/   {0,  0,  0,  0,  0,  0,  0,  0,  0},
+/*cel*/   {0,  0,  0,  0,  0,  0,  0,  0,  0},
+/*dtime*/ {0,  0,  0,  0,  0,  0,  0,  0,  0},
+/*undef*/ {0,  0,  0,  0,  0,  0,  0,  0,  0},
+/*ndvec*/ {1,  1,  0,  0,  0,  0,  0,  0,  1}};
+
+  static constexpr bool comparison_operators[9][9] =  // < or > operator
+        // int flt str vec rec cel dtime undef ndvec
+/*int*/  {{1,  1,  0,  0,  0,  0,  1,  0},
+/*flt*/   {1,  1,  0,  0,  0,  0,  1,  0},
+/*str*/   {0,  0,  1,  0,  0,  0,  0,  0},
+/*vec*/   {0,  0,  0,  0,  0,  0,  0,  0},
+/*rec*/   {0,  0,  0,  0,  0,  0,  0,  0},
+/*cel*/   {0,  0,  0,  0,  0,  0,  0,  0},
+/*dtime*/ {1,  1,  0,  0,  0,  0,  1,  0},
+/*undef*/ {0,  0,  0,  0,  0,  0,  0,  0},
+/*ndvec*/ {0,  0,  0,  0,  0,  0,  0,  0}};
+
+  static constexpr bool equality_operators[9][9] =  // = operator
+        // int flt str vec rec cel dtime undef ndvec
+/*int*/  {{1,  1,  0,  0,  0,  0,  1,  1,  0},
+/*flt*/   {1,  1,  0,  0,  0,  0,  1,  1,  0},
+/*str*/   {0,  0,  1,  0,  0,  0,  0,  1,  0},
+/*vec*/   {0,  0,  0,  1,  0,  0,  0,  1,  0},
+/*rec*/   {0,  0,  0,  0,  0,  0,  0,  1,  0},
+/*cel*/   {0,  0,  0,  0,  0,  0,  0,  1,  0},
+/*dtime*/ {1,  1,  0,  0,  0,  0,  1,  1,  0},
+/*undef*/ {1,  1,  1,  1,  1,  1,  1,  1,  0},
+/*ndvec*/ {0,  0,  0,  0,  0,  0,  0,  0,  1}};
   switch(op) {
    case '+':
     return plus_operator[static_cast<int>(left)][static_cast<int>(right)];
@@ -550,12 +537,6 @@ struct type_to_enum<flex_dict> {
 };
 
 template <>
-struct type_to_enum<flex_image> {
-  static constexpr flex_type_enum value = flex_type_enum::IMAGE;
-  constexpr operator flex_type_enum() const { return value; }
-};
-
-template <>
 struct type_to_enum<flex_undefined> {
   static constexpr flex_type_enum value = flex_type_enum::UNDEFINED;
   constexpr operator flex_type_enum() const { return value; }
@@ -634,11 +615,6 @@ struct is_valid_flex_type<flex_list> {
   constexpr operator bool() const { return value; }
 };
 
-template <>
-struct is_valid_flex_type<flex_image> {
-  static constexpr bool value = true;
-  constexpr operator bool() const { return value; }
-};
 
 
 /**
@@ -700,11 +676,6 @@ struct enum_to_type<flex_type_enum::DICT>{
   typedef flex_dict type;
 };
 
-template <>
-struct enum_to_type<flex_type_enum::IMAGE>{
-  typedef flex_image type;
-};
-
 
 template <>
 struct enum_to_type<flex_type_enum::UNDEFINED>{
@@ -734,8 +705,6 @@ inline const char* flex_type_enum_to_name(flex_type_enum en) {
      return "list";
    case flex_type_enum::DICT:
      return "dictionary";
-   case flex_type_enum::IMAGE:
-     return "image";
    default:
      return "undefined";
   }
@@ -757,7 +726,6 @@ inline flex_type_enum flex_type_enum_from_name(const std::string& name) {
     {"ndarray", flex_type_enum::ND_VECTOR},
     {"list", flex_type_enum::LIST},
     {"dictionary", flex_type_enum::DICT},
-    {"image", flex_type_enum::IMAGE},
     {"undefined", flex_type_enum::UNDEFINED}
   };
 
@@ -802,7 +770,6 @@ struct has_direct_conversion_to_flexible_type {
       std::is_convertible<T, flex_nd_vec>::value ||
       std::is_convertible<T, flex_dict>::value ||
       std::is_convertible<T, flex_date_time>::value ||
-      std::is_convertible<T, flex_image>::value ||
       std::is_same<T, flex_undefined>::value);
 
   static constexpr flex_type_enum desired_type =
@@ -814,7 +781,6 @@ struct has_direct_conversion_to_flexible_type {
       std::is_convertible<T, flex_nd_vec>::value ? flex_type_enum::ND_VECTOR :
       std::is_convertible<T, flex_dict>::value ? flex_type_enum::DICT :
       std::is_convertible<T, flex_date_time>::value ? flex_type_enum::DATETIME :
-      std::is_convertible<T, flex_image>::value ? flex_type_enum::IMAGE :
       flex_type_enum::UNDEFINED;
 };
 

@@ -12,9 +12,8 @@ documentation, along with a small number of simple examples.
 
 
 
-__all__ = ["sframe", "sarray", "sgraph", "sketch", "image", "serialization"]
+__all__ = ["sframe", "sarray", "sgraph", "sketch", "serialization"]
 
-from . import image
 from . import sframe
 from . import sarray
 from . import sgraph

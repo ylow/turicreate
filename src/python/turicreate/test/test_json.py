@@ -41,31 +41,6 @@ if sys.version_info.major == 3:
     long = int
 
 
-class image_info:
-    def __init__(self, url):
-        self.url = url
-        if "png" in url:
-            self.format = "PNG"
-        elif "jpg" in url:
-            self.format = "JPG"
-        if "grey" in url:
-            self.channels = 1
-        else:
-            self.channels = 3
-
-
-current_file_dir = os.path.dirname(os.path.realpath(__file__))
-image_urls = [
-    current_file_dir + x
-    for x in [
-        "/images/nested/sample_grey.jpg",
-        "/images/nested/sample_grey.png",
-        "/images/sample.jpg",
-        "/images/sample.png",
-    ]
-]
-image_info = [image_info(u) for u in image_urls]
-
 _SFrameComparer = util.SFrameComparer()
 
 
@@ -186,18 +161,7 @@ class JSONTest(unittest.TestCase):
             ]
         ]
 
-    def test_image_to_json(self):
-        from .. import Image
-
-        [
-            self._run_test_case(value)
-            for value in [
-                Image(path=item.url, format=item.format) for item in image_info
-            ]
-        ]
-
     def test_sarray_to_json(self):
-        from .. import Image
 
         d = datetime.datetime(year=2016, month=3, day=5)
         [
@@ -215,9 +179,6 @@ class JSONTest(unittest.TestCase):
                 SArray([{"x": 1, "y": 2}, {"x": 5, "z": 3},]),
                 SArray(
                     [d, pytz.utc.localize(d), pytz.timezone("US/Arizona").localize(d),]
-                ),
-                SArray(
-                    [Image(path=item.url, format=item.format) for item in image_info]
                 ),
             ]
         ]

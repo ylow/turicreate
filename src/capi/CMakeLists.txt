@@ -21,7 +21,6 @@ make_library(capi OBJECT
     "impl/capi_datetime.cpp"
     "impl/capi_flex_dict.cpp"
     "impl/capi_flex_list.cpp"
-    "impl/capi_flex_image.cpp"
     "impl/capi_ndarray.cpp"
     "impl/capi_functions.cpp"
     "impl/capi_sarray.cpp"

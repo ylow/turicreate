@@ -8,6 +8,7 @@
 #include <visualization/server/table.hpp>
 
 #include <core/data/sframe/gl_sframe.hpp>
+#include <core/storage/sframe_interface/unity_sframe.hpp>
 #include <core/storage/sframe_data/sframe.hpp>
 
 namespace turi {
@@ -145,48 +146,6 @@ std::string table_accordion(const std::shared_ptr<unity_sframe>& table, const st
         ss << "}}" << std::endl;
         return ss.str();
       }
-    case flex_type_enum::IMAGE:
-      {
-        std::stringstream ss;
-        flex_image img = value.get<flex_image>();
-        img = turi::image_util::encode_image(img);
-
-        const unsigned char * image_data = img.get_image_data();
-        size_t image_data_size = img.m_image_data_size;
-
-        ss << "{\"accordion_spec\": {\"index\": " << row_idx << ", \"column\":" << turi::visualization::extra_label_escape(column_name);
-        ss << ", \"type\": " << value.get_type();
-        ss << ", \"data\": ";
-        ss << "{\"width\": " << img.m_width << ", ";
-        ss << "\"height\": " << img.m_height << ", ";
-        ss << "\"data\": \"";
-        std::copy(
-          to_base64(image_data),
-          to_base64(image_data + image_data_size),
-          std::ostream_iterator<char>(ss)
-        );
-
-        ss << "\", \"format\": \"";
-        switch (img.m_format) {
-          case Format::JPG:
-            ss << "jpeg";
-            break;
-          case Format::PNG:
-            ss << "png";
-            break;
-          case Format::RAW_ARRAY:
-            ss << "raw";
-            break;
-          case Format::UNDEFINED:
-            // TODO - not sure what to do here.
-            // For now, treat it as raw, but this will probably
-            // display garbage for the user.
-            ss << "raw";
-            break;
-        }
-        ss << "\"}}}\n";
-        return ss.str();
-      }
     case flex_type_enum::DATETIME:
       {
         std::stringstream ss;
@@ -259,20 +218,6 @@ std::string table_accordion(const std::shared_ptr<unity_sframe>& table, const st
         return ss.str();
       }
   };
-}
-
-std::string image_png_data(const turi::flex_image& image, size_t resized_height) {
-  double image_ratio = ((image.m_width*1.0)/(image.m_height*1.0));
-  double calculated_width = (image_ratio * resized_height);
-  size_t resized_width = static_cast<int>(calculated_width);
-  turi::flex_image resized_image = turi::image_util::resize_image(image,
-          resized_width, resized_height, image.m_channels, true /* decode */);
-  resized_image = turi::image_util::encode_image(resized_image); /* encode in png */
-
-  // expect resized images to already be in PNG format
-  DASSERT_TRUE(resized_image.m_format == Format::PNG);
-
-  return std::string(reinterpret_cast<const char *>(resized_image.get_image_data()), resized_image.m_image_data_size);
 }
 
 }} // turi::visualization

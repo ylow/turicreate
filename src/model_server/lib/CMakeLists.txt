@@ -17,7 +17,6 @@ make_library(unity_core OBJECT
     simple_model.cpp
     variant_deep_serialize.cpp
     flex_dict_view.cpp
-    image_util.cpp
     ../extensions/additional_sframe_utilities.cpp
   REQUIRES
     unity_sframe
@@ -30,7 +29,6 @@ make_library(unity_core OBJECT
     sframe_query_engine
     libjson sgraph
     curl
-    image_type image_io
     startup_teardown
     pylambda_worker
     eigen

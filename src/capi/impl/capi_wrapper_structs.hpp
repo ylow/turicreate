@@ -79,7 +79,6 @@ DECLARE_CAPI_WRAPPER_STRUCT(tc_error, std::string);
 DECLARE_CAPI_WRAPPER_STRUCT(tc_datetime, turi::flex_date_time);
 DECLARE_CAPI_WRAPPER_STRUCT(tc_flex_dict, turi::flex_dict);
 DECLARE_CAPI_WRAPPER_STRUCT(tc_flex_list, turi::flex_list);
-DECLARE_CAPI_WRAPPER_STRUCT(tc_flex_image, turi::flex_image);
 DECLARE_CAPI_WRAPPER_STRUCT(tc_ndarray, turi::flex_nd_vec);
 DECLARE_CAPI_WRAPPER_STRUCT(tc_flexible_type, turi::flexible_type);
 DECLARE_CAPI_WRAPPER_STRUCT(tc_flex_enum_list, std::vector<turi::flex_type_enum>);

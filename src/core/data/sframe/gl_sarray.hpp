@@ -1165,9 +1165,9 @@ class gl_sarray {
   flexible_type sum() const;
 
   /**
-   * Mean of all the values in the \ref gl_sarray, or mean image.  Returns
+   * Mean of all the values in the \ref gl_sarray.  Returns
    * FLEX_UNDEFINED on an empty \ref gl_sarray. Raises an exception if called
-   * on an \ref gl_sarray with non-numeric type or non-Image type.
+   * on an \ref gl_sarray with non-numeric type.
    */
   flexible_type mean() const;
 
@@ -1245,27 +1245,6 @@ class gl_sarray {
    */
   gl_sarray str_to_datetime(const std::string& str_format="%Y-%m-%dT%H:%M:%S%ZP") const;
 
-
-  /**
-   * Create a new \ref gl_sarray with all the values cast to
-   * \ref turi::image_type of uniform size.
-   *
-   * \param width int The width of the new images.
-   *
-   * \param height int The height of the new images.
-   *
-   * \param channels int. Number of channels of the new images.
-   *
-   * \param undefined_on_failure optional. defaults to true. If true,
-   * return FLEX_UNDEFINED type instead of Image type on failure.  If false,
-   * raises error upon failure.
-   *
-   * \param allow_rounding optional. Default to false. If true, rounds
-   * non-integer values when converting to Image type.  If false, raises error
-   * upon rounding.
-   */
-  gl_sarray pixel_array_to_image(size_t width, size_t height, size_t channels=3,
-                                 bool undefined_on_failure=true) const;
 
   /**
    * Create a new \ref gl_sarray with all values cast to the given type. Throws

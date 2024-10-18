@@ -31,7 +31,6 @@
 #include <core/storage/serialization/iarchive.hpp>
 #include <model_server/lib/auto_close_sarray.hpp>
 #include <model_server/lib/unity_global.hpp>
-#include <model_server/lib/image_util.hpp>
 #include <core/storage/query_engine/operators/all_operators.hpp>
 #include <core/storage/query_engine/operators/operator_properties.hpp>
 #include <core/storage/query_engine/planning/planner.hpp>
@@ -1364,7 +1363,7 @@ std::shared_ptr<unity_sarray_base> unity_sarray::astype(flex_type_enum dtype,
                                                         bool undefined_on_failure) {
   auto ret = lazy_astype(dtype, undefined_on_failure);
   if (undefined_on_failure == false && this->dtype() == flex_type_enum::STRING) {
-    // if we are parsing, or image loading, materialize
+    // if we are parsing materialize
     ret->materialize();
   }
   return ret;
@@ -1374,29 +1373,6 @@ std::shared_ptr<unity_sarray_base> unity_sarray::lazy_astype(flex_type_enum dtyp
   log_func_entry();
 
   flex_type_enum current_type = this->dtype();
-  // Special path for converting image sarray to vector type.
-  if (current_type == flex_type_enum::IMAGE &&
-      dtype == flex_type_enum::VECTOR) {
-      return image_util::image_sarray_to_vector_sarray(
-          std::static_pointer_cast<unity_sarray>(shared_from_this()),
-          undefined_on_failure);
-  }
-
-  // Special path for converting strings to image
-  if (current_type == flex_type_enum::STRING &&
-      dtype == flex_type_enum::IMAGE) {
-    return transform_lambda([=](const flexible_type& f)->flexible_type {
-                                  try {
-                                    return image_util::load_image(f.to<flex_string>(), "");
-                                  } catch (...) {
-                                    if (undefined_on_failure) return FLEX_UNDEFINED;
-                                    else throw;
-                                  }
-                                },
-                                dtype,
-                                true /*skip undefined*/,
-                                0 /*random seed*/);
-  };
 
   // if no changes. just keep the identity function
   if (dtype == current_type) {

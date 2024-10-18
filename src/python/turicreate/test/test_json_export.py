@@ -7,7 +7,7 @@
 # of the BSD license. See the LICENSE file for details.
 
 # This file tests validity of the JSON export produced by SFrame/SArray.
-# NOTE: Complex types like datetime and Image are likely broken.
+# NOTE: Complex types like datetime are likely broken.
 # TODO: When https://github.com/apple/turicreate/issues/89 is fixed,
 # also check inverse (exported JSON, when loaded, should produce original
 # SFrame.)

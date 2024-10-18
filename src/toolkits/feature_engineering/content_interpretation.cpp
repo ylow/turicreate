@@ -89,7 +89,6 @@ EXPORT bool content_interpretation_valid(gl_sarray data, const flex_string& inte
         {flex_type_enum::VECTOR,    {"vector"}},
         {flex_type_enum::DICT,      {"sparse_vector"}},
         {flex_type_enum::LIST,      {"categorical"}},
-        {flex_type_enum::IMAGE,     {"image"}},
         {flex_type_enum::DATETIME,  {"timestamp"}},
         {flex_type_enum::UNDEFINED, {"undefined"}} };
 
@@ -106,7 +105,6 @@ EXPORT bool content_interpretation_valid(gl_sarray data, const flex_string& inte
  *    sparse_vector: dictionary of (key, value) pairs.
  *    numerical: Numerical column.
  *    vector: Interprets a vector column as a numerical vector.
- *    image: It's an image.
  *    timestamp: It's a timestamp.
  *
  *  If it starts with "undefined:", then the rest is the reason behind it.
@@ -184,11 +182,6 @@ EXPORT flex_string infer_content_interpretation(gl_sarray data) {
        *
        */
       interpretation = "categorical";
-      break;
-    }
-
-    case flex_type_enum::IMAGE: {
-      interpretation = "image";
       break;
     }
 
