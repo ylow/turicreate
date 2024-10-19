@@ -2,10 +2,10 @@
 subdirs(
   external
   core
-  ml
-  toolkits
   visualization
-  model_server)
+  ml
+  model_server
+)
 
 
 if(TC_BUILD_PYTHON)

@@ -1,3 +1,3 @@
-subdirs(ml_data
-optimization
-sketches)
+subdirs(
+    sketches
+)

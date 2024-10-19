@@ -13,7 +13,6 @@ add_subdirectory(google)
 add_subdirectory(bzip2)
 add_subdirectory(lz4)
 add_subdirectory(uuid_p)
-add_subdirectory(xgboost)
 add_subdirectory(boost)
 add_subdirectory(nanomsg)
 
