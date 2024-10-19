@@ -17,14 +17,6 @@ else()
   set(unity_shared_deps 
     pylambda_worker 
     python_callbacks)
-
-  if(APPLE AND HAS_MLCUSTOMMODEL)
-    set(unity_shared_deps
-      ${unity_shared_deps}
-      objcapi
-      )
-  endif()
-
 endif()
 
 
@@ -71,7 +63,6 @@ make_library(unity_shared_for_testing
     ${unity_shared_objcet_deps}
     ${_TC_DEFAULT_SERVER_INITIALIZER}
     ${_TC_COMMON_OBJECTS}
-    $<TARGET_OBJECTS:capi>
   REQUIRES
     ${_TC_COMMON_REQUIREMENTS}
     ${unity_shared_deps}

@@ -391,10 +391,6 @@ set(_TC_EXTERNAL_DEPENDENCIES openssl libxml2 curl Threads::Threads
 # Collate all the object targets shared among static and shared library targets
 # These are used by C API, unity_shared, etc.
 
-if(NOT _TC_DEFAULT_SERVER_INITIALIZER)
-  set(_TC_DEFAULT_SERVER_INITIALIZER
-      "${CMAKE_SOURCE_DIR}/src/capi/default_server_initializer.cpp")
-endif()
 
 if(NOT TC_DISABLE_OBJECT_BUILDS)
 

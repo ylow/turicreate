@@ -6,7 +6,6 @@
 #include <visualization/server/transformation.hpp>
 #include <model_server/lib/extensions/model_base.hpp>
 #include <string>
-#include <capi/TuriCreate.h>
 
 #ifdef __APPLE__
 #ifndef TC_BUILD_IOS
@@ -15,9 +14,49 @@ extern "C" {
 }
 #endif // TC_BUILD_IOS
 #endif // __APPLE__
+       //
+#ifdef __cplusplus
+#include <cstdint>
+#else
+#include <stdint.h>
+#endif
+
+#ifndef NS_OPTIONS
+#define NS_OPTIONS(_type, _name) enum _name : _type _name; enum _name : _type
+#endif // NS_OPTIONS
+
+#ifdef __cplusplus
+// In C++, NS_OPTIONS doesn't seem to be valid syntax; skip it and just use a C++ enum.
+#define MAKE_NS_OPTIONS(_type, _name) enum _name : _type
+#else
+#ifdef __OBJC__
+// In ObjC, define MAKE_NS_OPTIONS in terms of NS_OPTIONS
+#define MAKE_NS_OPTIONS(_type, _name) typedef NS_OPTIONS(_type, _name)
+#else
+#define MAKE_NS_OPTIONS(_type, _name) typedef enum _name##_enum _name; enum _name##_enum
+#endif
+#endif // __cplusplus
+
+
 
 namespace turi {
   namespace visualization {
+
+    const char * const tc_plot_title_default_label = "__TURI_DEFAULT_LABEL";
+    enum tc_plot_variation: uint64_t {
+        tc_plot_variation_default = 0x00,
+
+        // Sizes (defaults to medium)
+        tc_plot_size_small = 0x01,
+        tc_plot_size_medium = 0x02,
+        tc_plot_size_large = 0x03,
+
+        // Color variations
+        // default could be light/dark depending on OS settings
+        tc_plot_color_light = 0x10,
+        tc_plot_color_dark = 0x20,
+
+    };
 
     class Plot: public model_base {
       private:

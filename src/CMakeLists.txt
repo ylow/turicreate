@@ -1,7 +1,6 @@
 
 subdirs(
   external
-  capi
   core
   ml
   toolkits

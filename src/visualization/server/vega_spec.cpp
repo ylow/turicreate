@@ -5,8 +5,8 @@
  */
 #include <visualization/server/escape.hpp>
 #include <visualization/server/vega_spec.hpp>
+#include <visualization/server/plot.hpp>
 
-#include <capi/TuriCreate.h>
 #include <core/data/sframe/gl_sarray.hpp>
 #include <core/logging/assertions.hpp>
 #include <core/storage/sframe_data/sframe.hpp>
