@@ -27,51 +27,6 @@ from .data_structures.sframe_builder import SFrameBuilder
 from turicreate.data_structures.sgraph import load_sgraph
 
 import turicreate.aggregate
-import turicreate.toolkits
-import turicreate.toolkits.clustering as clustering
-import turicreate.toolkits.distances as distances
-
-import turicreate.toolkits.text_analytics as text_analytics
-import turicreate.toolkits.graph_analytics as graph_analytics
-
-from turicreate.toolkits.graph_analytics import connected_components
-from turicreate.toolkits.graph_analytics import shortest_path
-from turicreate.toolkits.graph_analytics import kcore
-from turicreate.toolkits.graph_analytics import pagerank
-from turicreate.toolkits.graph_analytics import graph_coloring
-from turicreate.toolkits.graph_analytics import triangle_counting
-from turicreate.toolkits.graph_analytics import degree_counting
-from turicreate.toolkits.graph_analytics import label_propagation
-
-import turicreate.toolkits.recommender as recommender
-from turicreate.toolkits.recommender import popularity_recommender
-from turicreate.toolkits.recommender import item_similarity_recommender
-from turicreate.toolkits.recommender import ranking_factorization_recommender
-from turicreate.toolkits.recommender import item_content_recommender
-from turicreate.toolkits.recommender import factorization_recommender
-
-import turicreate.toolkits.regression as regression
-from turicreate.toolkits.regression import boosted_trees_regression
-from turicreate.toolkits.regression import random_forest_regression
-from turicreate.toolkits.regression import decision_tree_regression
-from turicreate.toolkits.regression import linear_regression
-
-import turicreate.toolkits.classifier as classifier
-from turicreate.toolkits.classifier import svm_classifier
-from turicreate.toolkits.classifier import logistic_classifier
-from turicreate.toolkits.classifier import boosted_trees_classifier
-from turicreate.toolkits.classifier import random_forest_classifier
-from turicreate.toolkits.classifier import decision_tree_classifier
-from turicreate.toolkits.classifier import nearest_neighbor_classifier
-
-import turicreate.toolkits.nearest_neighbors as nearest_neighbors
-from turicreate.toolkits.clustering import kmeans
-from turicreate.toolkits.clustering import dbscan
-from turicreate.toolkits.topic_model import topic_model
-
-import turicreate.toolkits.text_classifier as text_classifier
-
-from turicreate.toolkits import evaluation
 
 # internal util
 from turicreate._connect.main import launch as _launch
@@ -79,7 +34,6 @@ from turicreate._connect.main import launch as _launch
 ## bring load functions to the top level
 from turicreate.data_structures.sframe import load_sframe
 from turicreate.data_structures.sarray import load_sarray
-from turicreate.toolkits._model import load_model
 
 ################### Extension Importing ########################
 import turicreate.extensions

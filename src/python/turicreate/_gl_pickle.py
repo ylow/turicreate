@@ -8,7 +8,6 @@
 
 from . import (
     util as _util,
-    toolkits as _toolkits,
     SFrame as _SFrame,
     SArray as _SArray,
     SGraph as _SGraph,
@@ -37,26 +36,6 @@ def _get_temp_filename():
 
 def _get_tmp_file_location():
     return _util._make_temp_directory(prefix="gl_pickle_")
-
-
-def _is_not_pickle_safe_gl_model_class(obj_class):
-    """
-    Check if a Turi create model is pickle safe.
-
-    The function does it by checking that _CustomModel is the base class.
-
-    Parameters
-    ----------
-    obj_class    : Class to be checked.
-
-    Returns
-    ----------
-    True if the GLC class is a model and is pickle safe.
-
-    """
-    if issubclass(obj_class, _toolkits._model.CustomModel):
-        return not obj_class._is_gl_pickle_safe()
-    return False
 
 
 def _is_not_pickle_safe_gl_class(obj_class):
