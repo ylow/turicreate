@@ -24,7 +24,6 @@ Contents
     :maxdepth: 3
 
     turicreate.data_structures.rst
-    turicreate.toolkits.rst
 
 .. toctree::
     :maxdepth: 1
