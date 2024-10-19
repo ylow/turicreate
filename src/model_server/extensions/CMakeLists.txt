@@ -26,24 +26,4 @@ make_extension(json SOURCES
   json/encoder.cpp
   json/json.cpp
 )
-
-#----------------------------
-make_extension(xgboost_extension SOURCES ${CMAKE_SOURCE_DIR}/src/toolkits/supervised_learning/xgboost_extension.cpp)
-
-#----------------------------
-make_extension(content_interpretation_extensions SOURCES
-  ${CMAKE_SOURCE_DIR}/src/toolkits/feature_engineering/content_interpretation_extensions.cpp)
-
-make_extension(dictionary_transformation_extensions SOURCES
-  ${CMAKE_SOURCE_DIR}/src/toolkits/feature_engineering/transform_to_flat_dict_extensions.cpp)
-
-#----------------------------
-# make_extension(timeseries
-#   SOURCES
-#     timeseries/grouped_timeseries.cpp
-#     timeseries/registration.cpp
-#     timeseries/timeseries.cpp
-# )
-# target_link_libraries(timeseries PUBLIC grouped_sframe)
-
 set_property(DIRECTORY PROPERTY EXTENSIONS_LIST "${EXTENSIONS_LIST}")

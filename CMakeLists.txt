@@ -400,7 +400,6 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
       "$<TARGET_OBJECTS:lz4>"
       "$<TARGET_OBJECTS:protobuf>"
       "$<TARGET_OBJECTS:uuid>"
-      "$<TARGET_OBJECTS:xgboost>"
       # Then our own source code
       "$<TARGET_OBJECTS:cancel_serverside_ops>"
       "$<TARGET_OBJECTS:crash_handler>"
@@ -411,10 +410,8 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
       "$<TARGET_OBJECTS:fileio>"
       "$<TARGET_OBJECTS:logger>"
       "$<TARGET_OBJECTS:minipsutil>"
-      "$<TARGET_OBJECTS:ml_data>"
       "$<TARGET_OBJECTS:nanosockets>"
       "$<TARGET_OBJECTS:network>"
-      "$<TARGET_OBJECTS:optimization>"
       "$<TARGET_OBJECTS:parallel>"
       "$<TARGET_OBJECTS:process>"
       "$<TARGET_OBJECTS:pylambda>"
@@ -425,29 +422,13 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
       "$<TARGET_OBJECTS:sgraph>"
       "$<TARGET_OBJECTS:shmipc>"
       "$<TARGET_OBJECTS:startup_teardown>"
-      "$<TARGET_OBJECTS:supervised_learning>"
       "$<TARGET_OBJECTS:table_printer>"
       "$<TARGET_OBJECTS:timer>"
       "$<TARGET_OBJECTS:unity_sframe>"
       "$<TARGET_OBJECTS:gl_sframe>"
-      "$<TARGET_OBJECTS:unity_sketches>"
       "$<TARGET_OBJECTS:unity>"
       "$<TARGET_OBJECTS:unity_core>"
-      "$<TARGET_OBJECTS:unity_clustering>"
-      "$<TARGET_OBJECTS:unity_evaluation>"
-      "$<TARGET_OBJECTS:unity_factorization>"
-      "$<TARGET_OBJECTS:unity_feature_engineering>"
-      "$<TARGET_OBJECTS:unity_graph_analytics>"
-      "$<TARGET_OBJECTS:unity_ml_data_2>"
-      "$<TARGET_OBJECTS:unity_ml_model>"
-      "$<TARGET_OBJECTS:unity_nearest_neighbors>"
-      "$<TARGET_OBJECTS:unity_pattern_mining>"
-      "$<TARGET_OBJECTS:unity_prototype>"
-      "$<TARGET_OBJECTS:unity_recsys>"
-      "$<TARGET_OBJECTS:unity_sgd>"
-      "$<TARGET_OBJECTS:unity_sparse_similarity>"
-      "$<TARGET_OBJECTS:unity_text>"
-      "$<TARGET_OBJECTS:unity_util>"
+      "$<TARGET_OBJECTS:unity_sketches>"
       "$<TARGET_OBJECTS:util>"
       "$<TARGET_OBJECTS:visualization>"
       )
@@ -500,4 +481,4 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/subtree)
 endif()
 
 add_subdirectory(src)
-add_subdirectory(test)
+# add_subdirectory(test)

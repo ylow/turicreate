@@ -10,7 +10,7 @@ DEBUG_DIR=debug
 TURI_HOME=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 DEPS_PREFIX=$PWD/deps/local
 IOS_DEFAULT_MIN_VERSION=12
-MACOS_DEFAULT_MIN_VERSION=10.9
+MACOS_DEFAULT_MIN_VERSION=12.0
 
 function print_help {
   echo "Configures the build with the specified toolchain. "
@@ -267,15 +267,19 @@ if [[ $with_python == 1 ]]; then
   fi
 
   install_python_toolchain
-  CMAKE_CONFIG_FLAGS="$CMAKE_CONFIG_FLAGS -DTC_BUILD_PYTHON=1"
-
-  CMAKE_CONFIG_FLAGS="$CMAKE_CONFIG_FLAGS -DPYTHON_EXECUTABLE:FILEPATH=${PWD}/deps/env/bin/python"
-  CMAKE_CONFIG_FLAGS="$CMAKE_CONFIG_FLAGS -DPYTHON_INCLUDE_DIR=${PWD}/deps/env/include/python*/"
 
 
   # Activate the virtual environment
   export PYTHON_EXECUTABLE=${PWD}/deps/env/bin/python
+  export PYTHON_INCLUDE_DIR=$(${PYTHON_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_path('include'))")
+  export PYTHON_LIBRARY=$(${PYTHON_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")
   export PATH=${PWD}/deps/env/bin:$PATH
+
+  CMAKE_CONFIG_FLAGS="$CMAKE_CONFIG_FLAGS -DTC_BUILD_PYTHON=1"
+  CMAKE_CONFIG_FLAGS="$CMAKE_CONFIG_FLAGS -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}"
+  CMAKE_CONFIG_FLAGS="$CMAKE_CONFIG_FLAGS -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}"
+  CMAKE_CONFIG_FLAGS="$CMAKE_CONFIG_FLAGS -DPYTHON_LIBRARY=${PYTHON_LIBRARY}"
+
 else
   CMAKE_CONFIG_FLAGS="$CMAKE_CONFIG_FLAGS -DTC_BUILD_PYTHON=0"
 fi

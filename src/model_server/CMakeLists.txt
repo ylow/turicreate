@@ -1,7 +1,9 @@
 project(Turi)
 
-subdirs(extensions
-  lib)
+subdirs(
+    extensions
+    lib
+)
 
 set(additional_unity_requirements)
 
