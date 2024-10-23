@@ -14,11 +14,6 @@ namespace turi {
  */
 extern size_t DEFAULT_NUM_PYLAMBDA_WORKERS;
 
-/**
- * Number of graph lambda workers
- */
-extern size_t DEFAULT_NUM_GRAPH_LAMBDA_WORKERS;
-
 }
 
 #endif

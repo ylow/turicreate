@@ -26,15 +26,11 @@ namespace turi {
 // forward declarations
 class unity_sarray_base;
 class unity_sframe_base;
-class unity_sgraph_base;
 class model_base;
 class unity_sarray;
 class unity_sframe;
-class unity_sgraph;
 class gl_sframe;
 class gl_sarray;
-class gl_sgraph;
-class gl_gframe;
 
 extern int64_t USE_GL_DATATYPE;
 
@@ -75,8 +71,7 @@ struct is_toolkit_builtin {
   static constexpr bool value =
       std::is_same<typename std::decay<T>::type, gl_sarray>::value ||
       std::is_same<typename std::decay<T>::type, gl_sframe>::value ||
-      std::is_same<typename std::decay<T>::type, gl_sarray>::value ||
-      std::is_same<typename std::decay<T>::type, gl_sgraph>::value;
+      std::is_same<typename std::decay<T>::type, gl_sarray>::value;
 };
 
 
@@ -112,18 +107,14 @@ struct all_variant_convertible;
  *  - any direct member of variant_type:
  *     - std::shared_ptr<unity_sarray_base>
  *     - std::shared_ptr<unity_sframe_base>
- *     - std::shared_ptr<unity_sgraph_base>
  *     - std::shared_ptr<model_base>
  *     - std::vector<variant_type>
  *     - std::map<std::string, variant_type>
  *  - everything convertible to flexible_type (See flexible_type_conveter.hpp)
  *  - std::shared_ptr<unity_sarray>
  *  - std::shared_ptr<unity_sframe>
- *  - std::shared_ptr<unity_sgraph>
  *  - gl_sarray
  *  - gl_sframe
- *  - gl_sgraph
- *  - gl_gframe
  *  - std::shared_ptr<T> where T is a descendent of model_base
  *  - variant_type
  *  - Recursive cases
@@ -186,7 +177,6 @@ struct variant_converter<T,
  * But not flexible_type since that is covered by case 1.
  *     - unity_sarray_base*
  *     - unity_sframe_base*
- *     - unity_sgraph_base*
  *     - model_base*
  *     - std::vector<variant_type>
  *     - std::map<std::string, variant_type>
@@ -242,19 +232,6 @@ struct variant_converter<std::shared_ptr<unity_sframe>, void> {
   std::shared_ptr<unity_sframe> get(const variant_type& val);
   variant_type set(std::shared_ptr<unity_sframe> val);
 };
-
-/**
- * Case 6: Cover unity_sgraph*.
- * (note that this case is not covered by Case 2 since variant_type
- * stores unity_sgraph_base* and not unity_sgraph*
- */
-template <>
-struct variant_converter<std::shared_ptr<unity_sgraph>, void> {
-  static constexpr bool value = true;
-  std::shared_ptr<unity_sgraph> get(const variant_type& val);
-  variant_type set(std::shared_ptr<unity_sgraph> val);
-};
-
 
 /**
  * Case 7a: Cover pointer descendents of model_base.
@@ -429,19 +406,7 @@ struct variant_converter<gl_sframe, void> {
   variant_type set(gl_sframe val);
 };
 
-template <>
-struct variant_converter<gl_sgraph, void> {
-  static constexpr bool value = true;
-  gl_sgraph get(const variant_type& val);
-  variant_type set(gl_sgraph val);
-};
 
-template <>
-struct variant_converter<gl_gframe, void> {
-  static constexpr bool value = true;
-  gl_gframe get(const variant_type& val);
-  variant_type set(gl_gframe val);
-};
 #endif
 
 namespace variant_converter_impl {

@@ -166,7 +166,7 @@ def _make_internal_url(url):
 
 def is_directory_archive(path):
     """
-    Utility function that returns True if the path provided is a directory that has an SFrame or SGraph in it.
+    Utility function that returns True if the path provided is a directory that has an SFrame in it.
 
     SFrames are written to disk as a directory archive, this function identifies if a given directory is an archive
     for an SFrame.
@@ -207,7 +207,7 @@ def get_archive_type(path):
 
     Returns
     -------
-    Returns a string of: sarray, sframe, sgraph. Raises TypeError for anything else.
+    Returns a string of: sarray, sframe. Raises TypeError for anything else.
     """
     if not is_directory_archive(path):
         raise TypeError("Unable to determine the type of archive at path: %s" % path)
@@ -267,15 +267,12 @@ def crossproduct(d):
 def get_turicreate_object_type(url):
     """
     Given url where a Turi Create object is persisted, return the Turi
-    Create object type: 'model', 'graph', 'sframe', or 'sarray'
+    Create object type: 'model', 'sframe', or 'sarray'
     """
     from .._connect import main as _glconnect
 
     ret = _glconnect.get_unity().get_turicreate_object_type(_make_internal_url(url))
 
-    # to be consistent, we use sgraph instead of graph here
-    if ret == "graph":
-        ret = "sgraph"
     return ret
 
 

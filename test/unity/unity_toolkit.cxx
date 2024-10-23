@@ -16,7 +16,6 @@
 #include <model_server/lib/simple_model.hpp>
 #include <core/storage/sframe_interface/unity_sarray.hpp>
 #include <core/storage/sframe_interface/unity_sframe.hpp>
-#include <core/storage/sframe_interface/unity_sgraph.hpp>
 #include <core/data/sframe/gl_sarray.hpp>
 #include <core/data/sframe/gl_sframe.hpp>
 using namespace turi;
@@ -36,9 +35,6 @@ struct variant_equality_visitor {
     return true;
   }
   bool operator()(std::shared_ptr<unity_sarray_base> a, std::shared_ptr<unity_sarray_base> b) const {
-    return true;
-  }
-  bool operator()(std::shared_ptr<unity_sgraph_base> a, std::shared_ptr<unity_sgraph_base> b) const {
     return true;
   }
   bool operator()(std::shared_ptr<model_base> a, std::shared_ptr<model_base> b) const {
@@ -101,9 +97,6 @@ struct unity_toolkit_test {
     return std::make_shared<unity_sframe>();
   }
 
-  std::shared_ptr<unity_sgraph> make_sgraph() {
-    return std::make_shared<unity_sgraph>();
-  }
   std::shared_ptr<simple_model> make_model() {
     return std::make_shared<simple_model>();
   }
@@ -124,7 +117,6 @@ struct unity_toolkit_test {
     // case 2
     converter_test<std::shared_ptr<unity_sarray_base>>(make_sarray());
     converter_test<std::shared_ptr<unity_sframe_base>>(make_sframe());
-    converter_test<std::shared_ptr<unity_sgraph_base>>(make_sgraph());
     converter_test<std::shared_ptr<model_base>>(make_model());
     converter_test<std::vector<variant_type>>({variant_type()});
     converter_test<std::vector<variant_type>>(
@@ -143,18 +135,13 @@ struct unity_toolkit_test {
     // case 5
     converter_test<std::shared_ptr<unity_sframe>>(make_sframe());
 
-    // case 6
-    converter_test<std::shared_ptr<unity_sgraph>>(make_sgraph());
-
     // case 7
     converter_test<std::shared_ptr<simple_model>>(make_model());
 
     // case 8
     converter_test<std::vector<std::shared_ptr<unity_sarray>>>({make_sarray(), make_sarray()});
-    converter_test<std::vector<std::shared_ptr<unity_sgraph>>>({make_sgraph(), make_sgraph()});
     converter_test<std::vector<variant_vector_type>>(
         std::vector<variant_vector_type>{{flexible_type("hello")},
-                                        {flexible_type(1.0), to_variant(make_sgraph())},
                                         {to_variant(make_sarray())},
                                         {to_variant(make_model()), to_variant(make_sframe())}});
     // case 9
@@ -186,15 +173,12 @@ struct unity_toolkit_test {
                                                     {"world", {{"world", 456}}}});
     // case 11
     converter_test<std::pair<size_t, std::shared_ptr<unity_sarray>>>({1.0, make_sarray()});
-    converter_test<std::pair<std::shared_ptr<unity_sgraph>, std::shared_ptr<unity_sarray>>>({make_sgraph(), make_sarray()});
     // flexible_type case. but should disambiguate
     converter_test<std::pair<size_t, int>>({1,2});
 
     // case 12
     converter_test<std::tuple<size_t, std::shared_ptr<unity_sarray>, bool>>(
         std::tuple<size_t, std::shared_ptr<unity_sarray>,bool>{1.0, make_sarray(), true});
-    converter_test<std::tuple<std::shared_ptr<unity_sgraph>, std::shared_ptr<unity_sarray>, bool>>(
-        std::tuple<std::shared_ptr<unity_sgraph>,std::shared_ptr<unity_sarray>,bool>{make_sgraph(), make_sarray(), false});
     // flexible_type case. but should disambiguate
     converter_test<std::tuple<size_t, int>>(std::tuple<size_t,int>{1,2});
   }

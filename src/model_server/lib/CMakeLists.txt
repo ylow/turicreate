@@ -27,7 +27,7 @@ make_library(unity_core OBJECT
     sframe
     cancel_serverside_ops
     sframe_query_engine
-    libjson sgraph
+    libjson 
     curl
     startup_teardown
     pylambda_worker

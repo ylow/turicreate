@@ -10,8 +10,6 @@ from . import (
     util as _util,
     SFrame as _SFrame,
     SArray as _SArray,
-    SGraph as _SGraph,
-    load_sgraph as _load_graph,
 )
 
 from .util import _get_aws_credentials as _util_get_aws_credentials, _cloudpickle
@@ -54,7 +52,7 @@ def _is_not_pickle_safe_gl_class(obj_class):
     True if the class is a GLC Model.
 
     """
-    gl_ds = [_SFrame, _SArray, _SGraph]
+    gl_ds = [_SFrame, _SArray]
 
     # Object is GLC-DS or GLC-Model
     return (obj_class in gl_ds) or _is_not_pickle_safe_gl_model_class(obj_class)
@@ -77,8 +75,6 @@ def _get_gl_class_type(obj_class):
 
     if obj_class == _SFrame:
         return "SFrame"
-    elif obj_class == _SGraph:
-        return "SGraph"
     elif obj_class == _SArray:
         return "SArray"
     elif _is_not_pickle_safe_gl_model_class(obj_class):
@@ -105,8 +101,6 @@ def _get_gl_object_from_persistent_id(type_tag, gl_archive_abs_path):
     """
     if type_tag == "SFrame":
         obj = _SFrame(gl_archive_abs_path)
-    elif type_tag == "SGraph":
-        obj = _load_graph(gl_archive_abs_path)
     elif type_tag == "SArray":
         obj = _SArray(gl_archive_abs_path)
     elif type_tag == "Model":
@@ -116,7 +110,7 @@ def _get_gl_object_from_persistent_id(type_tag, gl_archive_abs_path):
     else:
         raise _pickle.UnpicklingError(
             "Turi pickling Error: Unsupported object."
-            " Only SFrames, SGraphs, SArrays, and Models are supported."
+            " Only SFrames, SArrays, and Models are supported."
         )
     return obj
 
@@ -132,9 +126,8 @@ class GLPickler(_cloudpickle.CloudPickler):
     # (1) Regular python objects
     # (2) SArray
     # (3) SFrame
-    # (4) SGraph
-    # (5) Models
-    # (6) Any combination of (1) - (5)
+    # (4) Models
+    # (5) Any combination of (1) - (5)
 
     Examples
     --------
@@ -314,7 +307,6 @@ class GLPickler(_cloudpickle.CloudPickler):
         example:
 
             (SFrame, 'sframe-save-path')
-            (SGraph, 'sgraph-save-path')
             (Model, 'model-save-path')
 
         """

@@ -10,7 +10,6 @@
 #include <core/logging/logger.hpp>
 #include <core/data/sframe/gl_sarray.hpp>
 #include <core/data/sframe/gl_sframe.hpp>
-#include <core/data/sframe/gl_sgraph.hpp>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/archive/iterators/binary_from_base64.hpp>
@@ -107,7 +106,6 @@ static variant_type _list_from_serializable(const flexible_type& data, const sch
 
 
 static variant_type _dict_from_serializable(const flexible_type& data, const schema_t& schema) {
-  // TODO distinguish dict from SGraph
   flex_dict data_dict = data;
   if (_is_type(schema, JSON::types::DATETIME)) {
     flex_date_time ret;
@@ -161,19 +159,6 @@ static variant_type _dict_from_serializable(const flexible_type& data, const sch
       ret[column_name] = variant_get_value<gl_sarray>(deserialized_column);
     }
     return ret;
-  } else if (_is_type(schema, JSON::types::SGRAPH)) {
-    schema_t sframe_schema;
-    sframe_schema.insert(std::make_pair("type", JSON::types::SFRAME));
-
-    flexible_type serialized_vertices = _dict_get(data_dict, "vertices");
-    variant_type deserialized_vertices = _any_from_serializable(serialized_vertices, sframe_schema);
-    gl_sframe vertices = variant_get_value<gl_sframe>(deserialized_vertices);
-
-    flexible_type serialized_edges = _dict_get(data_dict, "edges");
-    variant_type deserialized_edges = _any_from_serializable(serialized_edges, sframe_schema);
-    gl_sframe edges = variant_get_value<gl_sframe>(deserialized_edges);
-
-    return gl_sgraph(vertices, edges);
   } else {
     _check_type(schema, JSON::types::DICT);
     if (schema.find("nested") != schema.end()) {

@@ -60,24 +60,6 @@ struct lambda_call_by_sframe_rows_data {
   flexible_type* output_values = nullptr;
 };
 
-/** The data used in applying a graph triple apply.
- */
-struct lambda_graph_triple_apply_data {
-
-  const std::vector<std::vector<flexible_type> >* all_edge_data;
-  std::vector<std::vector<flexible_type> >* out_edge_data;
-
-  std::vector<std::vector<flexible_type> >* source_partition;
-  std::vector<std::vector<flexible_type> >* target_partition;
-
-
-  const std::vector<std::string>* vertex_keys;
-  const std::vector<std::string>* edge_keys;
-  const std::vector<std::string>* mutated_edge_keys;
-  size_t srcid_column, dstid_column;
-};
-
-
 struct pylambda_evaluation_functions {
   void (*set_random_seed)(size_t seed);
   size_t (*init_lambda)(const std::string&);
@@ -85,7 +67,6 @@ struct pylambda_evaluation_functions {
   void (*eval_lambda)(size_t, lambda_call_data*);
   void (*eval_lambda_by_dict)(size_t, lambda_call_by_dict_data*);
   void (*eval_lambda_by_sframe_rows)(size_t, lambda_call_by_sframe_rows_data*);
-  void (*eval_graph_triple_apply)(size_t, lambda_graph_triple_apply_data*);
 };
 
 /** This is called through the cython functions to set up the

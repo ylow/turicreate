@@ -1000,7 +1000,6 @@ class CloudPickler(Pickler):
         ## Make sure the unity objects are not picklable ##
         self.dispatch[tc.SArray] = self.__class__.save_unsupported
         self.dispatch[tc.SFrame] = self.__class__.save_unsupported
-        self.dispatch[tc.SGraph] = self.__class__.save_unsupported
         self.dispatch[tc.Sketch] = self.__class__.save_unsupported
         self.dispatch[Model] = self.__class__.save_unsupported
 
@@ -1013,9 +1012,6 @@ class CloudPickler(Pickler):
         ] = self.__class__.save_unsupported
         self.dispatch[
             tc._cython.cy_sketch.UnitySketchProxy
-        ] = self.__class__.save_unsupported
-        self.dispatch[
-            tc._cython.cy_graph.UnityGraphProxy
         ] = self.__class__.save_unsupported
         self.dispatch[tc._cython.cy_model.UnityModel] = self.__class__.save_unsupported
 

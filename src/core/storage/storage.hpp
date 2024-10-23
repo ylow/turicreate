@@ -1,21 +1,6 @@
 #ifndef TURI_CORE_STORAGE_HPP_
 #define TURI_CORE_STORAGE_HPP_
 
-#include <core/storage/sgraph_data/sgraph_synchronize_interface.hpp>
-#include <core/storage/sgraph_data/sgraph.hpp>
-#include <core/storage/sgraph_data/sgraph_compute_vertex_block.hpp>
-#include <core/storage/sgraph_data/sgraph_vertex_apply.hpp>
-#include <core/storage/sgraph_data/hilbert_curve.hpp>
-#include <core/storage/sgraph_data/sgraph_engine.hpp>
-#include <core/storage/sgraph_data/sgraph_compute.hpp>
-#include <core/storage/sgraph_data/sgraph_synchronize.hpp>
-#include <core/storage/sgraph_data/sgraph_fast_triple_apply.hpp>
-#include <core/storage/sgraph_data/sgraph_types.hpp>
-#include <core/storage/sgraph_data/sgraph_io.hpp>
-#include <core/storage/sgraph_data/sgraph_edge_apply.hpp>
-#include <core/storage/sgraph_data/hilbert_parallel_for.hpp>
-#include <core/storage/sgraph_data/sgraph_constants.hpp>
-#include <core/storage/sgraph_data/sgraph_triple_apply.hpp>
 #include <core/storage/sframe_data/sarray_v2_type_encoding.hpp>
 #include <core/storage/sframe_data/csv_writer.hpp>
 #include <core/storage/sframe_data/join.hpp>
@@ -119,11 +104,9 @@
 #include <core/storage/core/storage/serialization/serialize_to_from_string.hpp>
 #include <core/storage/sframe_interface/unity_sarray.hpp>
 #include <core/storage/sframe_interface/unity_sframe_builder.hpp>
-#include <core/storage/sframe_interface/unity_sgraph_lazy_ops.hpp>
 #include <core/storage/sframe_interface/unity_sarray_binary_operations.hpp>
 #include <core/storage/sframe_interface/unity_sframe.hpp>
 #include <core/storage/sframe_interface/unity_sarray_builder.hpp>
-#include <core/storage/sframe_interface/unity_sgraph.hpp>
 #include <core/storage/query_engine/query_engine_lock.hpp>
 #include <core/storage/query_engine/operators/operator_properties.hpp>
 #include <core/storage/query_engine/operators/reduce.hpp>

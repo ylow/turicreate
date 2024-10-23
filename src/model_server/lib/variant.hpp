@@ -20,14 +20,12 @@ namespace turi {
 class model_base;
 struct function_closure_info;
 class unity_sframe_base;
-class unity_sgraph_base;
 class unity_sarray_base;
 
 /**
  * A variant object that can be communicated between Python and C++ which
  * contains either a
  * \li flexible_type
- * \li std::shared_ptr<unity_sgraph>
  * \li dataframe_t
  * \li model
  * \li std::shared_ptr<unity_sframe>
@@ -43,7 +41,6 @@ class unity_sarray_base;
  */
 typedef typename boost::make_recursive_variant<
             flexible_type,
-            std::shared_ptr<unity_sgraph_base>,
             dataframe_t,
             std::shared_ptr<model_base>,
             std::shared_ptr<unity_sframe_base>,
@@ -71,20 +68,18 @@ inline std::string get_variant_which_name(int i) {
    case 0:
      return "flexible_type";
    case 1:
-     return "SGraph";
-   case 2:
      return "Dataframe";
-   case 3:
+   case 2:
      return "Model";
-   case 4:
+   case 3:
      return "SFrame";
-   case 5:
+   case 4:
      return "SArray";
-   case 6:
+   case 5:
      return "Dictionary";
-   case 7:
+   case 6:
      return "List";
-   case 8:
+   case 7:
      return "Function";
    default:
      return "";
@@ -220,28 +215,23 @@ inline bool variant_is<flex_undefined>(const variant_type& t) {
    return variant_is<flexible_type>(t) && (variant_get_ref<flexible_type>(t).get_type() == flex_type_enum::UNDEFINED);
 }
 
+
 template <>
 GL_HOT_INLINE_FLATTEN
-inline bool variant_is<std::shared_ptr<unity_sgraph_base> >(const variant_type& t) {
+inline bool variant_is<dataframe_t>(const variant_type& t) {
    return t.which() == 1;
 }
 
 template <>
 GL_HOT_INLINE_FLATTEN
-inline bool variant_is<dataframe_t>(const variant_type& t) {
+inline bool variant_is<std::shared_ptr<model_base> >(const variant_type& t) {
    return t.which() == 2;
 }
 
 template <>
 GL_HOT_INLINE_FLATTEN
-inline bool variant_is<std::shared_ptr<model_base> >(const variant_type& t) {
-   return t.which() == 3;
-}
-
-template <>
-GL_HOT_INLINE_FLATTEN
 inline bool variant_is<std::shared_ptr<unity_sframe_base> >(const variant_type& t) {
-   return t.which() == 4;
+   return t.which() == 3;
 }
 
 class gl_sframe;
@@ -249,13 +239,13 @@ class gl_sframe;
 template <>
 GL_HOT_INLINE_FLATTEN
 inline bool variant_is<gl_sframe>(const variant_type& t) {
-   return t.which() == 4;
+   return t.which() == 3;
 }
 
 template <>
 GL_HOT_INLINE_FLATTEN
 inline bool variant_is<std::shared_ptr<unity_sarray_base> >(const variant_type& t) {
-   return t.which() == 5;
+   return t.which() == 4;
 }
 
 class gl_sarray;
@@ -263,19 +253,19 @@ class gl_sarray;
 template <>
 GL_HOT_INLINE_FLATTEN
 inline bool variant_is<gl_sarray>(const variant_type& t) {
-   return t.which() == 5;
+   return t.which() == 4;
 }
 
 template <>
 GL_HOT_INLINE_FLATTEN
 inline bool variant_is<variant_map_type>(const variant_type& t) {
-   return t.which() == 6;
+   return t.which() == 5;
 }
 
 template <>
 GL_HOT_INLINE_FLATTEN
 inline bool variant_is<boost::recursive_wrapper<function_closure_info> >(const variant_type& t) {
-   return t.which() == 7;
+   return t.which() == 6;
 }
 
 }

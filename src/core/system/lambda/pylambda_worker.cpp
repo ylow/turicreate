@@ -7,7 +7,6 @@
 #include <core/system/cppipc/server/comm_server.hpp>
 #include <core/system/lambda/pylambda.hpp>
 #include <shmipc/shmipc.hpp>
-#include <core/system/lambda/graph_pylambda.hpp>
 #include <core/logging/logger.hpp>
 #include <process/process_util.hpp>
 #include <core/util/try_finally.hpp>
@@ -129,12 +128,6 @@ int EXPORT pylambda_worker_main(const std::string& root_path,
           __TRACK; LOG_DEBUG_WITH_PID("creation of pylambda_evaluator without SHM complete.");
           __TRACK; return n;
         }
-      });
-
-    __TRACK; server.register_type<turi::lambda::graph_lambda_evaluator_interface>([&](){
-        __TRACK; auto n = new turi::lambda::graph_pylambda_evaluator();
-        __TRACK; LOG_DEBUG_WITH_PID("creation of graph_pylambda_evaluator complete.");
-        __TRACK; return n;
       });
 
     __TRACK; LOG_DEBUG_WITH_PID("Starting server.");

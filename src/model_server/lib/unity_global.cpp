@@ -25,7 +25,6 @@
 #include <model_server/lib/unity_global.hpp>
 #include <perf/memory_info.hpp>
 #include <core/globals/globals.hpp>
-#include <core/storage/sframe_interface/unity_sgraph.hpp>
 #include <core/storage/sframe_interface/unity_sarray.hpp>
 #include <core/storage/sframe_interface/unity_sframe.hpp>
 #include <model_server/lib/sdk_registration_function_types.hpp>
@@ -46,27 +45,10 @@ namespace turi {
     return UNITY_VERSION;
   }
 
-  std::string unity_global::get_graph_dag() {
-    std::stringstream strm;
-    unity_sgraph::get_dag()->print(strm);
-    return strm.str();
-  }
-
-  std::shared_ptr<unity_sgraph_base> unity_global::load_graph(std::string fname) {
-    log_func_entry();
-    std::shared_ptr<unity_sgraph> g(new unity_sgraph());
-    try {
-      g->load_graph(fname);
-    } catch (...) {
-      throw;
-    }
-    return g;
-  }
-
   std::string unity_global::get_turicreate_object_type(const std::string& url) {
     logstream(LOG_INFO) << "Getting turicreate object type stored at: " << sanitize_url(url) << std::endl;
 
-    // valid values are: model, graph. sframe, sarray
+    // valid values are: model, sframe, sarray
     return dir_archive::get_directory_metadata(url, "contents");
   }
 
@@ -81,23 +63,16 @@ namespace turi {
        oarc << boost::get<flexible_type>(v);
        break;
      case 1:
-       {
-         std::shared_ptr<unity_sgraph> g =
-             std::static_pointer_cast<unity_sgraph>(variant_get_ref<std::shared_ptr<unity_sgraph_base>>(v));
-         oarc << *g;
-         break;
-       }
-     case 2:
        oarc << boost::get<dataframe_t>(v);
        break;
-     case 3:
+     case 2:
        {
          auto model_ptr = boost::get<std::shared_ptr<model_base>>(v);
          oarc << std::string(model_ptr->name());
          oarc << (*model_ptr);
        }
        break;
-     case 4:
+     case 3:
        {
          std::shared_ptr<unity_sframe> s =
              std::static_pointer_cast<unity_sframe>(variant_get_ref<std::shared_ptr<unity_sframe_base>>(v));
@@ -105,7 +80,7 @@ namespace turi {
          break;
        }
        break;
-     case 5:
+     case 4:
        {
          std::shared_ptr<unity_sarray> s =
              std::static_pointer_cast<unity_sarray>(variant_get_ref<std::shared_ptr<unity_sarray_base>>(v));
@@ -113,7 +88,7 @@ namespace turi {
          break;
        }
        break;
-     case 6:
+     case 5:
        {
          const variant_map_type& varmap = variant_get_ref<variant_map_type>(v);
          oarc << (size_t)varmap.size();
@@ -123,7 +98,7 @@ namespace turi {
          }
          break;
        }
-     case 7:
+     case 6:
        {
          const variant_vector_type& varvec = variant_get_ref<variant_vector_type>(v);
          oarc << (size_t)varvec.size();
@@ -148,18 +123,11 @@ namespace turi {
        }
      case 1:
        {
-         std::shared_ptr<unity_sgraph> g(new unity_sgraph());
-         iarc >> *g;
-         variant_set_value<std::shared_ptr<unity_sgraph>>(v, g);
-         break;
-       }
-     case 2:
-       {
          v = dataframe_t();
          iarc >> boost::get<dataframe_t>(v);
          break;
        }
-     case 3:
+     case 2:
        {
          std::string model_name;
          iarc >> model_name;
@@ -168,21 +136,21 @@ namespace turi {
          v = model_ptr;
        }
        break;
-     case 4:
+     case 3:
        {
          std::shared_ptr<unity_sframe> s(new unity_sframe());
          iarc >> *s;
          variant_set_value<std::shared_ptr<unity_sframe>>(v, s);
          break;
        }
-     case 5:
+     case 4:
        {
          std::shared_ptr<unity_sarray> s(new unity_sarray());
          iarc >> *s;
          variant_set_value<std::shared_ptr<unity_sarray>>(v, s);
          break;
        }
-     case 6:
+     case 5:
        {
          size_t numvals;
          iarc >> numvals;
@@ -197,7 +165,7 @@ namespace turi {
          variant_set_value<variant_map_type>(v, varmap);
          break;
        }
-     case 7:
+     case 6:
        {
          size_t numvals;
          iarc >> numvals;

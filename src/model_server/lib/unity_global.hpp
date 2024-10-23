@@ -60,11 +60,6 @@ class unity_global: public unity_global_base {
   std::string get_version();
 
   /**
-   * Constructs a graph from a binary file on disk, or HDFS
-   */
-  std::shared_ptr<unity_sgraph_base> load_graph(std::string fname);
-
-  /**
    * Lists the names of all regsitered classes.
    */
   std::vector<std::string> list_toolkit_classes();
@@ -156,17 +151,12 @@ class unity_global: public unity_global_base {
    * Runs a toolkit of the specified name, and with the specified arguments.
    * Returns a toolkit_function_response_type which contains the result of the toolkit
    * execution (success/failure) as well as any additional returned state
-   * (graphs/classes/etc). Will throw an exception if the toolkit name was not
+   * (classes/etc). Will throw an exception if the toolkit name was not
    * found.
    */
   toolkit_function_response_type run_toolkit(std::string toolkit_name,
                                     variant_map_type& arguments);
 
-  /**
-   * Internal utility function. Gets the structure of the lazy
-   * evaluation dag for the graph operations.
-   */
-  std::string get_graph_dag();
 
   /**
    * Evaluate a pickled python lambda with the given argument.
@@ -330,7 +320,7 @@ class unity_global: public unity_global_base {
 
   /**
    * Given a url, returns the type of the Turi object, return value could be:
-   * model, graph, sframe, sarray
+   * model, sframe, sarray
    */
   std::string get_turicreate_object_type(const std::string& url);
 

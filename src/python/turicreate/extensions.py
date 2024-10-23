@@ -22,12 +22,11 @@ using the python import statement. Note that turicreate must be imported first.
 # models implemented as extensions in C++
 
 import sys as _sys
-from . import SArray as _SArray, SFrame as _SFrame, SGraph as _SGraph
+from . import SArray as _SArray, SFrame as _SFrame
 from ._connect.main import get_unity as _get_unity
 from .util import _make_internal_url
 from ._cython.cy_sframe import UnitySFrameProxy as _UnitySFrameProxy
 from ._cython.cy_sarray import UnitySArrayProxy as _UnitySArrayProxy
-from ._cython.cy_graph import UnityGraphProxy as _UnityGraphProxy
 from ._cython.cy_model import UnityModel as _UnityModel
 from .toolkits._main import ToolkitError as _ToolkitError
 from ._cython.context import debug_trace as cython_context
@@ -85,13 +84,10 @@ class_uid_to_class = {}
 def _wrap_function_return(val):
     """
     Recursively walks each thing in val, opening lists and dictionaries,
-    converting all occurrences of UnityGraphProxy to an SGraph,
     UnitySFrameProxy to SFrame, and UnitySArrayProxy to SArray.
     """
 
-    if type(val) is _UnityGraphProxy:
-        return _SGraph(_proxy=val)
-    elif type(val) is _UnitySFrameProxy:
+    if type(val) is _UnitySFrameProxy:
         return _SFrame(_proxy=val)
     elif type(val) is _UnitySArrayProxy:
         return _SArray(_proxy=val)

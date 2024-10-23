@@ -26,10 +26,6 @@ cdef extern from "<model_server/lib/unity_global.hpp>" namespace "turi":
 
         string get_version() except +
 
-        string get_graph_dag() except +
-
-        unity_sgraph_base_ptr load_graph(string) except +
-
         vector[string] list_toolkit_functions() except +
 
         vector[string] list_toolkit_classes() except +
@@ -95,10 +91,6 @@ cdef class UnityGlobalProxy:
     cdef unity_global_ptr _base_ptr
 
     cpdef get_version(self)
-
-    cpdef get_graph_dag(self)
-
-    cpdef load_graph(self, fname)
 
     cpdef list_toolkit_functions(self)
 

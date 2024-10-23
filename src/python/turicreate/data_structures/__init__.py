@@ -12,11 +12,10 @@ documentation, along with a small number of simple examples.
 
 
 
-__all__ = ["sframe", "sarray", "sgraph", "sketch", "serialization"]
+__all__ = ["sframe", "sarray", "sketch", "serialization"]
 
 from . import sframe
 from . import sarray
-from . import sgraph
 from . import sketch
 from . import serialization
 

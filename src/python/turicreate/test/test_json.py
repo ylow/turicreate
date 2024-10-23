@@ -33,7 +33,6 @@ from . import util
 from .. import _json  # turicreate._json
 from ..data_structures.sarray import SArray
 from ..data_structures.sframe import SFrame
-from ..data_structures.sgraph import SGraph, Vertex, Edge
 
 pytestmark = [pytest.mark.minimal]
 
@@ -58,8 +57,6 @@ class JSONTest(unittest.TestCase):
             _SFrameComparer._assert_sarray_equal(x, y)
         elif isinstance(x, SFrame):
             _SFrameComparer._assert_sframe_equal(x, y)
-        elif isinstance(x, SGraph):
-            _SFrameComparer._assert_sgraph_equal(x, y)
         elif isinstance(x, dict):
             for (k1, v1), (k2, v2) in zip(sorted(x.items()), sorted(y.items())):
                 self._assertEqual(k1, k2)
@@ -192,13 +189,6 @@ class JSONTest(unittest.TestCase):
             ]
         ]
 
-    def test_sgraph_to_json(self):
-        sg = SGraph()
-        self._run_test_case(sg)
-
-        sg = sg.add_vertices([Vertex(x) for x in [1, 2, 3, 4]])
-        sg = sg.add_edges([Edge(x, x + 1) for x in [1, 2, 3]])
-        self._run_test_case(sg)
 
     def test_nested_to_json(self):
         # not tested in the cases above: nested data, nested schema

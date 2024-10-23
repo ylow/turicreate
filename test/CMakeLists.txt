@@ -3,9 +3,6 @@ project(Turi)
 enable_testing()
 
 subdirs(
-        toolkits
-        ml_data
-        optimization
         util
         serialization
         logger
@@ -19,7 +16,6 @@ subdirs(
         parallel
         lambda
         sframe
-        sgraph
         lazy_eval
         sframe_query_engine
         unity
@@ -28,16 +24,8 @@ subdirs(
         table_printer
         network
         process
-        neural_net
         benchmark
         exceptions
         vega_renderer
 )
-
-if(${TC_BUILD_CAPI})
-  message("Building C API Tests.")
-  subdirs(capi)
-else()
-  message("Skipping build of C APIs Tests.")
-endif()
 

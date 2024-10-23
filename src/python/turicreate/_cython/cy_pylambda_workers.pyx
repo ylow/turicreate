@@ -70,21 +70,6 @@ cdef extern from "<core/system/lambda/pylambda.hpp>" namespace "turi::lambda":
 
         flexible_type* output_values
 
-    ################################################################################
-    # Graph Pylambda stuff
-    cdef struct lambda_graph_triple_apply_data:
-
-        const vector[vector[flexible_type]]* all_edge_data
-        vector[vector[flexible_type]]* out_edge_data
-
-        vector[vector[flexible_type]]* source_partition
-        vector[vector[flexible_type]]* target_partition
-
-        const vector[string]* vertex_keys
-        const vector[string]* edge_keys
-        const vector[string]* mutated_edge_keys
-        size_t srcid_column, dstid_column
-
     cdef struct pylambda_evaluation_functions:
         void (*set_random_seed)(size_t seed)
         size_t (*init_lambda)(const string&)
@@ -92,7 +77,6 @@ cdef extern from "<core/system/lambda/pylambda.hpp>" namespace "turi::lambda":
         void (*eval_lambda)(size_t, lambda_call_data*)
         void (*eval_lambda_by_dict)(size_t, lambda_call_by_dict_data*)
         void (*eval_lambda_by_sframe_rows)(size_t, lambda_call_by_sframe_rows_data*)
-        void (*eval_graph_triple_apply)(size_t, lambda_graph_triple_apply_data*)
 
     # The function to call to set everything up.
     void set_pylambda_evaluation_functions(pylambda_evaluation_functions* eval_function_struct)
@@ -270,82 +254,6 @@ cdef class lambda_evaluator(object):
                 pass
 
 
-    @cython.boundscheck(False)
-    cdef eval_graph_triple_apply(self, lambda_graph_triple_apply_data* lcg):
-
-        cdef long i, j
-        cdef long n_edges = lcg.all_edge_data[0].size()
-        cdef long n_edge_keys = lcg.edge_keys[0].size()
-        cdef long n_vertex_keys = lcg.vertex_keys[0].size()
-
-        cdef list edge_keys = [lcg.edge_keys[0][j] for j in range(n_edge_keys)]
-        cdef list vertex_keys = [lcg.vertex_keys[0][j] for j in range(n_vertex_keys)]
-
-        cdef long n_mutated_edges = lcg.mutated_edge_keys[0].size()
-        cdef list mutated_edge_keys = [lcg.mutated_edge_keys[0][j] for j in range(n_mutated_edges)]
-
-        cdef dict edge_object = {}, source_object = {}, target_object = {}
-        cdef dict edge_object_param, source_object_param, target_object_param
-
-        cdef flex_int srcid, dstid
-
-        cdef dict ret_source_dict, ret_edge_dict, ret_target_dict
-
-        cdef tuple ret
-
-        for i in range(n_edges):
-
-            srcid = lcg.all_edge_data[0][i][lcg.srcid_column].get_int()
-            dstid = lcg.all_edge_data[0][i][lcg.dstid_column].get_int()
-
-            # Set the edge update object.
-            for j in range(n_edge_keys):
-                edge_object[edge_keys[j].decode()] = pyobject_from_flexible_type(lcg.all_edge_data[0][i][j]);
-
-            edge_object_param = edge_object.copy()
-
-            # Set the vertex data
-            for j in range(n_vertex_keys):
-                source_object[vertex_keys[j].decode()] = pyobject_from_flexible_type(lcg.source_partition[0][srcid][j])
-                target_object[vertex_keys[j].decode()] = pyobject_from_flexible_type(lcg.target_partition[0][dstid][j])
-
-            source_object_param = source_object.copy()
-            target_object_param = target_object.copy()
-
-            _ret = self.lambda_function(source_object_param, edge_object_param, target_object_param)
-
-            if _ret is None or type(_ret) is not tuple or len(<tuple>_ret) != 3:
-                raise TypeError("Lambda function must return a tuple of 3 dictionaries of the form "
-                                "(source_data, edge_data, target_data).")
-
-            ret = <tuple>_ret
-
-            if ret[0] is not None and type(ret[0]) is not dict:
-                raise TypeError("First return argument of lambda function not a dictionary.")
-
-            if ret[1] is not None and type(ret[1]) is not dict:
-                raise TypeError("Second return argument of lambda function not a dictionary.")
-
-            if ret[2] is not None and type(ret[2]) is not dict:
-                raise TypeError("Third return argument of lambda function not a dictionary.")
-
-            if ret[0] is not None:
-                ret_source_dict = ret[0]
-                self.process_output_dict(lcg.source_partition[0][srcid].data(), vertex_keys,
-                                         source_object, ret_source_dict)
-
-            if n_mutated_edges != 0:
-                lcg.out_edge_data[0][i].resize(n_mutated_edges)
-                ret_edge_dict = <dict>(ret[1]) if ret[1] is not None else edge_object
-                self.process_output_dict(lcg.out_edge_data[0][i].data(), mutated_edge_keys,
-                                         edge_object, ret_edge_dict)
-
-            if ret[2] is not None:
-                ret_target_dict = <dict>(ret[2])
-                self.process_output_dict(lcg.target_partition[0][dstid].data(), vertex_keys,
-                                         target_object, ret_target_dict)
-
-        # And we're done!
 
 
 ################################################################################
@@ -457,13 +365,6 @@ eval_functions.eval_lambda_by_sframe_rows = _eval_lambda_by_sframe_rows
 ########################################
 # Triple Apply stuff
 
-cdef void _eval_graph_triple_apply(size_t lmfunc_id, lambda_graph_triple_apply_data* lcd) noexcept:
-    try:
-        _get_lambda_class(lmfunc_id).eval_graph_triple_apply(lcd)
-    except Exception, e:
-        register_exception(e)
-
-eval_functions.eval_graph_triple_apply = _eval_graph_triple_apply
 
 # Finally, set pylambda evaluation functions in the
 set_pylambda_evaluation_functions(&eval_functions)

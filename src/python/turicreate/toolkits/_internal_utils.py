@@ -14,12 +14,8 @@ This module defines the (internal) utility functions used by the toolkits.
 
 from ..data_structures.sframe import SArray as _SArray
 from ..data_structures.sframe import SFrame as _SFrame
-from ..data_structures.sgraph import SGraph as _SGraph
-from ..data_structures.sgraph import Vertex as _Vertex
-from ..data_structures.sgraph import Edge as _Edge
 from .._cython.cy_sarray import UnitySArrayProxy
 from .._cython.cy_sframe import UnitySFrameProxy
-from .._cython.cy_graph import UnityGraphProxy
 from ..toolkits._main import ToolkitError
 
 import json
@@ -29,7 +25,6 @@ import six as _six
 _proxy_map = {
     UnitySFrameProxy: (lambda x: _SFrame(_proxy=x)),
     UnitySArrayProxy: (lambda x: _SArray(_proxy=x)),
-    UnityGraphProxy: (lambda x: _SGraph(_proxy=x)),
 }
 
 
@@ -258,30 +253,6 @@ def _find_only_drawing_column(sframe):
                 + corrective_action_for_user
             )
 
-
-def _SGraphFromJsonTree(json_str):
-    """
-    Convert the Json Tree to SGraph
-    """
-    g = json.loads(json_str)
-    vertices = [
-        _Vertex(x["id"], dict([(str(k), v) for k, v in _six.iteritems(x) if k != "id"]))
-        for x in g["vertices"]
-    ]
-    edges = [
-        _Edge(
-            x["src"],
-            x["dst"],
-            dict(
-                [(str(k), v) for k, v in _six.iteritems(x) if k != "src" and k != "dst"]
-            ),
-        )
-        for x in g["edges"]
-    ]
-    sg = _SGraph().add_vertices(vertices)
-    if len(edges) > 0:
-        sg = sg.add_edges(edges)
-    return sg
 
 
 class _precomputed_field(object):

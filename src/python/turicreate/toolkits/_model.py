@@ -113,35 +113,7 @@ def load_model(location):
                 "Unable to load model of name '%s'; model name not registered." % name
             )
     else:
-        # very legacy model format. Attempt pickle loading
-        import sys
-
-        sys.stderr.write(
-            "This model was saved in a legacy model format. Compatibility cannot be guaranteed in future versions.\n"
-        )
-        if _six.PY3:
-            raise ToolkitError(
-                "Unable to load legacy model in Python 3.\n\n"
-                "To migrate a model, try loading it using Turi Create 4.0 or\n"
-                "later in Python 2 and then re-save it. The re-saved model should\n"
-                "work in Python 3."
-            )
-
-        if "graphlab" not in sys.modules:
-            sys.modules["graphlab"] = sys.modules["turicreate"]
-            # backward compatibility. Otherwise old pickles will not load
-            sys.modules["turicreate_util"] = sys.modules["turicreate.util"]
-            sys.modules["graphlab_util"] = sys.modules["turicreate.util"]
-
-            # More backwards compatibility with the turicreate namespace code.
-            for k, v in list(sys.modules.items()):
-                if "turicreate" in k:
-                    sys.modules[k.replace("turicreate", "graphlab")] = v
-        # legacy loader
-        import pickle
-
-        model_wrapper = pickle.loads(saved_state[b"model_wrapper"])
-        return model_wrapper(saved_state[b"model_base"])
+        raise ToolkitError("Unable to load legacy model")
 
 
 def _get_default_options_wrapper(

@@ -31,7 +31,6 @@
 #include <core/logging/log_rotate.hpp>
 #ifdef TC_HAS_PYTHON
 #include <core/system/lambda/lambda_master.hpp>
-#include <core/system/lambda/graph_pylambda_master.hpp>
 #endif
 #include <minipsutil/minipsutil.h>
 
@@ -230,7 +229,6 @@ void global_teardown::perform_teardown() {
   try {
 #ifdef TC_HAS_PYTHON
     turi::lambda::lambda_master::shutdown_instance();
-    turi::lambda::graph_pylambda_master::shutdown_instance();
 #endif
     MEMORY_RELEASE_THREAD->stop();
     delete MEMORY_RELEASE_THREAD;

@@ -10,7 +10,6 @@
 #include <core/logging/logger.hpp>
 #include <core/data/sframe/gl_sarray.hpp>
 #include <core/data/sframe/gl_sframe.hpp>
-#include <core/data/sframe/gl_sgraph.hpp>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/archive/iterators/base64_from_binary.hpp>
@@ -143,24 +142,6 @@ static void _to_serializable(flexible_type& data, schema_t& schema, const flexib
   }
 }
 
-static void _to_serializable(flexible_type& data, schema_t& schema, const gl_sgraph& input) {
-  schema.insert(std::make_pair("type", JSON::types::SGRAPH));
-  flex_dict data_dict;
-
-  schema_t nested_schema;
-  gl_sframe vertices = input.get_vertices();
-  flexible_type serialized_vertices;
-  _any_to_serializable(serialized_vertices, nested_schema, vertices);
-  data_dict.push_back(std::make_pair("vertices", serialized_vertices));
-
-  gl_sframe edges = input.get_edges();
-  flexible_type serialized_edges;
-  _any_to_serializable(serialized_edges, nested_schema, edges);
-  data_dict.push_back(std::make_pair("edges", serialized_edges));
-
-  data = data_dict;
-}
-
 static void _to_serializable(flexible_type& data, schema_t& schema, const gl_sframe& input) {
   schema.insert(std::make_pair("type", JSON::types::SFRAME));
   flex_dict data_dict;
@@ -225,10 +206,6 @@ static void _any_to_serializable(flexible_type& data, schema_t& schema, const va
       // flexible type
       _to_serializable(data, schema, variant_get_value<flexible_type>(input));
       break;
-    case 1:
-      // sgraph
-      _to_serializable(data, schema, variant_get_value<gl_sgraph>(input));
-      break;
     case 4:
       // sframe
       _to_serializable(data, schema, variant_get_value<gl_sframe>(input));
@@ -246,7 +223,7 @@ static void _any_to_serializable(flexible_type& data, schema_t& schema, const va
       _to_serializable(data, schema, variant_get_value<std::vector<variant_type>>(input));
       break;
     default:
-      log_and_throw("Unsupported type for to_serializable. Expected a flexible_type, SGraph, SFrame, SArray, dictionary, or list.");
+      log_and_throw("Unsupported type for to_serializable. Expected a flexible_type, SFrame, SArray, dictionary, or list.");
   }
 }
 

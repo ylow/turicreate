@@ -33,7 +33,7 @@ ADD_CUSTOM_TARGET (clean_cython)
 ADD_CUSTOM_COMMAND(
   COMMENT "clean cython"
   COMMAND
-  rm -f *.so *.dbg *.a *.o *.dll *.pyd *.obj
+  rm -f *.so *.dbg *.a *.o *.dll *.pyd *.obj *.cxx
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   TARGET clean_cython
 )

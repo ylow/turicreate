@@ -16,15 +16,12 @@ developers to easily create intelligent applications at scale.
 __version__ = "{{VERSION_STRING}}"
 from turicreate.version_info import __version__
 
-from turicreate.data_structures.sgraph import Vertex, Edge
-from turicreate.data_structures.sgraph import SGraph
 from turicreate.data_structures.sarray import SArray
 from turicreate.data_structures.sframe import SFrame
 from turicreate.data_structures.sketch import Sketch
 from .data_structures.sarray_builder import SArrayBuilder
 from .data_structures.sframe_builder import SFrameBuilder
 
-from turicreate.data_structures.sgraph import load_sgraph
 
 import turicreate.aggregate
 

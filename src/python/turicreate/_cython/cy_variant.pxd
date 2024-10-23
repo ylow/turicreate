@@ -19,7 +19,6 @@ cdef extern from "<model_server/lib/api/client_base_types.hpp>" namespace "turi"
         variant_type()
         int which()
         variant_type& set_flexible_type "operator=<turi::flexible_type>"(const flexible_type& other)
-        variant_type& set_graph "operator=<std::shared_ptr<turi::unity_sgraph_base>>"(const unity_sgraph_base_ptr& other)
         variant_type& set_dataframe "operator=<turi::dataframe_t>"(const gl_dataframe& other)
         variant_type& set_model "operator=<std::shared_ptr<turi::model_base>>"(const model_base_ptr& other)
         variant_type& set_sframe "operator=<std::shared_ptr<turi::unity_sframe_base>>"(const unity_sframe_base_ptr& other)
@@ -27,7 +26,6 @@ cdef extern from "<model_server/lib/api/client_base_types.hpp>" namespace "turi"
 
     flexible_type& variant_get_flexible_type "turi::variant_get_ref<turi::flexible_type>" (variant_type& v)
     gl_dataframe& variant_get_dataframe "turi::variant_get_ref<turi::dataframe_t>" (variant_type& v)
-    unity_sgraph_base_ptr& variant_get_graph "turi::variant_get_ref<std::shared_ptr<turi::unity_sgraph_base>>" (variant_type& v)
     model_base_ptr& variant_get_model "turi::variant_get_ref<std::shared_ptr<turi::model_base>>" (variant_type& v)
     unity_sframe_base_ptr& variant_get_sframe "turi::variant_get_ref<std::shared_ptr<turi::unity_sframe_base>>" (variant_type& v)
     unity_sarray_base_ptr& variant_get_sarray "turi::variant_get_ref<std::shared_ptr<turi::unity_sarray_base>>" (variant_type& v)
@@ -36,7 +34,6 @@ cdef extern from "<model_server/lib/api/client_base_types.hpp>" namespace "turi"
 
     const flexible_type& variant_get_flexible_type "turi::variant_get_ref<turi::flexible_type>" (const variant_type& v)
     const gl_dataframe& variant_get_dataframe "turi::variant_get_ref<turi::dataframe_t>" (const variant_type& v)
-    const unity_sgraph_base_ptr& variant_get_graph "turi::variant_get_ref<std::shared_ptr<turi::unity_sgraph_base>>"  (const variant_type& v)
     const model_base_ptr& variant_get_model "turi::variant_get_ref<std::shared_ptr<turi::model_base>>" (const variant_type& v)
     const unity_sframe_base_ptr& variant_get_sframe "turi::variant_get_ref<std::shared_ptr<turi::unity_sframe_base>>" (const variant_type& v)
     const unity_sarray_base_ptr& variant_get_sarray "turi::variant_get_ref<std::shared_ptr<turi::unity_sarray_base>>" (const variant_type& v)
@@ -46,7 +43,6 @@ cdef extern from "<model_server/lib/api/client_base_types.hpp>" namespace "turi"
 
     void variant_set_flexible_type "turi::variant_set_value<turi::flexible_type>" (variant_type& v, flexible_type& f)
     void variant_set_dataframe "turi::variant_set_value<turi::dataframe_t>" (variant_type& v, gl_dataframe& f)
-    void variant_set_graph "turi::variant_set_value<std::shared_ptr<turi::unity_sgraph_base>>" (variant_type& v, unity_sgraph_base_ptr f)
     void variant_set_model "turi::variant_set_value<std::shared_ptr<turi::model_base>>" (variant_type& v, model_base_ptr& f)
     void variant_set_sframe "turi::variant_set_value<std::shared_ptr<turi::unity_sframe_base>>" (variant_type& v, unity_sframe_base_ptr& f)
     void variant_set_sarray "turi::variant_set_value<std::shared_ptr<turi::unity_sarray_base>>" (variant_type& v, unity_sarray_base_ptr& f)

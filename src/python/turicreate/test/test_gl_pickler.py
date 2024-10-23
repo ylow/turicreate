@@ -98,36 +98,6 @@ class GLPicklingTest(unittest.TestCase):
             unpickler.close()
             assert_sframe_equal(obj, obj_ret)
 
-    def test_pickling_sgraph_types(self):
-
-        sg_test_1 = tc.SGraph().add_vertices(
-            [
-                tc.Vertex(0, {"fluffy": 1}),
-                tc.Vertex(1, {"fluffy": 1, "woof": 1}),
-                tc.Vertex(2, {}),
-            ]
-        )
-
-        sg_test_2 = tc.SGraph()
-        sg_test_2 = sg_test_2.add_vertices([tc.Vertex(x) for x in [0, 1, 2]])
-        sg_test_2 = sg_test_2.add_edges(
-            [
-                tc.Edge(0, 1, attr={"relationship": "dislikes"}),
-                tc.Edge(1, 2, attr={"relationship": "likes"}),
-                tc.Edge(1, 0, attr={"relationship": "likes"}),
-            ]
-        )
-
-        sarray_list = [sg_test_1, sg_test_2]
-        for obj in sarray_list:
-            pickler = gl_pickle.GLPickler(self.filename)
-            pickler.dump(obj)
-            pickler.close()
-            unpickler = gl_pickle.GLUnpickler(self.filename)
-            obj_ret = unpickler.load()
-            unpickler.close()
-            assert_sframe_equal(obj.get_vertices(), obj_ret.get_vertices())
-            assert_sframe_equal(obj.get_edges(), obj_ret.get_edges())
 
     def test_combination_gl_python_types(self):
 

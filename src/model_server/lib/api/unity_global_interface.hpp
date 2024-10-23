@@ -10,7 +10,6 @@
 #include <string>
 #include <map>
 #include <model_server/lib/api/unity_sarray_interface.hpp>
-#include <model_server/lib/api/unity_graph_interface.hpp>
 #include <model_server/lib/toolkit_function_response.hpp>
 #include <model_server/lib/api/client_base_types.hpp>
 #include <core/system/cppipc/magic_macros.hpp>
@@ -33,11 +32,9 @@ class unity_global_base {
  public:
   std::vector<std::string> list_toolkit_functions();
   std::string get_version();
-  std::string get_graph_dag();
 
   toolkit_function_response_type run_toolkit(std::string name, variant_map_type& opts);
 
-  std::shared_ptr<unity_sgraph_base> load_graph(std::string file);
 };
 #endif
 
@@ -50,9 +47,7 @@ typedef std::map<std::string, flexible_type> global_configuration_type;
       (global_configuration_type, describe_toolkit_class, (std::string))
       (std::shared_ptr<model_base>, create_toolkit_class, (std::string))
       (std::string, get_version, )
-      (std::string, get_graph_dag, )
       (toolkit_function_response_type, run_toolkit, (std::string)(variant_map_type&))
-      (std::shared_ptr<unity_sgraph_base>, load_graph, (std::string))
       (variant_map_type, load_model, (const std::string&))
       (void, save_model, (std::shared_ptr<model_base>)(const variant_map_type&)(const std::string&))
       (void, save_model2, (const std::string&)(const variant_map_type&)(const std::string&))

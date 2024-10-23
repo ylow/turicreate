@@ -7,7 +7,6 @@
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <model_server/lib/api/unity_sframe_interface.hpp>
 #include <model_server/lib/api/unity_sarray_interface.hpp>
-#include <model_server/lib/api/unity_graph_interface.hpp>
 #include <model_server/lib/api/function_closure_info.hpp>
 #include <model_server/lib/extensions/model_base.hpp>
 
@@ -22,27 +21,24 @@ exec(oarchive& oarc, const variant_type& v) {
      oarc << boost::get<flexible_type>(v);
      break;
    case 1:
-     oarc << boost::get<std::shared_ptr<unity_sgraph_base>>(v);
-     break;
-   case 2:
      oarc << boost::get<dataframe_t>(v);
      break;
-   case 3:
+   case 2:
      oarc << boost::get<std::shared_ptr<model_base>>(v);
      break;
-   case 4:
+   case 3:
      oarc << boost::get<std::shared_ptr<unity_sframe_base>>(v);
      break;
-   case 5:
+   case 4:
      oarc << boost::get<std::shared_ptr<unity_sarray_base>>(v);
      break;
-   case 6:
+   case 5:
      oarc << boost::get<variant_map_type>(v);
      break;
-   case 7:
+   case 6:
      oarc << boost::get<variant_vector_type>(v);
      break;
-   case 8:
+   case 7:
      oarc << boost::get<function_closure_info>(v);
      break;
    default:
@@ -62,34 +58,30 @@ exec(iarchive& iarc, variant_type& v) {
      iarc >> boost::get<flexible_type>(v);
      break;
    case 1:
-     v = std::shared_ptr<unity_sgraph_base>();
-     iarc >> boost::get<std::shared_ptr<unity_sgraph_base>>(v);
-     break;
-   case 2:
      v = dataframe_t();
      iarc >> boost::get<dataframe_t>(v);
      break;
-   case 3:
+   case 2:
      v = std::shared_ptr<model_base>();
      iarc >> boost::get<std::shared_ptr<model_base>>(v);
      break;
-   case 4:
+   case 3:
      v = std::shared_ptr<unity_sframe_base>();
      iarc >> boost::get<std::shared_ptr<unity_sframe_base>>(v);
      break;
-   case 5:
+   case 4:
      v = std::shared_ptr<unity_sarray_base>();
      iarc >> boost::get<std::shared_ptr<unity_sarray_base>>(v);
      break;
-   case 6:
+   case 5:
      v = variant_map_type();
      iarc >> boost::get<variant_map_type>(v);
      break;
-   case 7:
+   case 6:
      v = variant_vector_type();
      iarc >> boost::get<variant_vector_type>(v);
      break;
-   case 8:
+   case 7:
      v = function_closure_info();
      iarc >> boost::get<function_closure_info>(v);
      break;

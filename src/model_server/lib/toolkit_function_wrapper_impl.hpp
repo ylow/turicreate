@@ -620,7 +620,6 @@ generate_const_member_function_wrapper(Ret (T::* fn)(Args...) const,
  *  - flexible_type
  *  - unity_sarray*
  *  - unity_sframe*
- *  - unity_sgraph*
  *  - any type contained by flexible_type: i.e. flex_int, flex_vec, etc.
  *
  * The return type can similarly be any input argument type, or any type which

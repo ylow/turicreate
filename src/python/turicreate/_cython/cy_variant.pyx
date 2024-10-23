@@ -12,10 +12,8 @@ import cython
 import types
 from libcpp.string cimport string
 from libcpp.pair cimport pair
-from . cimport cy_graph
 from . cimport cy_sframe
 from . cimport cy_sarray
-from .cy_graph cimport UnityGraphProxy
 from .cy_model cimport create_model_from_proxy
 from .cy_model cimport UnityModel
 from .cy_sframe cimport UnitySFrameProxy
@@ -66,12 +64,10 @@ DEF VAR_TR_LIST                        = 7
 # Other general types
 DEF VAR_TR_SFRAME                      = 8
 DEF VAR_TR_SARRAY                      = 9
-DEF VAR_TR_GRAPH                       = 10
 DEF VAR_TR_UNITY_MODEL                 = 11
 DEF VAR_TR_UNITY_MODEL_TKCLASS         = 12
 DEF VAR_TR_SFRAME_PROXY                = 13
 DEF VAR_TR_SARRAY_PROXY                = 14
-DEF VAR_TR_GRAPH_PROXY                 = 15
 DEF VAR_TR_FUNCTION                    = 16
 DEF VAR_TR_CLOSURE                     = 17
 
@@ -80,7 +76,6 @@ DEF VAR_TR_ATTEMPT_OTHER_FLEXIBLE_TYPE = 20  #
 
 # Codes for translating variant type back to python types.
 DEF VAR_TYPE_FLEXIBLE_TYPE       = 0
-DEF VAR_TYPE_GRAPH               = 1
 DEF VAR_TYPE_DATAFRAME           = 2
 DEF VAR_TYPE_MODEL               = 3
 DEF VAR_TYPE_SFRAME              = 4
@@ -100,8 +95,6 @@ cdef type lambda_type   = types.LambdaType
 cdef bint internal_classes_set = False
 cdef object sframe_class = None
 cdef object sarray_class = None
-cdef object sgraph_class = None
-cdef object gframe_class = None
 
 cdef object build_native_function_call = None
 
@@ -115,14 +108,6 @@ cdef import_internal_classes():
     global sarray_class
     from ..data_structures.sarray import SArray
     sarray_class = SArray
-
-    global sgraph_class
-    from ..data_structures.sgraph import SGraph
-    sgraph_class = SGraph
-
-    global gframe_class
-    from ..data_structures.gframe import GFrame
-    gframe_class = GFrame
 
     global build_native_function_call
     from ..extensions import _build_native_function_call
@@ -163,10 +148,6 @@ cdef int _get_tr_code_by_type_string(object v) except -1:
         ret =  VAR_TR_DICT
     elif type(v) is sframe_class or v.__class__ is sframe_class:
         ret =  VAR_TR_SFRAME
-    elif type(v) is gframe_class or v.__class__ is gframe_class:
-        ret =  VAR_TR_SFRAME
-    elif v.__class__ is sgraph_class:
-        ret =  VAR_TR_GRAPH
     elif type(v) is sarray_class or v.__class__ is sarray_class:
         ret =  VAR_TR_SARRAY
     elif type(v) is UnityModel:
@@ -181,8 +162,6 @@ cdef int _get_tr_code_by_type_string(object v) except -1:
         ret =  VAR_TR_SFRAME_PROXY
     elif type(v) is UnitySArrayProxy:
         ret =  VAR_TR_SARRAY_PROXY
-    elif type(v) is UnityGraphProxy:
-        ret =  VAR_TR_GRAPH_PROXY
     elif is_function_closure_info(v):
         ret =  VAR_TR_CLOSURE
     else:
@@ -638,13 +617,11 @@ cdef _convert_to_variant_type(variant_type& ret, object v, int tr_code):
     elif tr_code == VAR_TR_TUPLE:
         _var_set_listlike(ret, <tuple>v)
 
-    # SFrame/SArray/SGraph objects
+    # SFrame/SArray objects
     elif tr_code == VAR_TR_SFRAME:
         variant_set_sframe(ret, (<UnitySFrameProxy?>(v.__proxy__))._base_ptr)
     elif tr_code == VAR_TR_SARRAY:
         variant_set_sarray(ret, (<UnitySArrayProxy?>(v.__proxy__))._base_ptr)
-    elif tr_code == VAR_TR_GRAPH:
-        variant_set_graph(ret, (<UnityGraphProxy?>(v.__proxy__))._base_ptr)
 
     # Unity models
     elif tr_code == VAR_TR_UNITY_MODEL:
@@ -657,8 +634,6 @@ cdef _convert_to_variant_type(variant_type& ret, object v, int tr_code):
         variant_set_sframe(ret, (<UnitySFrameProxy>(v))._base_ptr)
     elif tr_code == VAR_TR_SARRAY_PROXY:
         variant_set_sarray(ret, (<UnitySArrayProxy>(v))._base_ptr)
-    elif tr_code == VAR_TR_GRAPH_PROXY:
-        variant_set_graph(ret, (<UnityGraphProxy>v)._base_ptr)
 
     # Functions and closures
     elif tr_code == VAR_TR_FUNCTION:
@@ -730,9 +705,6 @@ cdef to_value(variant_type& v):
 
     if var_type == VAR_TYPE_FLEXIBLE_TYPE:
         return pyobject_from_flexible_type(variant_get_flexible_type(v))
-    elif var_type == VAR_TYPE_GRAPH:
-        return cy_graph.create_proxy_wrapper_from_existing_proxy(
-            variant_get_graph(v))
     elif var_type == VAR_TYPE_DATAFRAME:
         return pd_from_gl_dataframe(variant_get_dataframe(v))
     elif var_type == VAR_TYPE_MODEL:

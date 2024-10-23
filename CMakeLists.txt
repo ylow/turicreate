@@ -419,7 +419,6 @@ if(NOT TC_DISABLE_OBJECT_BUILDS)
       "$<TARGET_OBJECTS:serialization>"
       "$<TARGET_OBJECTS:sframe>"
       "$<TARGET_OBJECTS:sframe_query_engine>"
-      "$<TARGET_OBJECTS:sgraph>"
       "$<TARGET_OBJECTS:shmipc>"
       "$<TARGET_OBJECTS:startup_teardown>"
       "$<TARGET_OBJECTS:table_printer>"

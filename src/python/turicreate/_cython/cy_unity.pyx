@@ -17,7 +17,6 @@ from .cy_flexible_type cimport pyobject_from_flexible_type
 from .cy_flexible_type cimport flexible_type_from_pyobject
 from .cy_flexible_type cimport pydict_from_gl_options_map
 
-from . cimport cy_graph
 from . cimport cy_sarray
 from . cimport cy_sframe
 
@@ -57,16 +56,6 @@ cdef class UnityGlobalProxy:
 
     cpdef get_version(self):
         return cpp_to_str(self.thisptr.get_version())
-
-    cpdef get_graph_dag(self):
-        return cpp_to_str(self.thisptr.get_graph_dag())
-
-    cpdef load_graph(self, _fname):
-        cdef string fname = str_to_cpp(_fname)
-        cdef unity_sgraph_base_ptr g
-        with nogil:
-            g = self.thisptr.load_graph(fname)
-        return cy_graph.create_proxy_wrapper_from_existing_proxy(g)
 
     cpdef list_toolkit_functions(self):
         return from_vector_of_strings(self.thisptr.list_toolkit_functions())

@@ -32,8 +32,8 @@ containing elements of variable types to C++. For instance, a regular
 dictionary gets converted to std::map<std::string, flexible_type>.
 
 \li \ref turi::variant_type A more generic type that describes a union over
-a fixed set of types to support other stuff like passing SFrames, SArrays,
-SGraphs, or other user defined classes around. The \ref flex
+a fixed set of types to support other stuff like passing SFrames, SArrays
+ or other user defined classes around. The \ref flex
 
 \section unity_architecture_unity_types Unity Types
 
@@ -62,16 +62,6 @@ unity_global.hpp and is called turi::unity_global.
 
 \li \ref turi::unity_sframe This represents the immutable scalable Dataframe
 object. It is a lazy evaluated datastructure.
-
-\li \ref turi::unity_sgraph This represents the immutable graph object and
-implements all the graph manipulation primitives. (object naming and file names
-all follow the convention above). Like the unity_sframe, the unity_sgraph
-implementation is that it is an immutable, dataflow, lazy-evaluated
-datastructure. The details of the object are out of scope of this brief
-paragraph, but to summarize quickly, the unity_sgraph datastructure wraps a
-shared_ptr to a node in a lazy evaluation graph (\ref turi::lazy_eval_future),
-which in turn evaluates to a unity_sgraph_impl object, where all the graph
-manipulation logic really lives.
 
 \li \ref turi::model_base The model object describes the interface for the
 return type of all toolkit executions. This object breaks convention in that it

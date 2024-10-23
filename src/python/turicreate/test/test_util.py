@@ -14,7 +14,7 @@ import uuid
 import sys as _sys
 
 from .. import util as glutil
-from .. import SFrame, SArray, SGraph
+from .. import SFrame, SArray
 from ..util import get_turicreate_object_type
 from ..config import get_runtime_config, set_runtime_config
 from . import util
@@ -73,9 +73,6 @@ class UtilTests(unittest.TestCase):
                 "__dst_id": [1011, 7928, 7718, 12966, 11080],
             }
         )
-
-        g = SGraph()
-        self._validate_gl_object_type(g, "sgraph")
 
     def test_sframe_equals(self):
         # Empty SFrames should be equal
