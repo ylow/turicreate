@@ -21,11 +21,11 @@ from .cy_unity cimport make_function_closure_info
 
 ctypedef map[string, unity_sarray_base_ptr] gl_error_map
 
-cdef extern from "<core/storage/sframe_interface/unity_sframe.hpp>" namespace "turi":
-   cdef cppclass unity_sframe nogil:
-        unity_sframe() except +
+cdef extern from "<core/storage/xframe_interface/unity_xframe.hpp>" namespace "turi":
+   cdef cppclass unity_xframe nogil:
+        unity_xframe() except +
         void construct_from_dataframe(const gl_dataframe&) except +
-        void construct_from_sframe_index(string) except +
+        void construct_from_xframe_index(string) except +
         gl_error_map construct_from_csvs(string, gl_options_map, map[string, flex_type_enum]) except +
         void save_frame(string) except +
         void save_frame_reference(string) except +
@@ -34,13 +34,13 @@ cdef extern from "<core/storage/sframe_interface/unity_sframe.hpp>" namespace "t
         int num_columns() except +
         vector[flex_type_enum] dtype() except +
         vector[string] column_names() except +
-        unity_sframe_base_ptr head(size_t) except +
-        unity_sframe_base_ptr tail(size_t) except +
+        unity_xframe_base_ptr head(size_t) except +
+        unity_xframe_base_ptr tail(size_t) except +
         unity_sarray_base_ptr transform(const string&, flex_type_enum, bint, int) except +
         unity_sarray_base_ptr transform_native(const function_closure_info&, flex_type_enum, bint, int) except +
-        unity_sframe_base_ptr flat_map(const string&, vector[string], vector[flex_type_enum], bint, int) except +
-        unity_sframe_base_ptr logical_filter(unity_sarray_base_ptr) except +
-        unity_sframe_base_ptr select_columns(const vector[string]&) except +
+        unity_xframe_base_ptr flat_map(const string&, vector[string], vector[flex_type_enum], bint, int) except +
+        unity_xframe_base_ptr logical_filter(unity_sarray_base_ptr) except +
+        unity_xframe_base_ptr select_columns(const vector[string]&) except +
         unity_sarray_base_ptr select_column(const string&) except +
         void add_column(unity_sarray_base_ptr, const string&) except +
         void add_columns(cpplist[unity_sarray_base_ptr], vector[string]) except +
@@ -50,36 +50,36 @@ cdef extern from "<core/storage/sframe_interface/unity_sframe.hpp>" namespace "t
         void begin_iterator() except +
         vector[vector[flexible_type]] iterator_get_next(size_t) except +
         void save_as_csv(const string&, gl_options_map) except +
-        unity_sframe_base_ptr sample(float, int, bint) except +
-        unity_sframe_base_ptr shuffle() except +
-        cpplist[unity_sframe_base_ptr] random_split(float, int, bint) except +
-        unity_sframe_base_ptr groupby_aggregate(const vector[string]&, const vector[vector[string]]&, const vector[string]&, const vector[string]&) except +
-        unity_sframe_base_ptr append(unity_sframe_base_ptr) except +
+        unity_xframe_base_ptr sample(float, int, bint) except +
+        unity_xframe_base_ptr shuffle() except +
+        cpplist[unity_xframe_base_ptr] random_split(float, int, bint) except +
+        unity_xframe_base_ptr groupby_aggregate(const vector[string]&, const vector[vector[string]]&, const vector[string]&, const vector[string]&) except +
+        unity_xframe_base_ptr append(unity_xframe_base_ptr) except +
         void materialize() except +
         bint is_materialized() except +
         bint has_size() except +
         string query_plan_string() except +
-        unity_sframe_base_ptr join(unity_sframe_base_ptr, const string, map[string, string]) except +
-        unity_sframe_base_ptr join_with_custom_name(unity_sframe_base_ptr, const string, map[string, string], map[string, string]) except +
+        unity_xframe_base_ptr join(unity_xframe_base_ptr, const string, map[string, string]) except +
+        unity_xframe_base_ptr join_with_custom_name(unity_xframe_base_ptr, const string, map[string, string], map[string, string]) except +
         unity_sarray_base_ptr pack_columns(const vector[string]&, const vector[string]&, flex_type_enum , const flexible_type&) except +
-        unity_sframe_base_ptr stack (const string& , const vector[string]& , const vector[flex_type_enum]&, bint) except +
-        unity_sframe_base_ptr sort(const vector[string]&, const vector[int]&) except +
-        unity_sframe_base_ptr copy_range(size_t, size_t, size_t) except +
-        cpplist[unity_sframe_base_ptr] drop_missing_values(const vector[string]&, bint, bint, bint) except +
+        unity_xframe_base_ptr stack (const string& , const vector[string]& , const vector[flex_type_enum]&, bint) except +
+        unity_xframe_base_ptr sort(const vector[string]&, const vector[int]&) except +
+        unity_xframe_base_ptr copy_range(size_t, size_t, size_t) except +
+        cpplist[unity_xframe_base_ptr] drop_missing_values(const vector[string]&, bint, bint, bint) except +
         void delete_on_close() except +
         void explore(const string&, const string&) except +
         void show(const string&) except +
         model_base_ptr plot() except +
 
-cdef create_proxy_wrapper_from_existing_proxy(const unity_sframe_base_ptr& proxy)
+cdef create_proxy_wrapper_from_existing_proxy(const unity_xframe_base_ptr& proxy)
 
-cdef class UnitySFrameProxy:
-    cdef unity_sframe* thisptr
-    cdef unity_sframe_base_ptr _base_ptr
+cdef class UnityXFrameProxy:
+    cdef unity_xframe* thisptr
+    cdef unity_xframe_base_ptr _base_ptr
 
     cpdef load_from_dataframe(self, dataframe)
 
-    cpdef load_from_sframe_index(self, index_file)
+    cpdef load_from_xframe_index(self, index_file)
 
     cpdef load_from_csvs(self, url, object csv_config, dict column_type_hints)
 
@@ -135,7 +135,7 @@ cdef class UnitySFrameProxy:
 
     cpdef groupby_aggregate(self, key_columns, group_columns, group_output_columns, column_ops)
 
-    cpdef append(self, UnitySFrameProxy other)
+    cpdef append(self, UnityXFrameProxy other)
 
     cpdef materialize(self)
 
@@ -145,9 +145,9 @@ cdef class UnitySFrameProxy:
 
     cpdef query_plan_string(self)
 
-    cpdef join(self, UnitySFrameProxy right, how, dict on)
+    cpdef join(self, UnityXFrameProxy right, how, dict on)
 
-    cpdef join_with_custom_name(self, UnitySFrameProxy right, how, dict on, dict alter_name)
+    cpdef join_with_custom_name(self, UnityXFrameProxy right, how, dict on, dict alter_name)
 
     cpdef pack_columns(self, columns, keys, dtype, fill_na)
 

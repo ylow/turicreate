@@ -3,17 +3,17 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include<core/storage/sframe_data/sframe_io.hpp>
+#include<core/storage/xframe_data/xframe_io.hpp>
 #include<core/data/flexible_type/json_util.hpp>
 #include<cstdio>
 
 namespace turi{
 
 /**
- * Write a csv string of a vector of flexible_types (as a row in the sframe) to buffer.
+ * Write a csv string of a vector of flexible_types (as a row in the xframe) to buffer.
  * Return the number of bytes written.
  */
-size_t sframe_row_to_csv(const std::vector<flexible_type>& row, char* buf, size_t buflen) {
+size_t xframe_row_to_csv(const std::vector<flexible_type>& row, char* buf, size_t buflen) {
   flexible_type val;
   char* cur = buf;
   size_t space_remaining = buflen;
@@ -62,9 +62,9 @@ size_t sframe_row_to_csv(const std::vector<flexible_type>& row, char* buf, size_
 }
 
 /**
- * Write column_names and column_values (as a row in the sframe) to JSONNode.
+ * Write column_names and column_values (as a row in the xframe) to JSONNode.
  */
-void sframe_row_to_json(const std::vector<std::string>& column_names,
+void xframe_row_to_json(const std::vector<std::string>& column_names,
                         const std::vector<flexible_type>& column_values,
                         JSONNode& node) {
   DASSERT_EQ(column_names.size(), column_values.size());

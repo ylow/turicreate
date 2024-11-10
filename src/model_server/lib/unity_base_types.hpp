@@ -7,12 +7,12 @@
 #define TURI_UNITY_BASE_TYPES_HPP
 #include <memory>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
 namespace turi {
 
-/// The sframe type
-typedef sframe sframe_type;
+/// The xframe type
+typedef xframe xframe_type;
 
 typedef sarray<flexible_type> sarray_type;
 

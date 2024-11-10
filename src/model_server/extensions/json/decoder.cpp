@@ -8,8 +8,8 @@
 
 #include <core/logging/assertions.hpp>
 #include <core/logging/logger.hpp>
-#include <core/data/sframe/gl_sarray.hpp>
-#include <core/data/sframe/gl_sframe.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/archive/iterators/binary_from_base64.hpp>
@@ -143,12 +143,12 @@ static variant_type _dict_from_serializable(const flexible_type& data, const sch
       }
     }
     return gl_sarray(deserialized_values, dtype);
-  } else if (_is_type(schema, JSON::types::SFRAME)) {
-    gl_sframe ret;
+  } else if (_is_type(schema, JSON::types::XFRAME)) {
+    gl_xframe ret;
     flex_list column_names = _dict_get(data_dict, "column_names");
     flex_list serializable_columns = _dict_get(data_dict, "columns");
     if (column_names.size() != serializable_columns.size()) {
-      log_and_throw("Array length mismatch in serializable SFrame data. Expected column_names to be the same length as columns.");
+      log_and_throw("Array length mismatch in serializable XFrame data. Expected column_names to be the same length as columns.");
     }
     for (size_t i=0; i<column_names.size(); i++) {
       std::string column_name = column_names[i];

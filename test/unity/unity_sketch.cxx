@@ -9,7 +9,7 @@
 #include <iostream>
 #include <cmath>
 
-#include <core/storage/sframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
 #include <ml/sketches/unity_sketch.hpp>
 
 using namespace turi;

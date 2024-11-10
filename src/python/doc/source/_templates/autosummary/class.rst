@@ -22,7 +22,7 @@
      '__radd__', '__rmul__', '__rsub__', '__rdiv__',
      '__and__', '__or__',
      '__gt__', '__lt__', '__eq__', '__ne__', '__ge__', '__le__',
-     ]) or (name == 'SFrame' and item in
+     ]) or (name == 'XFrame' and item in
     [
     '__delitem__',
     '__format__',

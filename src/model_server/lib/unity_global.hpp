@@ -303,7 +303,7 @@ class unity_global: public unity_global_base {
    * \internal
    * Retrieve the folder that is currently being used to hold temp files.
    *
-   * This is where all the SFrame files and such are located.
+   * This is where all the XFrame files and such are located.
    */
   std::string get_current_cache_file_location();
 
@@ -320,7 +320,7 @@ class unity_global: public unity_global_base {
 
   /**
    * Given a url, returns the type of the Turi object, return value could be:
-   * model, sframe, sarray
+   * model, xframe, sarray
    */
   std::string get_turicreate_object_type(const std::string& url);
 

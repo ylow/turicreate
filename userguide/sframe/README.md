@@ -8,7 +8,7 @@ transformations of existing data quickly, and compute summary
 statistics.
 
 With Turi Create, you can work with:
-- [Tabular data](sframe-intro.md)
+- [Tabular data](xframe-intro.md)
 - [Graphs](../sgraph/sgraph.md)
 - [Text data](../text/analysis.md)
 - [Visualization](../vis/README.md)

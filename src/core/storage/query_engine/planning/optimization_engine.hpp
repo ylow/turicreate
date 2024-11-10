@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_OPTIMIZATION_ENGINE_H_
-#define TURI_SFRAME_QUERY_OPTIMIZATION_ENGINE_H_
+#ifndef TURI_XFRAME_QUERY_OPTIMIZATION_ENGINE_H_
+#define TURI_XFRAME_QUERY_OPTIMIZATION_ENGINE_H_
 
 #include <core/storage/query_engine/planning/planner_node.hpp>
 #include <core/storage/query_engine/planning/materialize_options.hpp>
@@ -46,7 +46,7 @@ struct optimization_transform_registry {
 
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup planning Planning, Optimization and Execution
  * \{
  */

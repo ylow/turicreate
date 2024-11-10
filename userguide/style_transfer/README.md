@@ -105,7 +105,7 @@ For a model with 8 styles, the output looks like this:
 
 We can visually explore these results using `stylized_images.explore()`:
 
-![View of SFrame with stylized images](images/stylized_sframe.png)
+![View of XFrame with stylized images](images/stylized_xframe.png)
 
 By default `stylize` will apply all the styles of the model to each of the
 input images. You can also stylize using selected styles by setting the
@@ -135,7 +135,7 @@ expensive it is to stylize (without resizing). Please refer to the [api
 docs](https://apple.github.io/turicreate/docs/api/generated/turicreate.style_transfer.StyleTransfer.stylize.html#turicreate.style_transfer.StyleTransfer.stylize)
 for more details.
 
-The styles are stored inside the model as an SFrame. You can retrieve it
+The styles are stored inside the model as an XFrame. You can retrieve it
 using:
 ```python
 my_styles = model.styles

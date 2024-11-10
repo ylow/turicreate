@@ -5,7 +5,7 @@ make_library(table_printer OBJECT
     table_printer.cpp
     table_element_printers.cpp
   REQUIRES
-    sframe
+    xframe
     logger
     globals
   EXTERNAL_VISIBILITY

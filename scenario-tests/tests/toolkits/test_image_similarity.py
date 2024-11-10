@@ -56,7 +56,7 @@ def _get_data(image_length):
         pil_img.putdata(list(zip(rand_image(), rand_image(), rand_image())))
         images.append(from_pil_image(pil_img))
 
-    data = tc.SFrame({'awesome_image': tc.SArray(images)})
+    data = tc.XFrame({'awesome_image': tc.SArray(images)})
     return data
 
 
@@ -139,7 +139,7 @@ class ImageSimilarityTest(unittest.TestCase):
         preds = model.similarity_graph()
         self.assertEqual(len(preds.edges), len(self.sf) * 5)
 
-        preds = model.similarity_graph(output_type = 'SFrame')
+        preds = model.similarity_graph(output_type = 'XFrame')
         self.assertEqual(len(preds), len(self.sf) * 5)
 
     def test_list_fields(self):

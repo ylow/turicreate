@@ -7,7 +7,7 @@
 #define TURI_SARRAY_READER_BUFFER
 #include <memory>
 #include <vector>
-#include <core/storage/sframe_data/sframe_constants.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
 namespace turi {
 template <typename T>
 class sarray;
@@ -15,8 +15,8 @@ class sarray;
 
 
 /**
- * \ingroup sframe_physical
- * \addtogroup sframe_main Main SFrame Objects
+ * \ingroup xframe_physical
+ * \addtogroup xframe_main Main XFrame Objects
  * \{
  */
 

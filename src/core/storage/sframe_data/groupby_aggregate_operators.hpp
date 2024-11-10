@@ -3,15 +3,15 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_GROUPBY_AGGREGATE_OPERATORS_HPP
-#define TURI_SFRAME_GROUPBY_AGGREGATE_OPERATORS_HPP
-#include <core/storage/sframe_data/group_aggregate_value.hpp>
+#ifndef TURI_XFRAME_GROUPBY_AGGREGATE_OPERATORS_HPP
+#define TURI_XFRAME_GROUPBY_AGGREGATE_OPERATORS_HPP
+#include <core/storage/xframe_data/group_aggregate_value.hpp>
 #include <ml/sketches/streaming_quantile_sketch.hpp>
 namespace turi {
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup groupby_aggregate Groupby Aggregation
  * \{
  */
@@ -1377,4 +1377,4 @@ class frequency_count: public group_aggregate_value {
 
 /// \}
 } // namespace turi
-#endif //TURI_SFRAME_GROUPBY_AGGREGATE_OPERATORS_HPP
+#endif //TURI_XFRAME_GROUPBY_AGGREGATE_OPERATORS_HPP

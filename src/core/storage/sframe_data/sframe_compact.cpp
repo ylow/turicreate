@@ -3,11 +3,11 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sframe_compact.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/xframe_compact.hpp>
 namespace turi {
 
-bool sframe_fast_compact(const sframe& sf) {
+bool xframe_fast_compact(const xframe& sf) {
   bool ret = false;
   for (size_t i = 0;i < sf.num_columns(); ++i) {
     auto cur_column = sf.select_column(i);
@@ -17,8 +17,8 @@ bool sframe_fast_compact(const sframe& sf) {
 }
 
 
-void sframe_compact(sframe& sf, size_t segment_threshold) {
-  sframe_fast_compact(sf);
+void xframe_compact(xframe& sf, size_t segment_threshold) {
+  xframe_fast_compact(sf);
   size_t num_above_threshold = 0;
   for (size_t i = 0;i < sf.num_columns(); ++i) {
     auto cur_column = sf.select_column(i);
@@ -28,8 +28,8 @@ void sframe_compact(sframe& sf, size_t segment_threshold) {
   }
 
   if (num_above_threshold == sf.num_columns()) {
-    //rewrite the entire sframe
-    sframe ret;
+    //rewrite the entire xframe
+    xframe ret;
     size_t nsegments = std::min(segment_threshold, thread::cpu_count());
     ret.open_for_write(sf.column_names(), sf.column_types(), "", nsegments);
     auto reader = sf.get_reader(nsegments);

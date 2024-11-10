@@ -10,7 +10,7 @@
 #include "base_fixture.hpp"
 
 #include "examples/turicreate/mushroom_categorical_heatmap.vg.h"
-#include "examples/turicreate/mushroom_sframe_summary.vg.h"
+#include "examples/turicreate/mushroom_xframe_summary.vg.h"
 #include "examples/turicreate/clang_format_heatmap.vg.h"
 #include "examples/turicreate/clang_format_scatterplot.vg.h"
 #include "examples/turicreate/clang_format_boxes_and_whiskers.vg.h"
@@ -40,10 +40,10 @@ BOOST_AUTO_TEST_CASE(testCategoricalHeatmap) {
                       "mushroom_categorical_heatmap");
 }
 
-BOOST_AUTO_TEST_CASE(testSFrameSummary) {
-  this->run_test_spec(examples_turicreate_mushroom_sframe_summary_vg_json,
-                      examples_turicreate_mushroom_sframe_summary_vg_json_len,
-                      "mushroom_sframe_summary");
+BOOST_AUTO_TEST_CASE(testXFrameSummary) {
+  this->run_test_spec(examples_turicreate_mushroom_xframe_summary_vg_json,
+                      examples_turicreate_mushroom_xframe_summary_vg_json_len,
+                      "mushroom_xframe_summary");
 }
 
 BOOST_AUTO_TEST_CASE(testHeatmap) {

@@ -7,7 +7,7 @@
 #define TURI_LAMBDA_LAMBDA_INTERFACE_HPP
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/system/cppipc/cppipc.hpp>
-#include <core/storage/sframe_data/sframe_rows.hpp>
+#include <core/storage/xframe_data/xframe_rows.hpp>
 #include <core/system/cppipc/magic_macros.hpp>
 
 namespace turi {
@@ -23,9 +23,9 @@ GENERATE_INTERFACE_AND_PROXY(lambda_evaluator_interface, lambda_evaluator_proxy,
       (size_t, make_lambda, (const std::string&))
       (void, release_lambda, (size_t))
       (std::vector<flexible_type>, bulk_eval, (size_t)(const std::vector<flexible_type>&)(bool)(uint64_t))
-      (std::vector<flexible_type>, bulk_eval_rows, (size_t)(const sframe_rows&)(bool)(uint64_t))
+      (std::vector<flexible_type>, bulk_eval_rows, (size_t)(const xframe_rows&)(bool)(uint64_t))
       (std::vector<flexible_type>, bulk_eval_dict, (size_t)(const std::vector<std::string>&)(const std::vector<std::vector<flexible_type>>&)(bool)(uint64_t))
-      (std::vector<flexible_type>, bulk_eval_dict_rows, (size_t)(const std::vector<std::string>&)(const sframe_rows&)(bool)(uint64_t))
+      (std::vector<flexible_type>, bulk_eval_dict_rows, (size_t)(const std::vector<std::string>&)(const xframe_rows&)(bool)(uint64_t))
       (std::string, initialize_shared_memory_comm, )
     )
 } // namespace lambda

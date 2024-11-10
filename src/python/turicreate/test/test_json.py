@@ -32,7 +32,7 @@ import pytest
 from . import util
 from .. import _json  # turicreate._json
 from ..data_structures.sarray import SArray
-from ..data_structures.sframe import SFrame
+from ..data_structures.xframe import XFrame
 
 pytestmark = [pytest.mark.minimal]
 
@@ -40,7 +40,7 @@ if sys.version_info.major == 3:
     long = int
 
 
-_SFrameComparer = util.SFrameComparer()
+_XFrameComparer = util.XFrameComparer()
 
 
 class JSONTest(unittest.TestCase):
@@ -54,9 +54,9 @@ class JSONTest(unittest.TestCase):
         if isinstance(x, six.string_types):
             self.assertEqual(str(x), str(y))
         elif isinstance(x, SArray):
-            _SFrameComparer._assert_sarray_equal(x, y)
-        elif isinstance(x, SFrame):
-            _SFrameComparer._assert_sframe_equal(x, y)
+            _XFrameComparer._assert_sarray_equal(x, y)
+        elif isinstance(x, XFrame):
+            _XFrameComparer._assert_xframe_equal(x, y)
         elif isinstance(x, dict):
             for (k1, v1), (k2, v2) in zip(sorted(x.items()), sorted(y.items())):
                 self._assertEqual(k1, k2)
@@ -180,12 +180,12 @@ class JSONTest(unittest.TestCase):
             ]
         ]
 
-    def test_sframe_to_json(self):
+    def test_xframe_to_json(self):
         [
             self._run_test_case(value)
             for value in [
-                SFrame(),
-                SFrame({"foo": [1, 2, 3, 4], "bar": [None, "Hello", None, "World"]}),
+                XFrame(),
+                XFrame({"foo": [1, 2, 3, 4], "bar": [None, "Hello", None, "World"]}),
             ]
         ]
 
@@ -215,9 +215,9 @@ class JSONTest(unittest.TestCase):
         ]
 
     def test_variant_to_json(self):
-        # not tested in the cases above: variant_type other than SFrame-like
-        # but containing SFrame-like (so cannot be a flexible_type)
-        sf = SFrame({"col1": [1, 2], "col2": ["hello", "world"]})
+        # not tested in the cases above: variant_type other than XFrame-like
+        # but containing XFrame-like (so cannot be a flexible_type)
+        sf = XFrame({"col1": [1, 2], "col2": ["hello", "world"]})
         sa = SArray([5.0, 6.0, 7.0])
         [self._run_test_case(value) for value in [{"foo": sf, "bar": sa}, [sf, sa],]]
 
@@ -251,11 +251,11 @@ class JSONTest(unittest.TestCase):
             f.flush()
 
             self.assertRaises(RuntimeError, SArray.read_json, f.name)
-            self.assertRaises(RuntimeError, SFrame.read_json, f.name)
+            self.assertRaises(RuntimeError, XFrame.read_json, f.name)
 
     def test_nonexistant_json(self):
         self.assertRaises(IOError, SArray.read_json, "/nonexistant.json")
-        self.assertRaises(IOError, SFrame.read_json, "/nonexistant.json")
+        self.assertRaises(IOError, XFrame.read_json, "/nonexistant.json")
 
     def test_strange_128_char_corner_case(self):
         json_text = """
@@ -266,9 +266,9 @@ class JSONTest(unittest.TestCase):
             f.flush()
 
             df = pandas.read_json(f.name, lines=True)
-            sf_actual = SFrame.read_json(f.name, orient="lines")
-            sf_expected = SFrame(df)
-            _SFrameComparer._assert_sframe_equal(sf_expected, sf_actual)
+            sf_actual = XFrame.read_json(f.name, orient="lines")
+            sf_expected = XFrame(df)
+            _XFrameComparer._assert_xframe_equal(sf_expected, sf_actual)
 
     def test_true_false_substitutions(self):
         expecteda = [["a", "b", "c"], ["a", "b", "c"]]
@@ -288,14 +288,14 @@ class JSONTest(unittest.TestCase):
         with tempfile.NamedTemporaryFile("w") as f:
             f.write(records_json_file)
             f.flush()
-            records = SFrame.read_json(f.name, orient="records")
+            records = XFrame.read_json(f.name, orient="records")
         self.assertEqual(list(records["a"]), expecteda)
         self.assertEqual(list(records["b"]), expectedb)
 
         with tempfile.NamedTemporaryFile("w") as f:
             f.write(lines_json_file)
             f.flush()
-            lines = SFrame.read_json(f.name, orient="lines")
+            lines = XFrame.read_json(f.name, orient="lines")
 
         self.assertEqual(list(lines["a"]), expecteda)
         self.assertEqual(list(lines["b"]), expectedb)

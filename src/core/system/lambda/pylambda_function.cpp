@@ -5,7 +5,7 @@
  */
 #include <core/system/lambda/pylambda_function.hpp>
 #include <core/system/lambda/lambda_master.hpp>
-#include <core/storage/sframe_data/sframe_rows.hpp>
+#include <core/storage/xframe_data/xframe_rows.hpp>
 #include <core/storage/fileio/file_ownership_handle.hpp>
 
 namespace turi {
@@ -41,14 +41,14 @@ void pylambda_function::set_random_seed(uint64_t value) {
 //// Evaluating Interface
 
 /* One to one */
-void pylambda_function::eval(const sframe_rows& rows,
+void pylambda_function::eval(const xframe_rows& rows,
                              std::vector<flexible_type>& out) {
   lambda::lambda_master::get_instance().bulk_eval(lambda_hash, rows, out, skip_undefined, random_seed);
 };
 
 /* Many to one */
 void pylambda_function::eval(const std::vector<std::string>& keys,
-                             const sframe_rows& rows,
+                             const xframe_rows& rows,
                              std::vector<flexible_type>& out) {
   lambda::lambda_master::get_instance().bulk_eval(lambda_hash, keys, rows, out, skip_undefined, random_seed);
 }

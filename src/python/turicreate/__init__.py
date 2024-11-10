@@ -17,10 +17,10 @@ __version__ = "{{VERSION_STRING}}"
 from turicreate.version_info import __version__
 
 from turicreate.data_structures.sarray import SArray
-from turicreate.data_structures.sframe import SFrame
+from turicreate.data_structures.xframe import XFrame
 from turicreate.data_structures.sketch import Sketch
 from .data_structures.sarray_builder import SArrayBuilder
-from .data_structures.sframe_builder import SFrameBuilder
+from .data_structures.xframe_builder import XFrameBuilder
 
 
 import turicreate.aggregate
@@ -29,7 +29,7 @@ import turicreate.aggregate
 from turicreate._connect.main import launch as _launch
 
 ## bring load functions to the top level
-from turicreate.data_structures.sframe import load_sframe
+from turicreate.data_structures.xframe import load_xframe
 from turicreate.data_structures.sarray import load_sarray
 
 ################### Extension Importing ########################

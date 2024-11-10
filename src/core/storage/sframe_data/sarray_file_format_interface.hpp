@@ -15,15 +15,15 @@
 #include <core/storage/fileio/general_fstream.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#include <core/storage/sframe_data/sarray_index_file.hpp>
+#include <core/storage/xframe_data/sarray_index_file.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/sframe_rows.hpp>
+#include <core/storage/xframe_data/xframe_rows.hpp>
 namespace turi {
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  * \{
  */
 
@@ -138,7 +138,7 @@ class sarray_format_reader<flexible_type>
 
   virtual size_t read_rows(size_t row_start,
                            size_t row_end,
-                           sframe_rows& out_obj) {
+                           xframe_rows& out_obj) {
     size_t ret = 0;
     out_obj.resize(1);
     ret = read_rows(row_start, row_end, *(out_obj.get_columns()[0]));
@@ -225,7 +225,7 @@ class sarray_group_format_writer {
    * Writes a bunch of rows to the array group
    */
   virtual void write_segment(size_t segmentid,
-                             const sframe_rows& rows) = 0;
+                             const xframe_rows& rows) = 0;
 
   /**
    * Writes a collection of rows to a column

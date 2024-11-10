@@ -6,7 +6,7 @@
 #include <core/storage/query_engine/operators/all_operators.hpp>
 #include <core/storage/query_engine/util/aggregates.hpp>
 #include <core/storage/query_engine/operators/operator_transformations.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
 
 #define ENABLE_HISTORY_TRACKING_OPTIMIZATION true
 
@@ -23,10 +23,10 @@ static const size_t n = 17;
  *   .v[1] -- opt + naive
  *   .v[2] -- opt
  *   .v[3] -- opt, with many nodes in the history pre-materialized.
- *   .v[4] -- opt with zero length sframes to test this corner case.
- *   .v[5] -- opt with truncated sframes to test indexing and slicing, 0-n/2
- *   .v[6] -- opt with truncated sframes to test indexing and slicing, n/4-3*n/4
- *   .v[7] -- opt with truncated sframes to test indexing and slicing, n/2-n
+ *   .v[4] -- opt with zero length xframes to test this corner case.
+ *   .v[5] -- opt with truncated xframes to test indexing and slicing, 0-n/2
+ *   .v[6] -- opt with truncated xframes to test indexing and slicing, n/4-3*n/4
+ *   .v[7] -- opt with truncated xframes to test indexing and slicing, n/2-n
  */
 
 // Actually using arrays to make sure full + no-opt + no-opt-naive are all the same
@@ -179,7 +179,7 @@ static node binary_source_sarray() {
 }
 
 
-static node source_sframe(size_t n_columns) {
+static node source_xframe(size_t n_columns) {
 
   std::vector<std::vector<flexible_type> > data(n_columns);
   
@@ -206,7 +206,7 @@ static node source_sframe(size_t n_columns) {
 
   node ret;
   for(auto& n : ret.v)
-    n = op_sframe_source::make_planner_node(sframe(sa_l));
+    n = op_xframe_source::make_planner_node(xframe(sa_l));
 
   {
     for(size_t i = 0; i < n_columns; ++i) {
@@ -219,7 +219,7 @@ static node source_sframe(size_t n_columns) {
       sa_l[i] = sa;
 
     }
-    ret.v[4] = op_sframe_source::make_planner_node(sframe(sa_l));
+    ret.v[4] = op_xframe_source::make_planner_node(xframe(sa_l));
   }
 
   add_sliced_info(ret, data.size());
@@ -229,7 +229,7 @@ static node source_sframe(size_t n_columns) {
   return ret;
 }
 
-static node shifted_source_sframe(size_t n_columns) {
+static node shifted_source_xframe(size_t n_columns) {
 
   std::vector<std::vector<flexible_type> > data(n_columns);
 
@@ -256,7 +256,7 @@ static node shifted_source_sframe(size_t n_columns) {
 
   node ret;
   for(auto& pn : ret.v)
-    pn = op_sframe_source::make_planner_node(sframe(sa_l), n/2, n/2 + n);
+    pn = op_xframe_source::make_planner_node(xframe(sa_l), n/2, n/2 + n);
 
   {
     for(size_t i = 0; i < n_columns; ++i) {
@@ -269,7 +269,7 @@ static node shifted_source_sframe(size_t n_columns) {
       sa_l[i] = sa;
 
     }
-    ret.v[4] = op_sframe_source::make_planner_node(sframe(sa_l));
+    ret.v[4] = op_xframe_source::make_planner_node(xframe(sa_l));
   }
 
   add_sliced_info(ret, n);
@@ -279,7 +279,7 @@ static node shifted_source_sframe(size_t n_columns) {
   return ret;
 }
 
-static node empty_sframe(size_t n_columns) {
+static node empty_xframe(size_t n_columns) {
 
   std::vector<std::shared_ptr<sarray<flexible_type> > > sa_l(n_columns);
 
@@ -295,7 +295,7 @@ static node empty_sframe(size_t n_columns) {
 
   node ret;
   for(auto& n : ret.v)
-    n = op_sframe_source::make_planner_node(sframe(sa_l));
+    n = op_xframe_source::make_planner_node(xframe(sa_l));
 
   add_sliced_info(ret, 0);
 
@@ -336,7 +336,7 @@ static node make_transform(node n1) {
 
   node ret;
 
-  transform_type tr = [](const sframe_rows::row& r) -> flexible_type {
+  transform_type tr = [](const xframe_rows::row& r) -> flexible_type {
     flexible_type out = flex_int(1);
 
     for(size_t i = 0; i < r.size(); ++i) {
@@ -357,7 +357,7 @@ static node make_generalized_transform(node n1, size_t n_out) {
 
   std::vector<flex_type_enum> output_types(n_out, flex_type_enum::INTEGER);
 
-  generalized_transform_type f = [=](const sframe_rows::row& r1, sframe_rows::row& r2) {
+  generalized_transform_type f = [=](const xframe_rows::row& r1, xframe_rows::row& r2) {
 
     size_t prod = 1;
     for(size_t i = 0; i < r1.size(); ++i)
@@ -407,7 +407,7 @@ static node make_append(node n1, node n2) {
   return ret;
 }
 
-static void check_sframes(sframe sf1, sframe sf2, std::string tag) {
+static void check_xframes(xframe sf1, xframe sf2, std::string tag) {
   
   std::vector<std::vector<std::vector<flexible_type> > > results(2);
   
@@ -543,7 +543,7 @@ static void run(size_t line, node n) {
   materialize_options naive;
   naive.naive_mode = true; 
   
-  std::vector<sframe> out(4);
+  std::vector<xframe> out(4);
   
   logprogress_stream << std::endl;
   logprogress_stream << "################################################################" << std::endl;
@@ -555,10 +555,10 @@ static void run(size_t line, node n) {
   random::shuffle(history_vect);
 
   for(size_t i = 0; i < std::min<size_t>(history_vect.size(), 10); ++i) {
-    sframe sf_1 = planner().materialize(history_vect[i][0], no_opt);
-    sframe sf_2 = planner().materialize(history_vect[i][1], materialize_options());
+    xframe sf_1 = planner().materialize(history_vect[i][0], no_opt);
+    xframe sf_2 = planner().materialize(history_vect[i][1], materialize_options());
 
-    check_sframes(sf_1, sf_2, "mixed-graph-materialize"); 
+    check_xframes(sf_1, sf_2, "mixed-graph-materialize"); 
   }
    
   logprogress_stream << std::endl;
@@ -589,9 +589,9 @@ static void run(size_t line, node n) {
   
   out[3] = planner().materialize(n.v[3], materialize_options());
   
-  check_sframes(out[0], out[1], "naive");
-  check_sframes(out[0], out[2], "Opt");
-  check_sframes(out[0], out[3], "Opt-with-history");
+  check_xframes(out[0], out[1], "naive");
+  check_xframes(out[0], out[2], "Opt");
+  check_xframes(out[0], out[3], "Opt-with-history");
 }
 
 
@@ -603,15 +603,15 @@ struct opts  {
     _RUN(out);
   }
 
-  void test_project_sframe() {
-    node out = make_project(source_sframe(5), {0, 2, 4});
+  void test_project_xframe() {
+    node out = make_project(source_xframe(5), {0, 2, 4});
     _RUN(out);
   }
 
-  void test_union_project_sframe() {
+  void test_union_project_xframe() {
     random::seed(0);
     
-    node n = source_sframe(5);
+    node n = source_xframe(5);
     
     for(size_t i = 0; i < 20; ++i) {
 
@@ -621,9 +621,9 @@ struct opts  {
         indices.push_back(random::fast_uniform<size_t>(0, 9));
 
       if(i % 2 == 0)
-        n = make_union(n, source_sframe(5));
+        n = make_union(n, source_xframe(5));
       else 
-        n = make_union(source_sframe(5), n);
+        n = make_union(source_xframe(5), n);
                        
       n = make_project(n, indices);
     }
@@ -633,8 +633,8 @@ struct opts  {
 
   void test_union_project_elimination_right() {
 
-    node n1 = make_transform(source_sframe(2));
-    node n2 = make_transform(source_sframe(2));
+    node n1 = make_transform(source_xframe(2));
+    node n2 = make_transform(source_xframe(2));
     
     node n = make_union(n1, n2);
     n = make_project(n, {0});
@@ -644,8 +644,8 @@ struct opts  {
 
   void test_union_project_elimination_left() {
 
-    node n1 = make_transform(source_sframe(2));
-    node n2 = make_transform(source_sframe(2));
+    node n1 = make_transform(source_xframe(2));
+    node n2 = make_transform(source_xframe(2));
     
     node n = make_union(n1, n2);
     n = make_project(n, {1});
@@ -656,8 +656,8 @@ struct opts  {
 
   void test_union_project_switch_places() {
 
-    node n = source_sframe(2);
-    node old_n = source_sframe(2);
+    node n = source_xframe(2);
+    node old_n = source_xframe(2);
     
     n = make_union(n, old_n);
     old_n = n;
@@ -668,11 +668,11 @@ struct opts  {
     _RUN(n);
   }
   
-  void test_union_project_recursive_sframe_2() {
+  void test_union_project_recursive_xframe_2() {
     random::seed(0);
 
-    node n = source_sframe(5);
-    node old_n = source_sframe(5);
+    node n = source_xframe(5);
+    node old_n = source_xframe(5);
     
     for(size_t i = 0; i < 20; ++i) {
 
@@ -694,11 +694,11 @@ struct opts  {
     _RUN(n);
   }
   
-  void test_union_project_recursive_sframe_3() {
+  void test_union_project_recursive_xframe_3() {
     random::seed(0);
 
-    node n = source_sframe(5);
-    node old_n = source_sframe(5);
+    node n = source_xframe(5);
+    node old_n = source_xframe(5);
 
     std::vector<node> nodes;
     
@@ -730,13 +730,13 @@ struct opts  {
   }
 
   void test_project_union_transform() {
-    node n = source_sframe(5);
+    node n = source_xframe(5);
     node out = make_union(n, make_transform(make_project(n, {1, 2}) ) );
     _RUN(out); 
   }
 
   void test_eliminate_identity_projection_1() {
-    node n = source_sframe(5);
+    node n = source_xframe(5);
     n = make_project(make_transform(n), {0});
     n = make_project(make_transform(n), {0});
     _RUN(n);
@@ -744,10 +744,10 @@ struct opts  {
 
 
   void test_eliminate_identity_projection_2() {
-    node n1 = make_union(make_transform(source_sframe(5)),
-                         make_transform(source_sframe(5)));
-    node n2 = make_union(make_transform(source_sframe(5)),
-                         make_transform(source_sframe(5)));
+    node n1 = make_union(make_transform(source_xframe(5)),
+                         make_transform(source_xframe(5)));
+    node n2 = make_union(make_transform(source_xframe(5)),
+                         make_transform(source_xframe(5)));
     
     node n = make_union(n1, n2);
 
@@ -760,10 +760,10 @@ struct opts  {
   void test_eliminate_identity_projection_3() {
     random::seed(0);
 
-    node n1 = make_union(make_transform(source_sframe(5)),
-                         make_transform(source_sframe(5)));
-    node n2 = make_union(make_transform(source_sframe(5)),
-                         make_transform(source_sframe(5)));
+    node n1 = make_union(make_transform(source_xframe(5)),
+                         make_transform(source_xframe(5)));
+    node n2 = make_union(make_transform(source_xframe(5)),
+                         make_transform(source_xframe(5)));
     
     node n = make_union(n1, n2);
 
@@ -779,10 +779,10 @@ struct opts  {
 
 
   void test_merge_projections() {
-    node n1 = make_union(make_transform(source_sframe(5)),
-                         make_transform(source_sframe(5)));
-    node n2 = make_union(make_transform(source_sframe(5)),
-                         make_transform(source_sframe(5)));
+    node n1 = make_union(make_transform(source_xframe(5)),
+                         make_transform(source_xframe(5)));
+    node n2 = make_union(make_transform(source_xframe(5)),
+                         make_transform(source_xframe(5)));
     
     node n3 = make_union(n1, n2);
     
@@ -794,7 +794,7 @@ struct opts  {
   void test_project_union_transform_recursive_1() {
     random::seed(0);
 
-    node n = source_sframe(5);
+    node n = source_xframe(5);
 
     for(size_t i = 0; i < 20; ++i) {
 
@@ -808,7 +808,7 @@ struct opts  {
   void test_project_union_transform_recursive_2() {
     random::seed(0);
 
-    node n = source_sframe(5);
+    node n = source_xframe(5);
 
     for(size_t i = 0; i < 20; ++i) {
 
@@ -826,7 +826,7 @@ struct opts  {
   void test_project_union_transform_recursive_3() {
     random::seed(0);
 
-    node n = source_sframe(5);
+    node n = source_xframe(5);
 
     for(size_t i = 0; i < 20; ++i) {
 
@@ -842,14 +842,14 @@ struct opts  {
   }
 
   void test_append_on_source() {
-    node n = make_append(source_sframe(5), 
-                         source_sframe(5));
+    node n = make_append(source_xframe(5), 
+                         source_xframe(5));
     _RUN(n);
   }
   
   void test_project_append_exchange_1() {
-    node n1 = source_sframe(5);
-    node n2 = source_sframe(5);
+    node n1 = source_xframe(5);
+    node n2 = source_xframe(5);
 
     node n = make_project(make_append(n1, n2), {1, 3, 4});
 
@@ -859,10 +859,10 @@ struct opts  {
   void test_project_append_exchange_2() {
     random::seed(0);
 
-    node n = source_sframe(5);
+    node n = source_xframe(5);
 
     for(size_t i = 0; i < 20; ++i) {
-      node n2 = source_sframe(5);
+      node n2 = source_xframe(5);
 
       std::vector<size_t> indices;
       for(size_t j = 0; j < 5; ++j)
@@ -879,7 +879,7 @@ struct opts  {
 
 
   void test_project_logical_filter_exchange_1() {
-    node n1 = source_sframe(5);
+    node n1 = source_xframe(5);
     node n2 = binary_source_sarray();
 
     node n = make_project(make_logical_filter(n1, n2), {1, 3});
@@ -888,7 +888,7 @@ struct opts  {
   }
 
   void test_project_logical_filter_exchange_2() {
-    node n1 = source_sframe(5);
+    node n1 = source_xframe(5);
     node n2 = binary_source_sarray();
 
     node lf = make_logical_filter(n1, n2);
@@ -900,7 +900,7 @@ struct opts  {
   }
   /* 
    * TODO: These cases are currently impossible to produce
-   * via the regular SFrame API since binary operations across of stuff of
+   * via the regular XFrame API since binary operations across of stuff of
    * unknown sizes will force materialization to check their size,
    * before allowing the plan to be created.
    * Thus there are no current means of generating such a plan except via
@@ -908,8 +908,8 @@ struct opts  {
    * the logical_filter have been disabled
    *
    * void disabled_test_project_logical_filter_exchange_3() {
-   *   node n1 = source_sframe(5);
-   *   node n2 = source_sframe(5);
+   *   node n1 = source_xframe(5);
+   *   node n2 = source_xframe(5);
    *   node mask = binary_source_sarray();
 
    *   node lf_1 = make_logical_filter(n1, mask);
@@ -922,8 +922,8 @@ struct opts  {
 
 
    * void disabled_test_project_logical_filter_exchange_4() {
-   *   node n1 = source_sframe(5);
-   *   node n2 = source_sframe(5);
+   *   node n1 = source_xframe(5);
+   *   node n2 = source_xframe(5);
    *   node mask = binary_source_sarray();
 
    *   node lf_1 = make_logical_filter(n1, mask);
@@ -935,7 +935,7 @@ struct opts  {
    * }
    */
   void test_zero_logical_filter() {
-    node n1 = source_sframe(5);
+    node n1 = source_xframe(5);
     node n2 = zero_source_sarray();
 
     node n = make_project(make_logical_filter(n1, n2), {1, 3});
@@ -944,8 +944,8 @@ struct opts  {
   }
 
   void test_union_filter_exchange_1() {
-    node n1 = source_sframe(2);
-    node n2 = source_sframe(2);
+    node n1 = source_xframe(2);
+    node n2 = source_xframe(2);
 
     node mask = binary_source_sarray();
 
@@ -961,7 +961,7 @@ struct opts  {
   void test_union_filter_exchange_2() {
     random::seed(0);
 
-    node n = source_sframe(5);
+    node n = source_xframe(5);
 
     for(size_t i = 0; i < 20; ++i) {
 
@@ -980,21 +980,21 @@ struct opts  {
     _RUN(n);
   }
 
-  void test_empty_sframe() {
-    node n = empty_sframe(5);
+  void test_empty_xframe() {
+    node n = empty_xframe(5);
     _RUN(n);
   }
 
-  void test_empty_append_sframe_collapse_1() {
-    node n = empty_sframe(5);
+  void test_empty_append_xframe_collapse_1() {
+    node n = empty_xframe(5);
 
     n = make_append(n, n);
 
     _RUN(n);
   }
 
-  void test_empty_append_sframe_collapse_2() {
-    node n = empty_sframe(5);
+  void test_empty_append_xframe_collapse_2() {
+    node n = empty_xframe(5);
 
     for(size_t i = 0; i < 10; ++i) {
       n = make_append(n, n);
@@ -1003,8 +1003,8 @@ struct opts  {
     _RUN(n);
   }
 
-  void test_empty_append_sframe_collapse_with_transform() {
-    node n = empty_sframe(5);
+  void test_empty_append_xframe_collapse_with_transform() {
+    node n = empty_xframe(5);
 
     for(size_t i = 0; i < 5; ++i) {
       n = make_append(make_transform(n), make_transform(n));
@@ -1024,7 +1024,7 @@ struct opts  {
   }
   
   void test_union_project_merge() {
-    node n = source_sframe(5);
+    node n = source_xframe(5);
     n = make_generalized_transform(n, 5);
 
     n = make_union(make_project(n, {1, 2, 3}), make_project(n, {0, 4}));
@@ -1033,7 +1033,7 @@ struct opts  {
   }
   
   void test_union_project_merge_2() {
-    node n = source_sframe(5);
+    node n = source_xframe(5);
 
     node n_src = make_generalized_transform(n, 10);
     
@@ -1047,7 +1047,7 @@ struct opts  {
 
   void test_union_project_merge_2b() {
     
-    node n_src = make_generalized_transform(source_sframe(10), 10);
+    node n_src = make_generalized_transform(source_xframe(10), 10);
     
     node n = n_src;
     
@@ -1060,7 +1060,7 @@ struct opts  {
   void test_union_project_merge_3() {
     random::seed(0);
 
-    node n = source_sframe(5);
+    node n = source_xframe(5);
 
     std::vector<node> node_list = {make_generalized_transform(n, 10)};
 
@@ -1077,7 +1077,7 @@ struct opts  {
 
   void test_union_project_merge_4() {
     
-    node n_src = make_generalized_transform(source_sframe(5), 100);
+    node n_src = make_generalized_transform(source_xframe(5), 100);
 
     node n = make_union(make_project(n_src, {0}), make_project(n_src, {1}));
     
@@ -1091,7 +1091,7 @@ struct opts  {
   void test_union_project_merge_5() {
     random::seed(0);
 
-    node n = source_sframe(5);
+    node n = source_xframe(5);
 
     std::vector<node> node_list = {make_generalized_transform(n, 10)};
 
@@ -1118,9 +1118,9 @@ struct opts  {
     _RUN(n);
   }
 
-  void test_union_shifted_sframes() {
-    node n1 = source_sframe(5);
-    node n2 = shifted_source_sframe(5);
+  void test_union_shifted_xframes() {
+    node n1 = source_xframe(5);
+    node n2 = shifted_source_xframe(5);
 
     node n = make_union(n1, n2);
 
@@ -1128,7 +1128,7 @@ struct opts  {
   }
 
   void test_union_duplication() {
-    node n = source_sframe(1);
+    node n = source_xframe(1);
 
     n = make_union(n, n);
 
@@ -1136,7 +1136,7 @@ struct opts  {
   }
 
   void test_union_duplication_2() {
-    node n = source_sframe(1);
+    node n = source_xframe(1);
 
     n = make_union(n, n);
 
@@ -1144,7 +1144,7 @@ struct opts  {
   }
 
   void test_union_duplication_3() {
-    node n = source_sframe(1);
+    node n = source_xframe(1);
 
     for(size_t i = 0; i < 5; ++i) {
       n = make_union(n, n);
@@ -1155,7 +1155,7 @@ struct opts  {
 
   void test_regression_union_project_identity_issue() {
 
-    node n = make_generalized_transform(source_sframe(5), 2);
+    node n = make_generalized_transform(source_xframe(5), 2);
 
     n = make_union(n, make_project(n, {0,1}));
 
@@ -1165,7 +1165,7 @@ struct opts  {
   void test_source_merging_as_sarrays() {
     random::seed(0);
 
-    node base_1 = make_union(source_sframe(5), shifted_source_sframe(5));
+    node base_1 = make_union(source_xframe(5), shifted_source_xframe(5));
 
     node n = base_1;
 
@@ -1178,10 +1178,10 @@ struct opts  {
     _RUN(n);
   }
 
-  void test_source_merging_as_sframes() {
+  void test_source_merging_as_xframes() {
     random::seed(0);
 
-    node base_1 = make_union(source_sframe(5), shifted_source_sframe(5));
+    node base_1 = make_union(source_xframe(5), shifted_source_xframe(5));
 
     node n = base_1;
 
@@ -1202,11 +1202,11 @@ BOOST_FIXTURE_TEST_SUITE(_opts, opts)
 BOOST_AUTO_TEST_CASE(test_union_sarray) {
   opts::test_union_sarray();
 }
-BOOST_AUTO_TEST_CASE(test_project_sframe) {
-  opts::test_project_sframe();
+BOOST_AUTO_TEST_CASE(test_project_xframe) {
+  opts::test_project_xframe();
 }
-BOOST_AUTO_TEST_CASE(test_union_project_sframe) {
-  opts::test_union_project_sframe();
+BOOST_AUTO_TEST_CASE(test_union_project_xframe) {
+  opts::test_union_project_xframe();
 }
 BOOST_AUTO_TEST_CASE(test_union_project_elimination_right) {
   opts::test_union_project_elimination_right();
@@ -1217,11 +1217,11 @@ BOOST_AUTO_TEST_CASE(test_union_project_elimination_left) {
 BOOST_AUTO_TEST_CASE(test_union_project_switch_places) {
   opts::test_union_project_switch_places();
 }
-BOOST_AUTO_TEST_CASE(test_union_project_recursive_sframe_2) {
-  opts::test_union_project_recursive_sframe_2();
+BOOST_AUTO_TEST_CASE(test_union_project_recursive_xframe_2) {
+  opts::test_union_project_recursive_xframe_2();
 }
-BOOST_AUTO_TEST_CASE(test_union_project_recursive_sframe_3) {
-  opts::test_union_project_recursive_sframe_3();
+BOOST_AUTO_TEST_CASE(test_union_project_recursive_xframe_3) {
+  opts::test_union_project_recursive_xframe_3();
 }
 BOOST_AUTO_TEST_CASE(test_project_union_transform) {
   opts::test_project_union_transform();
@@ -1271,17 +1271,17 @@ BOOST_AUTO_TEST_CASE(test_union_filter_exchange_1) {
 BOOST_AUTO_TEST_CASE(test_union_filter_exchange_2) {
   opts::test_union_filter_exchange_2();
 }
-BOOST_AUTO_TEST_CASE(test_empty_sframe) {
-  opts::test_empty_sframe();
+BOOST_AUTO_TEST_CASE(test_empty_xframe) {
+  opts::test_empty_xframe();
 }
-BOOST_AUTO_TEST_CASE(test_empty_append_sframe_collapse_1) {
-  opts::test_empty_append_sframe_collapse_1();
+BOOST_AUTO_TEST_CASE(test_empty_append_xframe_collapse_1) {
+  opts::test_empty_append_xframe_collapse_1();
 }
-BOOST_AUTO_TEST_CASE(test_empty_append_sframe_collapse_2) {
-  opts::test_empty_append_sframe_collapse_2();
+BOOST_AUTO_TEST_CASE(test_empty_append_xframe_collapse_2) {
+  opts::test_empty_append_xframe_collapse_2();
 }
-BOOST_AUTO_TEST_CASE(test_empty_append_sframe_collapse_with_transform) {
-  opts::test_empty_append_sframe_collapse_with_transform();
+BOOST_AUTO_TEST_CASE(test_empty_append_xframe_collapse_with_transform) {
+  opts::test_empty_append_xframe_collapse_with_transform();
 }
 BOOST_AUTO_TEST_CASE(test_empty_append_sarray_collapse) {
   opts::test_empty_append_sarray_collapse();
@@ -1304,8 +1304,8 @@ BOOST_AUTO_TEST_CASE(test_union_project_merge_4) {
 BOOST_AUTO_TEST_CASE(test_union_project_merge_5) {
   opts::test_union_project_merge_5();
 }
-BOOST_AUTO_TEST_CASE(test_union_shifted_sframes) {
-  opts::test_union_shifted_sframes();
+BOOST_AUTO_TEST_CASE(test_union_shifted_xframes) {
+  opts::test_union_shifted_xframes();
 }
 BOOST_AUTO_TEST_CASE(test_union_duplication) {
   opts::test_union_duplication();
@@ -1322,7 +1322,7 @@ BOOST_AUTO_TEST_CASE(test_regression_union_project_identity_issue) {
 BOOST_AUTO_TEST_CASE(test_source_merging_as_sarrays) {
   opts::test_source_merging_as_sarrays();
 }
-BOOST_AUTO_TEST_CASE(test_source_merging_as_sframes) {
-  opts::test_source_merging_as_sframes();
+BOOST_AUTO_TEST_CASE(test_source_merging_as_xframes) {
+  opts::test_source_merging_as_xframes();
 }
 BOOST_AUTO_TEST_SUITE_END()

@@ -12,12 +12,12 @@
 #include <boost/range/combine.hpp>
 
 #include <model_server/lib/variant.hpp>
-#include <core/data/sframe/gl_gframe.hpp>
+#include <core/data/xframe/gl_gframe.hpp>
 #include <model_server/lib/simple_model.hpp>
-#include <core/storage/sframe_interface/unity_sarray.hpp>
-#include <core/storage/sframe_interface/unity_sframe.hpp>
-#include <core/data/sframe/gl_sarray.hpp>
-#include <core/data/sframe/gl_sframe.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
 using namespace turi;
 
 
@@ -31,7 +31,7 @@ struct variant_equality_visitor {
   bool operator()(S a, T b) const {
     return false;
   }
-  bool operator()(std::shared_ptr<unity_sframe_base> a, std::shared_ptr<unity_sframe_base> b) const {
+  bool operator()(std::shared_ptr<unity_xframe_base> a, std::shared_ptr<unity_xframe_base> b) const {
     return true;
   }
   bool operator()(std::shared_ptr<unity_sarray_base> a, std::shared_ptr<unity_sarray_base> b) const {
@@ -93,8 +93,8 @@ struct unity_toolkit_test {
     return std::make_shared<unity_sarray>();
   }
 
-  std::shared_ptr<unity_sframe> make_sframe() {
-    return std::make_shared<unity_sframe>();
+  std::shared_ptr<unity_xframe> make_xframe() {
+    return std::make_shared<unity_xframe>();
   }
 
   std::shared_ptr<simple_model> make_model() {
@@ -116,7 +116,7 @@ struct unity_toolkit_test {
 
     // case 2
     converter_test<std::shared_ptr<unity_sarray_base>>(make_sarray());
-    converter_test<std::shared_ptr<unity_sframe_base>>(make_sframe());
+    converter_test<std::shared_ptr<unity_xframe_base>>(make_xframe());
     converter_test<std::shared_ptr<model_base>>(make_model());
     converter_test<std::vector<variant_type>>({variant_type()});
     converter_test<std::vector<variant_type>>(
@@ -133,7 +133,7 @@ struct unity_toolkit_test {
     converter_test<std::shared_ptr<unity_sarray>>(make_sarray());
 
     // case 5
-    converter_test<std::shared_ptr<unity_sframe>>(make_sframe());
+    converter_test<std::shared_ptr<unity_xframe>>(make_xframe());
 
     // case 7
     converter_test<std::shared_ptr<simple_model>>(make_model());
@@ -143,7 +143,7 @@ struct unity_toolkit_test {
     converter_test<std::vector<variant_vector_type>>(
         std::vector<variant_vector_type>{{flexible_type("hello")},
                                         {to_variant(make_sarray())},
-                                        {to_variant(make_model()), to_variant(make_sframe())}});
+                                        {to_variant(make_model()), to_variant(make_xframe())}});
     // case 9
     converter_test<std::map<std::string, variant_vector_type>>(
         std::map<std::string, variant_vector_type>{{"hello world", {variant_type()}}});

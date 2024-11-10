@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
 """
-Builtin aggregators for SFrame groupby operator.
+Builtin aggregators for XFrame groupby operator.
 """
 
 
@@ -183,7 +183,7 @@ def SELECT_ONE(src_column):
     ...            {'item':tc.aggregate.SELECT_ONE('item')})
 
     The selected 'rating' and 'item' value for each user will come from the
-    same row in the SFrame.
+    same row in the XFrame.
     """
     return ("__builtin__select_one__", [src_column])
 

@@ -9,7 +9,7 @@
 #include <unordered_set>
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <model_server/lib/api/unity_sketch_interface.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
 #include <ml/sketches/hyperloglog.hpp>
 #include <ml/sketches/countsketch.hpp>
 #include <ml/sketches/quantile_sketch.hpp>
@@ -37,7 +37,7 @@ class hyperloglog;
  * Provides a query interface to a collection of statistics about an SArray
  * accumulated via various sketching methods.
  * The unity_sketch object contains a summary of a single SArray (a column of
- * an SFrame). It contains sketched statistics about the Array which can be
+ * an XFrame). It contains sketched statistics about the Array which can be
  * queried efficiently.
  *
  * The sketch computation is fast and has complexity approximately linear

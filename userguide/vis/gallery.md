@@ -5,10 +5,10 @@ Click on a thumbnail to see the code and a larger image.
 <table>
   <tr>
     <td>
-      <a href="#sframeshow"><img src="images/sframe_show.png"></a>
+      <a href="#xframeshow"><img src="images/xframe_show.png"></a>
     </td>
     <td>
-      <a href="#sframeexplore"><img src="images/sframe_explore_with_images.png"></a>
+      <a href="#xframeexplore"><img src="images/xframe_explore_with_images.png"></a>
     </td>
     <td>
       <a href="#sarrayshow-intfloat"><img src="images/numeric_histogram.png"></a>
@@ -35,21 +35,21 @@ Click on a thumbnail to see the code and a larger image.
 
 #### Examples
 
-##### SFrame.show
+##### XFrame.show
 
 ```python
 # Summarizes and shows the summary of each column in sf
 sf.show()
 ```
-![sf.show()](images/sframe_show.png)
+![sf.show()](images/xframe_show.png)
 
-##### SFrame.explore
+##### XFrame.explore
 
 ```python
 # Opens an interactive exploration of the data in sf
 sf.explore()
 ```
-![sf.explore()](images/sframe_explore_with_images.png)
+![sf.explore()](images/xframe_explore_with_images.png)
 
 ##### SArray.show (int/float)
 

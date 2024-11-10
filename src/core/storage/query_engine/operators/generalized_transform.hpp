@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_MANAGER_GENERALIZED_TRANSFORM_HPP
-#define TURI_SFRAME_QUERY_MANAGER_GENERALIZED_TRANSFORM_HPP
+#ifndef TURI_XFRAME_QUERY_MANAGER_GENERALIZED_TRANSFORM_HPP
+#define TURI_XFRAME_QUERY_MANAGER_GENERALIZED_TRANSFORM_HPP
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/random/random.hpp>
 #include <core/parallel/pthread_tools.hpp>
@@ -15,11 +15,11 @@
 namespace turi {
 namespace query_eval {
 
-typedef std::function<void (const sframe_rows::row&,
-                            sframe_rows::row&)> generalized_transform_type;
+typedef std::function<void (const xframe_rows::row&,
+                            xframe_rows::row&)> generalized_transform_type;
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup operators Logical Operators
  * \{
  */
@@ -165,4 +165,4 @@ typedef operator_impl<planner_node_type::GENERALIZED_TRANSFORM_NODE> op_generali
 } // query_eval
 } // turicreate
 
-#endif // TURI_SFRAME_QUERY_MANAGER_TRANSFORM_HPP
+#endif // TURI_XFRAME_QUERY_MANAGER_TRANSFORM_HPP

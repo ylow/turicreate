@@ -30,12 +30,12 @@ elif PY_MAJOR_VERSION >= 3:
 cdef extern from "<core/util/cityhash_tc.hpp>" namespace "turi":
     size_t hash64(const string&)
 
-cdef extern from "<core/storage/sframe_data/sframe_rows.hpp>" namespace "turi":
+cdef extern from "<core/storage/xframe_data/xframe_rows.hpp>" namespace "turi":
 
-    cdef struct row "sframe_rows::row":
+    cdef struct row "xframe_rows::row":
         const flexible_type& at "operator[]"(size_t col)
 
-    cdef struct sframe_rows:
+    cdef struct xframe_rows:
         row at "operator[]"(size_t row)
 
         size_t num_columns()
@@ -62,11 +62,11 @@ cdef extern from "<core/system/lambda/pylambda.hpp>" namespace "turi::lambda":
 
         flexible_type* output_values
 
-    cdef struct lambda_call_by_sframe_rows_data:
+    cdef struct lambda_call_by_xframe_rows_data:
         flex_type_enum output_enum_type
 
         const vector[string]* input_keys
-        const sframe_rows* input_rows
+        const xframe_rows* input_rows
 
         flexible_type* output_values
 
@@ -76,7 +76,7 @@ cdef extern from "<core/system/lambda/pylambda.hpp>" namespace "turi::lambda":
         void (*release_lambda)(size_t)
         void (*eval_lambda)(size_t, lambda_call_data*)
         void (*eval_lambda_by_dict)(size_t, lambda_call_by_dict_data*)
-        void (*eval_lambda_by_sframe_rows)(size_t, lambda_call_by_sframe_rows_data*)
+        void (*eval_lambda_by_xframe_rows)(size_t, lambda_call_by_xframe_rows_data*)
 
     # The function to call to set everything up.
     void set_pylambda_evaluation_functions(pylambda_evaluation_functions* eval_function_struct)
@@ -183,7 +183,7 @@ cdef class lambda_evaluator(object):
         process_common_typed_list(lcd.output_values, self.output_buffer, lcd.output_enum_type)
 
     @cython.boundscheck(False)
-    cdef eval_sframe_rows(self, lambda_call_by_sframe_rows_data* lcd):
+    cdef eval_xframe_rows(self, lambda_call_by_xframe_rows_data* lcd):
 
         cdef dict arg_dict = {}
         cdef long i, j
@@ -354,13 +354,13 @@ eval_functions.eval_lambda_by_dict = _eval_lambda_by_dict
 ########################################
 # Multiple column evaluation
 
-cdef void _eval_lambda_by_sframe_rows(size_t lmfunc_id, lambda_call_by_sframe_rows_data* lcd) noexcept:
+cdef void _eval_lambda_by_xframe_rows(size_t lmfunc_id, lambda_call_by_xframe_rows_data* lcd) noexcept:
     try:
-        _get_lambda_class(lmfunc_id).eval_sframe_rows(lcd)
+        _get_lambda_class(lmfunc_id).eval_xframe_rows(lcd)
     except Exception, e:
         register_exception(e)
 
-eval_functions.eval_lambda_by_sframe_rows = _eval_lambda_by_sframe_rows
+eval_functions.eval_lambda_by_xframe_rows = _eval_lambda_by_xframe_rows
 
 ########################################
 # Triple Apply stuff

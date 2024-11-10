@@ -9,22 +9,22 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
 from .cy_unity_base_types cimport *
 
-cdef extern from "<core/storage/sframe_interface/unity_sframe_builder.hpp>" namespace "turi":
-    cdef cppclass unity_sframe_builder nogil:
-        unity_sframe_builder() except +
+cdef extern from "<core/storage/xframe_interface/unity_xframe_builder.hpp>" namespace "turi":
+    cdef cppclass unity_xframe_builder nogil:
+        unity_xframe_builder() except +
         void init(size_t, size_t, vector[string], vector[flex_type_enum], string) except +
         void append(const vector[flexible_type]&, size_t) except +
         void append_multiple(const vector[vector[flexible_type]]&, size_t) except +
         vector[string] column_names() except +
         vector[flex_type_enum] column_types() except +
         vector[vector[flexible_type]] read_history(size_t, size_t) except +
-        unity_sframe_base_ptr close() except +
+        unity_xframe_base_ptr close() except +
 
-cdef create_proxy_wrapper_from_existing_proxy(const unity_sframe_builder_base_ptr& proxy)
+cdef create_proxy_wrapper_from_existing_proxy(const unity_xframe_builder_base_ptr& proxy)
 
-cdef class UnitySFrameBuilderProxy:
-    cdef unity_sframe_builder_base_ptr _base_ptr
-    cdef unity_sframe_builder* thisptr
+cdef class UnityXFrameBuilderProxy:
+    cdef unity_xframe_builder_base_ptr _base_ptr
+    cdef unity_xframe_builder* thisptr
 
     cpdef init(self, list column_types, _column_names, size_t num_segments, size_t history_size, _save_location)
 

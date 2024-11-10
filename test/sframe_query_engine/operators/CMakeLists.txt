@@ -1,7 +1,7 @@
 project(Turi)
 
 make_boost_test(sarray_source.cxx REQUIRES unity_shared_for_testing)
-make_boost_test(sframe_source.cxx REQUIRES unity_shared_for_testing)
+make_boost_test(xframe_source.cxx REQUIRES unity_shared_for_testing)
 make_boost_test(project.cxx REQUIRES unity_shared_for_testing)
 make_boost_test(transform.cxx REQUIRES unity_shared_for_testing)
 make_boost_test(append.cxx REQUIRES unity_shared_for_testing)

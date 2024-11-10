@@ -2,10 +2,10 @@
 
 This is the User Guide for Turi Create
 * [Overview](README.md)
-* [Working with data](sframe/README.md)
-    * [Tabular data](sframe/tabular-data.md)
-        * [Loading and Saving](sframe/sframe-intro.md)
-        * [Data Manipulation](sframe/data-manipulation.md)
+* [Working with data](xframe/README.md)
+    * [Tabular data](xframe/tabular-data.md)
+        * [Loading and Saving](xframe/xframe-intro.md)
+        * [Data Manipulation](xframe/data-manipulation.md)
         * [SQL Databases](data_formats_and_sources/sql_integration.md)
     * [Graph data](sgraph/sgraph.md)
     * [Text data](text/analysis.md)

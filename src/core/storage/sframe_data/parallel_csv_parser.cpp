@@ -15,14 +15,14 @@
 #include <core/parallel/thread_pool.hpp>
 #include <core/parallel/atomic.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/parallel_csv_parser.hpp>
-#include <core/storage/sframe_data/csv_line_tokenizer.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/parallel_csv_parser.hpp>
+#include <core/storage/xframe_data/csv_line_tokenizer.hpp>
 #include <core/storage/fileio/general_fstream.hpp>
 #include <core/storage/fileio/sanitize_url.hpp>
 #include <core/storage/fileio/fs_utils.hpp>
 #include <core/system/cppipc/server/cancel_ops.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
 #include <core/util/dense_bitset.hpp>
 
 namespace turi {
@@ -187,7 +187,7 @@ struct csv_info {
 class parallel_csv_parser {
  public:
   /**
-   * Constructs a parallel CSV parser which parses a CSV into SFrames
+   * Constructs a parallel CSV parser which parses a CSV into XFrames
    * \param column_types This must match the number of columns of output and
    *                     the type of each column. Generally this should the same
    *                     number of columns as in the CSV. If only a subset if
@@ -240,7 +240,7 @@ class parallel_csv_parser {
    * Parses an input file into an output frame
    */
   void parse(general_ifstream& fin,
-             sframe& output_frame,
+             xframe& output_frame,
              sarray<flexible_type>& errors) {
     size_t num_output_segments = output_frame.num_segments();
     size_t current_input_file_size = fin.file_size();
@@ -706,7 +706,7 @@ class parallel_csv_parser {
   bool fill_buffer(general_ifstream& fin) {
     if (fin.good()) {
       size_t oldsize = buffer.size();
-      size_t amount_to_read = SFRAME_CSV_PARSER_READ_SIZE;
+      size_t amount_to_read = XFRAME_CSV_PARSER_READ_SIZE;
       buffer.resize(buffer.size() + amount_to_read);
       fin.read(&(buffer[0]) + oldsize, buffer.size() - oldsize);
       if ((size_t)fin.gcount() < amount_to_read) {
@@ -904,7 +904,7 @@ class parallel_csv_parser {
    * writing_buffer, thus permitting the parsed_buffer to be used again in
    * a different thread.
    */
-  void start_background_write(sframe& output_frame,
+  void start_background_write(xframe& output_frame,
                               sarray<flexible_type>& errors_array,
                               size_t output_segment) {
     // switch the parse buffer with the write buffer
@@ -1108,24 +1108,24 @@ void get_column_types(csv_info& info,
 
 
 /**
- * Parsed a CSV file to an SFrame.
+ * Parsed a CSV file to an XFrame.
  *
  * \param path The file to open as a csv
  * \param tokenizer The tokenizer configuration to use. This should be
  *                  filled with all the tokenization rules (like what
  *                  separator character to use, what quoting character to use,
  *                  etc.)
- * \param writer The sframe writer to use.
+ * \param writer The xframe writer to use.
  * \param frame_sidx_file Where to write the frame to
  * \param parallel_csv_parser A parallel_csv_parser
  * \param errors A reference to a map in which to store an sarray of bad lines
  * for each input file.
  */
-void parse_csv_to_sframe(
+void parse_csv_to_xframe(
     const std::string& path,
     csv_line_tokenizer& tokenizer,
     csv_file_handling_options options,
-    sframe& frame,
+    xframe& frame,
     std::string frame_sidx_file,
     parallel_csv_parser& parser,
     std::map<std::string, std::shared_ptr<sarray<flexible_type>>>& errors) {
@@ -1134,7 +1134,7 @@ void parse_csv_to_sframe(
   auto store_errors = options.store_errors;
   auto skip_rows = options.skip_rows;
 
-  logstream(LOG_INFO) << "Loading sframe from " << sanitize_url(path) << std::endl;
+  logstream(LOG_INFO) << "Loading xframe from " << sanitize_url(path) << std::endl;
 
   // load; For each line, insert into the frame
   {
@@ -1200,11 +1200,11 @@ void parse_csv_to_sframe(
   }
 }
 
-std::map<std::string, std::shared_ptr<sarray<flexible_type>>> parse_csvs_to_sframe(
+std::map<std::string, std::shared_ptr<sarray<flexible_type>>> parse_csvs_to_xframe(
     const std::string& url,
     csv_line_tokenizer& tokenizer,
     csv_file_handling_options options,
-    sframe& frame,
+    xframe& frame,
     std::string frame_sidx_file) {
   // unpack the options
   auto use_header = options.use_header;
@@ -1254,7 +1254,7 @@ std::map<std::string, std::shared_ptr<sarray<flexible_type>>> parse_csvs_to_sfra
   // ensure that we actually found some valid files
   if (files.empty()) {
     if (found_zero_byte_files) {
-      // We only found zero-byte files - return an empty SFrame.
+      // We only found zero-byte files - return an empty XFrame.
       if (!frame.is_opened_for_write()) {
         frame.open_for_write({},{},frame_sidx_file);
       }
@@ -1346,7 +1346,7 @@ std::map<std::string, std::shared_ptr<sarray<flexible_type>>> parse_csvs_to_sfra
   for (auto file : files) {
     // check that we've read < row_limit
     if (parser.num_lines_read() < row_limit || row_limit == 0) {
-      parse_csv_to_sframe(file, tokenizer, options, frame,
+      parse_csv_to_xframe(file, tokenizer, options, frame,
                           frame_sidx_file, parser, errors);
     } else break;
   }

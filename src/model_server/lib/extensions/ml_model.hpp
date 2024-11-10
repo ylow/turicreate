@@ -31,7 +31,7 @@ namespace turi {
  *
  *  *) state: This is the key-value map that stores the "model" attributes.
  *            The value is of type "variant_type" which is fully interfaced
- *            with python. You can add basic types, vectors, SFrames etc.
+ *            with python. You can add basic types, vectors, XFrames etc.
  *
  *
  *  *) options: Option manager which keeps track of default options, current

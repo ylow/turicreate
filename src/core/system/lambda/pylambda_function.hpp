@@ -12,7 +12,7 @@
 
 namespace turi {
 
-class sframe_rows;
+class xframe_rows;
 
 namespace fileio {
 struct file_ownership_handle;
@@ -81,12 +81,12 @@ class pylambda_function {
   //// Evaluating Interface
 
   /* One to one */
-  void eval(const sframe_rows& rows,
+  void eval(const xframe_rows& rows,
             std::vector<flexible_type>& out);
 
   /* Many to one */
   void eval(const std::vector<std::string>& keys,
-            const sframe_rows& rows,
+            const xframe_rows& rows,
             std::vector<flexible_type>& out);
 
  private:

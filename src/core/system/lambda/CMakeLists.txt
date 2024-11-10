@@ -14,7 +14,7 @@ make_library(pylambda OBJECT
     lambda_master.cpp
     pylambda_function.cpp
   REQUIRES
-    flexible_type cppipc sframe shmipc process python_callbacks
+    flexible_type cppipc xframe shmipc process python_callbacks
   EXTERNAL_VISIBILITY
 )
 
@@ -23,6 +23,6 @@ make_library(pylambda_worker OBJECT
     pylambda.cpp
     pylambda_worker.cpp
   REQUIRES
-    flexible_type cppipc sframe shmipc process python_callbacks
+    flexible_type cppipc xframe shmipc process python_callbacks
   EXTERNAL_VISIBILITY
 )

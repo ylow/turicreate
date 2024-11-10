@@ -7,7 +7,7 @@
 #ifndef __TC_VIS_HEATMAP
 #define __TC_VIS_HEATMAP
 
-#include <core/data/sframe/gl_sframe.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
 
 #include "extrema.hpp"
 #include "groupby.hpp"
@@ -57,7 +57,7 @@ namespace visualization {
    */
   class heatmap : public groupby<heatmap_result> {
     public:
-      virtual void init(const gl_sframe& source, size_t batch_size) override;
+      virtual void init(const gl_xframe& source, size_t batch_size) override;
       virtual std::vector<heatmap_result> split_input(size_t num_threads) override;
   };
 

@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_ENGINE_OPERATORS_EXECUTION_NODE_HPP
-#define TURI_SFRAME_QUERY_ENGINE_OPERATORS_EXECUTION_NODE_HPP
+#ifndef TURI_XFRAME_QUERY_ENGINE_OPERATORS_EXECUTION_NODE_HPP
+#define TURI_XFRAME_QUERY_ENGINE_OPERATORS_EXECUTION_NODE_HPP
 
 #include <memory>
 #include <vector>
@@ -16,15 +16,15 @@
 #include <core/storage/query_engine/util/broadcast_queue.hpp>
 
 namespace turi {
-class sframe_rows;
+class xframe_rows;
 
 template <>
-struct broadcast_queue_serializer<std::shared_ptr<sframe_rows>> {
-  void save(oarchive& oarc, const std::shared_ptr<sframe_rows>& t) {
+struct broadcast_queue_serializer<std::shared_ptr<xframe_rows>> {
+  void save(oarchive& oarc, const std::shared_ptr<xframe_rows>& t) {
     oarc << (*t);
   }
-  void load(iarchive& iarc, std::shared_ptr<sframe_rows>& t) {
-    t = std::make_shared<sframe_rows>();
+  void load(iarchive& iarc, std::shared_ptr<xframe_rows>& t) {
+    t = std::make_shared<xframe_rows>();
     iarc >> (*t);
   }
 };
@@ -35,7 +35,7 @@ namespace query_eval {
 class query_context;
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup execution Execution
  * \{
  */
@@ -97,9 +97,9 @@ class query_context;
  * while the context switch is relatively cheap (boost coroutines promise this
  * at < 100 cycles or so), we still want to avoid performing the context
  * switch for every row, so our unit of communication across coroutines
- * is an \ref sframe_rows object which represents a collection of rows, but
+ * is an \ref xframe_rows object which represents a collection of rows, but
  * represented columnar-wise. Every communicated block must be of a constant
- * number of rows (i.e. SFRAME_READ_BATCH_SIZE. ex: 256), except for the last
+ * number of rows (i.e. XFRAME_READ_BATCH_SIZE. ex: 256), except for the last
  * block which may be smaller. Operators which perform filtering for instance,
  * must hence make sure to buffer accordingly.
  *
@@ -184,7 +184,7 @@ class execution_node  : public std::enable_shared_from_this<execution_node> {
 
   /** Returns nullptr if there is no more data.
    */
-  std::shared_ptr<sframe_rows> get_next(size_t consumer_id, bool skip=false);
+  std::shared_ptr<xframe_rows> get_next(size_t consumer_id, bool skip=false);
 
   /**
    * Returns the number of inputs of the execution node
@@ -224,7 +224,7 @@ class execution_node  : public std::enable_shared_from_this<execution_node> {
   /**
    * Internal function used to add to the operator output
    */
-  void add_operator_output(const std::shared_ptr<sframe_rows>& rows);
+  void add_operator_output(const std::shared_ptr<xframe_rows>& rows);
 
   /**
    * Internal utility function what pulls the next batch of rows from a input
@@ -232,7 +232,7 @@ class execution_node  : public std::enable_shared_from_this<execution_node> {
    * This reads *exactly* one block.
    * If skip is true, nullptr is always returned.
    */
-  std::shared_ptr<sframe_rows> get_next_from_input(size_t input_id, bool skip);
+  std::shared_ptr<xframe_rows> get_next_from_input(size_t input_id, bool skip);
 
   /**
    * Starts the coroutines
@@ -255,7 +255,7 @@ class execution_node  : public std::enable_shared_from_this<execution_node> {
   };
   std::vector<input_node> m_inputs;
 
-  std::unique_ptr<broadcast_queue<std::shared_ptr<sframe_rows> > > m_output_queue;
+  std::unique_ptr<broadcast_queue<std::shared_ptr<xframe_rows> > > m_output_queue;
   size_t m_head = 0;
   bool m_coroutines_started = false;
   bool m_skip_next_block = false;
@@ -275,4 +275,4 @@ class execution_node  : public std::enable_shared_from_this<execution_node> {
 /// \}
 }}
 
-#endif /* TURI_SFRAME_QUERY_ENGINE_OPERATORS_EXECUTION_NODE_HPP */
+#endif /* TURI_XFRAME_QUERY_ENGINE_OPERATORS_EXECUTION_NODE_HPP */

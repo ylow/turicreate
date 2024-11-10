@@ -18,7 +18,7 @@ from .cy_flexible_type cimport flexible_type_from_pyobject
 from .cy_flexible_type cimport pydict_from_gl_options_map
 
 from . cimport cy_sarray
-from . cimport cy_sframe
+from . cimport cy_xframe
 
 from .cy_sarray cimport UnitySArrayProxy
 from .cy_model cimport UnityModel, create_model_from_proxy

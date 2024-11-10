@@ -26,8 +26,8 @@ from .cy_cpp_utils cimport str_to_cpp
 
 from .cy_unity cimport make_function_closure_info
 
-### sframe ###
-from .cy_sframe cimport create_proxy_wrapper_from_existing_proxy as sframe_proxy
+### xframe ###
+from .cy_xframe cimport create_proxy_wrapper_from_existing_proxy as xframe_proxy
 
 cdef create_proxy_wrapper_from_existing_proxy(const unity_sarray_base_ptr& proxy):
     if proxy.get() == NULL:
@@ -411,7 +411,7 @@ cdef class UnitySArrayProxy:
 
     cpdef unpack_dict(self, _column_name_prefix, object limit, na_value):
         cdef string column_name_prefix = str_to_cpp(_column_name_prefix)
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         cdef flexible_type gl_na_value = flexible_type_from_pyobject(na_value)
         cdef vector[flexible_type] sub_keys
         for key in limit:
@@ -419,7 +419,7 @@ cdef class UnitySArrayProxy:
 
         with nogil:
             proxy = self.thisptr.unpack_dict(column_name_prefix, sub_keys, gl_na_value)
-        return sframe_proxy(proxy)
+        return xframe_proxy(proxy)
 
     cpdef unpack(self, _column_name_prefix, object limit, value_types, na_value):
         cdef string column_name_prefix = str_to_cpp(_column_name_prefix)
@@ -431,11 +431,11 @@ cdef class UnitySArrayProxy:
         for key in limit:
             sub_keys.push_back(flexible_type_from_pyobject(key))
 
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         cdef flexible_type gl_na_value = flexible_type_from_pyobject(na_value)
         with nogil:
             proxy = self.thisptr.unpack(column_name_prefix, sub_keys, column_types, gl_na_value)
-        return sframe_proxy(proxy)
+        return xframe_proxy(proxy)
 
     cpdef expand(self, _column_name_prefix, object limit, value_types):
         cdef string column_name_prefix = str_to_cpp(_column_name_prefix)
@@ -447,10 +447,10 @@ cdef class UnitySArrayProxy:
         for key in limit:
             sub_keys.push_back(flexible_type_from_pyobject(key))
 
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = self.thisptr.expand(column_name_prefix, sub_keys, column_types)
-        return sframe_proxy(proxy)
+        return xframe_proxy(proxy)
 
     cpdef __get_object_id(self):
         return <size_t>(self.thisptr)

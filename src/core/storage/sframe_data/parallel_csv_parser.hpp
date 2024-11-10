@@ -9,14 +9,14 @@
 #include <vector>
 #include <map>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/csv_line_tokenizer.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/csv_line_tokenizer.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
 namespace turi {
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup csv_utils CSV Parsing and Writing
  * \{
  */
@@ -54,23 +54,23 @@ struct csv_file_handling_options {
 };
 
 /**
- * Parses a CSV file / glob of CSV files to an SFrame.
+ * Parses a CSV file / glob of CSV files to an XFrame.
  *
  * \param url Path or Glob to read files
  * \param tokenizer CSV tokenization options
  * \param options Other file handling options
- * \param frame Returned sframe object. This should be an uninitialized sframe.
+ * \param frame Returned xframe object. This should be an uninitialized xframe.
  * \param frame_sidx_file Location to save the result. Optional. Defaults to cache.
  *
  * \returns a map of filename to sarray<flexible_type> of string type where each
  * row contains a line of the file that failed to parse. This is only filled
  * if options.store_errors = true
  */
-std::map<std::string, std::shared_ptr<sarray<flexible_type>>> parse_csvs_to_sframe(
+std::map<std::string, std::shared_ptr<sarray<flexible_type>>> parse_csvs_to_xframe(
     const std::string& url,
     csv_line_tokenizer& tokenizer,
     csv_file_handling_options options,
-    sframe& frame,
+    xframe& frame,
     std::string frame_sidx_file = "");
 
 /// \}

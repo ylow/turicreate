@@ -3,12 +3,12 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include <model_server/extensions/grouped_sframe.hpp>
+#include <model_server/extensions/grouped_xframe.hpp>
 
 namespace turi {
 
 /// Public methods
-void grouped_sframe::group(const gl_sframe &sf, const std::vector<std::string>
+void grouped_xframe::group(const gl_xframe &sf, const std::vector<std::string>
     column_names, bool is_grouped) {
   if(m_inited)
     log_and_throw("Group has already been called on this object!");
@@ -71,7 +71,7 @@ void grouped_sframe::group(const gl_sframe &sf, const std::vector<std::string>
   m_inited = true;
 }
 
-gl_sframe grouped_sframe::get_group(std::vector<flexible_type> key) {
+gl_xframe grouped_xframe::get_group(std::vector<flexible_type> key) {
   if(!m_inited) {
     log_and_throw("The 'group' operation needs to occur before getting a "
         "group!");
@@ -94,7 +94,7 @@ gl_sframe grouped_sframe::get_group(std::vector<flexible_type> key) {
 }
 
 
-gl_sarray grouped_sframe::groups() {
+gl_sarray grouped_xframe::groups() {
   if(!m_inited)
     log_and_throw("The 'group' operation needs to occur before getting the "
         "list of groups!");
@@ -114,14 +114,14 @@ gl_sarray grouped_sframe::groups() {
 }
 
 
-std::vector<std::pair<flexible_type,gl_sframe>>
-grouped_sframe::iterator_get_next(size_t len) {
+std::vector<std::pair<flexible_type,gl_xframe>>
+grouped_xframe::iterator_get_next(size_t len) {
   if(!m_inited)
     log_and_throw("The 'group' operation needs to occur before iteration!");
   if(!m_iterating)
     log_and_throw("Must begin iteration before iterating!");
 
-  std::vector<std::pair<flexible_type,gl_sframe>> ret;
+  std::vector<std::pair<flexible_type,gl_xframe>> ret;
 
   if(len < 1) {
     return ret;
@@ -148,7 +148,7 @@ grouped_sframe::iterator_get_next(size_t len) {
   return ret;
 }
 
-gl_sframe grouped_sframe::group_info() const {
+gl_xframe grouped_xframe::group_info() const {
   if (m_group_names.size() == 0) {
     log_and_throw("No groups present. Cannot obtain group info.");
   }
@@ -175,7 +175,7 @@ gl_sframe grouped_sframe::group_info() const {
 
   // Prepare for writing.
   size_t num_segments = thread::cpu_count();
-  gl_sframe_writer writer(ret_column_names, ret_column_types, num_segments);
+  gl_xframe_writer writer(ret_column_names, ret_column_types, num_segments);
   size_t range_dir_size = m_range_directory.size();
 
   // Write the group info.
@@ -203,7 +203,7 @@ gl_sframe grouped_sframe::group_info() const {
 }
 
 /// Private methods
-gl_sframe grouped_sframe::get_group_by_index(size_t range_dir_idx) {
+gl_xframe grouped_xframe::get_group_by_index(size_t range_dir_idx) {
   int64_t range_start = m_range_directory[range_dir_idx];
   int64_t range_end;
   if((range_dir_idx+1) == m_range_directory.size()) {
@@ -221,5 +221,5 @@ gl_sframe grouped_sframe::get_group_by_index(size_t range_dir_idx) {
 using namespace turi;
 
 BEGIN_CLASS_REGISTRATION
-REGISTER_CLASS(grouped_sframe)
+REGISTER_CLASS(grouped_xframe)
 END_CLASS_REGISTRATION

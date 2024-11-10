@@ -106,7 +106,7 @@ namespace lambda {
      * \overload
      */
     void bulk_eval(size_t lambda_hash,
-                   const sframe_rows& args,
+                   const xframe_rows& args,
                    std::vector<flexible_type>& out,
                    bool skip_undefined, uint64_t seed);
 
@@ -125,7 +125,7 @@ namespace lambda {
      */
     void bulk_eval(size_t lambda_hash,
         const std::vector<std::string>& keys,
-        const sframe_rows& args,
+        const xframe_rows& args,
         std::vector<flexible_type>& out,
         bool skip_undefined, uint64_t seed);
 

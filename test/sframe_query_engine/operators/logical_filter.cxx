@@ -4,8 +4,8 @@
 #include <core/storage/query_engine/execution/execution_node.hpp>
 #include <core/storage/query_engine/operators/sarray_source.hpp>
 #include <core/storage/query_engine/operators/logical_filter.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
 
 #include "check_node.hpp"
 

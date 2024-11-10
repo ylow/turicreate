@@ -7,14 +7,14 @@
 #include <vector>
 #include <core/logging/logger.hpp>
 #include <core/system/platform/timer//timer.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/group_aggregate_value.hpp>
-#include <core/storage/sframe_data/groupby_aggregate_impl.hpp>
-#include <core/storage/sframe_data/groupby_aggregate.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/group_aggregate_value.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_impl.hpp>
+#include <core/storage/xframe_data/groupby_aggregate.hpp>
 
 namespace turi {
 
-sframe groupby_aggregate(const sframe& source,
+xframe groupby_aggregate(const xframe& source,
       const std::vector<std::string>& keys,
       const std::vector<std::string>& output_column_names,
       const std::vector<std::pair<std::vector<std::string>,
@@ -52,7 +52,7 @@ sframe groupby_aggregate(const sframe& source,
   for (const auto& key: keys) {
     // check that the column name is valid
     if (!source.contains_column(key)) {
-      log_and_throw("SFrame does not contain column " + key);
+      log_and_throw("XFrame does not contain column " + key);
     }
   }
 
@@ -63,7 +63,7 @@ sframe groupby_aggregate(const sframe& source,
       for (size_t index = 0; index < group.first.size(); index++) {
         auto& col_name = group.first[index];
         if (!source.contains_column(col_name)) {
-          log_and_throw("SFrame does not contain column " + col_name);
+          log_and_throw("XFrame does not contain column " + col_name);
         }
 
         if(turi::registered_arg_functions.count(group.second->name()) != 0 && index > 0)
@@ -100,10 +100,10 @@ sframe groupby_aggregate(const sframe& source,
       all_columns.push_back(group_column);
     }
   }
-  sframe frame_with_relevant_cols = source.select_columns(all_columns);
+  xframe frame_with_relevant_cols = source.select_columns(all_columns);
 
   // prepare the output frame
-  sframe output;
+  xframe output;
   std::vector<std::string> column_names;
   std::vector<flex_type_enum> column_types;
   // output frame has the key column name and types
@@ -170,7 +170,7 @@ sframe groupby_aggregate(const sframe& source,
   groupby_aggregate_impl::group_aggregate_container
       container(max_buffer_size, nsegments);
 
-  // ok the input sframe (frame_with_relevant_cols) contains all the values
+  // ok the input xframe (frame_with_relevant_cols) contains all the values
   // we care about. However, the challenge here is to figure out how the keys
   // and values line up. By construction, all the key columns come first.
   // which is good. But group columns can be pretty much anywhere.

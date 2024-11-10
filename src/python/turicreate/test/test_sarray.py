@@ -9,7 +9,7 @@
 
 
 from ..data_structures.sarray import SArray
-from ..data_structures.sframe import SFrame
+from ..data_structures.xframe import XFrame
 from ..data_structures.sarray import load_sarray
 from .._cython.cy_flexible_type import GMT
 from . import util
@@ -1908,7 +1908,7 @@ class SArrayTest(unittest.TestCase):
             # sf1 now references the on disk file
             sa1 = SArray(f)
 
-            # create another SFrame and save to the same location
+            # create another XFrame and save to the same location
             sa2 = SArray([str(i) for i in range(1, 100000)])
             sa2.save(f)
 
@@ -3666,7 +3666,7 @@ class SArrayTest(unittest.TestCase):
         self.assertTrue(np.array_equal(SArray([a1, b1]).sum(), a1 + b1))
 
     def test_type_casting(self):
-        x = SFrame({"a": [[1, 2], None, [3, 4], None]})
+        x = XFrame({"a": [[1, 2], None, [3, 4], None]})
         x["a"] = SArray(x["a"], list)
         self.assertTrue(x["a"].dtype == list)
 

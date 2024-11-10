@@ -3,21 +3,21 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef SFRAME_ALGORITHM_EC_SORT_HPP
-#define SFRAME_ALGORITHM_EC_SORT_HPP
+#ifndef XFRAME_ALGORITHM_EC_SORT_HPP
+#define XFRAME_ALGORITHM_EC_SORT_HPP
 
 #include <vector>
 #include <memory>
 
 namespace turi {
-class sframe;
+class xframe;
 
 namespace query_eval {
 
 struct planner_node;
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup Algorithms Algorithms
  * \{
  */
@@ -42,7 +42,7 @@ struct planner_node;
  *
  * Scatter
  * -------
- *  - The entire sframe is materialized to a stream which consumes the sframe row
+ *  - The entire xframe is materialized to a stream which consumes the xframe row
  *  by row.
  *  - For each row, the key is compared to the pivots, and the row is written
  *  row-wise into the bucket.
@@ -58,7 +58,7 @@ struct planner_node;
  *
  * 1. Exactly 2x write amplification. Every tuple is only written exactly twice.
  * (But see Issue 1)
- * 2. Works with Lazy sframe sources
+ * 2. Works with Lazy xframe sources
  *
  * Issues
  * ------
@@ -67,7 +67,7 @@ struct planner_node;
  * compressed since they are done row-wise. So while every tuple is written
  * exactly twice, the effective \#bytes written can be *much much* larger.
  *
- * 2. Wide reads of SFrames are slow. If the SFrame to be sorted has a few hundred
+ * 2. Wide reads of XFrames are slow. If the XFrame to be sorted has a few hundred
  * columns on disk, things break.
  *
  * 3. Memory limits are hard to control. Image columns or very big dictionaries /
@@ -75,7 +75,7 @@ struct planner_node;
  *
  * The Proposed algorithm
  * =======================
- * Firstly, we assume that the sframe is read one value at a time, i.e.
+ * Firstly, we assume that the xframe is read one value at a time, i.e.
  * we get a stream of *(column\_number, row\_number, value)*. With the
  * assumption that the data is at least, sequential within the column.
  * I.e. if I just received *(c, r, v) : r \> 0*, Â  I must have already
@@ -92,7 +92,7 @@ struct planner_node;
  * - Row numbers are added again, and its sorted again by the first set
  * of row numbers. This gives the forward map (i.e. y[i] = j implies
  * input row i is written to output row j)
- * - (In SFrame pseudocode:
+ * - (In XFrame pseudocode:
  *
  *     B = A[['key']].add_row_number('r1').sort('key')
  *     inverse_map = B['r1'] # we don't need this
@@ -111,7 +111,7 @@ struct planner_node;
  *  - For each (c,r,v) in data:
  *    Write (c,v) to bucket `Floor(K \ forward_map(r) / N)`
  *
- * This requires a little modification to the sframe writer to allow
+ * This requires a little modification to the xframe writer to allow
  * single columns writes (really it already does this internally. It
  * transposes written rows to turn it to columns). This exploits the
  * property that if (c,r-1,v) must be read before (c,r,v). Hence the
@@ -136,12 +136,12 @@ struct planner_node;
  *         Load forward_map[S:T] into memory
  *         For each (c,r,v) in bucket b
  *             Output[per_bucket_forward_map(r) - S][c] = v
- *         Dump Output to an SFrame
+ *         Dump Output to an XFrame
  *
  * Advantages
  * ----------
  *
- * 1. Only sequential sweeps on the input SFrames, block-wise.
+ * 1. Only sequential sweeps on the input XFrames, block-wise.
  * 2. Does not matter if there are a large number of columns.
  * 3. Memory limits can be easier to control.
  *   a.  Scatter has little memory requirements (apart from the write buffer stage).
@@ -151,18 +151,18 @@ struct planner_node;
  * Issues
  * ------
  *
- * 1. The block-wise reads do not work well on lazy SFrames. In theory this is
+ * 1. The block-wise reads do not work well on lazy XFrames. In theory this is
  * possible, since the algorithm is technically more general and will work even if
  * the (c,r,v) tuples are generated one row at a time (i.e. wide reads). However,
- * executing this on a lazy Sframe, means that we *actually* perform the wide
- * reads which are slow.  (Example: if I have a really wide SFrame on disk.
+ * executing this on a lazy XFrame, means that we *actually* perform the wide
+ * reads which are slow.  (Example: if I have a really wide XFrame on disk.
  * And I perform the read through the query execution pipeline, the query
  * execution pipeline performs the wide read and that is slow.  Whereas if I go to
- * the disk SFrame directly, I can completely avoid the wide read).
+ * the disk XFrame directly, I can completely avoid the wide read).
  *
  *
- * 2. Due to (1) it is better to materialize the SFrame and operate on
- * the physical SFrame. Hence we get up to 3x write amplification.
+ * 2. Due to (1) it is better to materialize the XFrame and operate on
+ * the physical XFrame. Hence we get up to 3x write amplification.
  * However, every intermediate bucket is fully compressed.
  *
  * Optimizations And implementation Details
@@ -187,7 +187,7 @@ struct planner_node;
  *
  * - There are 2 optimizations possible.
  *    - One is the above: we write row number into the bucket, and we go back
- *    to the original input SFrame for data. We can put a threshold size here
+ *    to the original input XFrame for data. We can put a threshold size here
  *    of say ... 256 KB. about 100MBps * 2ms.
  *
  *    - The second is optimization in the final sort of the bucket. We can perform
@@ -195,7 +195,7 @@ struct planner_node;
  *    additional write + seek of the element, but it IS a smaller file.
  *
  * - Minimize full decode of dictionary/list type. We should be able to
- * read/write dict/list columns in the input SFrame as strings. (Annoyingly
+ * read/write dict/list columns in the input XFrame as strings. (Annoyingly
  * this is actually quite hard to achieve at the moment)
  *
  * Notes on the current implementation
@@ -205,14 +205,14 @@ struct planner_node;
  *   used for the forward map sort since it now very small. A dedicated sort
  *   around just sorting integers could be nice.
  *
- * \param sframe_planner_node The lazy sframe to be sorted
+ * \param xframe_planner_node The lazy xframe to be sorted
  * \param sort_column_names The columns to be sorted
  * \param sort_orders The order for each column to be sorted, true is ascending
  *
- * \return The sorted sframe
+ * \return The sorted xframe
  */
-std::shared_ptr<sframe> ec_sort(
-    std::shared_ptr<planner_node> sframe_planner_node,
+std::shared_ptr<xframe> ec_sort(
+    std::shared_ptr<planner_node> xframe_planner_node,
     const std::vector<std::string> column_names,
     const std::vector<size_t>& key_column_indices,
     const std::vector<bool>& sort_orders);

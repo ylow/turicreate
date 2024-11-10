@@ -4,15 +4,15 @@
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
 #include <core/logging/logger.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sframe_index_file.hpp>
-#include <core/storage/sframe_data/sframe_reader.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/xframe_index_file.hpp>
+#include <core/storage/xframe_data/xframe_reader.hpp>
 
 namespace turi {
 
-void sframe_reader::init(const sframe& frame, size_t num_segments) {
+void xframe_reader::init(const xframe& frame, size_t num_segments) {
   Dlog_func_entry();
-  ASSERT_MSG(!inited, "SFrame reader already inited");
+  ASSERT_MSG(!inited, "XFrame reader already inited");
   index_info = frame.get_index_info();
   // no columns. Just stop.
   if (index_info.column_names.size() == 0) {
@@ -35,9 +35,9 @@ void sframe_reader::init(const sframe& frame, size_t num_segments) {
   }
 }
 
-void sframe_reader::init(const sframe& frame, const std::vector<size_t>& segment_lengths) {
+void xframe_reader::init(const xframe& frame, const std::vector<size_t>& segment_lengths) {
   Dlog_func_entry();
-  ASSERT_MSG(!inited, "SFrame reader already inited");
+  ASSERT_MSG(!inited, "XFrame reader already inited");
 
   // Verify that lengths match up
   index_info = frame.get_index_info();
@@ -51,20 +51,20 @@ void sframe_reader::init(const sframe& frame, const std::vector<size_t>& segment
   }
 }
 
-sframe_reader::iterator sframe_reader::begin(size_t segmentid) const {
+xframe_reader::iterator xframe_reader::begin(size_t segmentid) const {
   ASSERT_LT(segmentid, num_segments());
   if(segmentid >= num_segments()) log_and_throw(std::string("Invalid segment ID"));
-  return sframe_iterator(column_data, segmentid, true);
+  return xframe_iterator(column_data, segmentid, true);
 }
 
-sframe_reader::iterator sframe_reader::end(size_t segmentid) const {
+xframe_reader::iterator xframe_reader::end(size_t segmentid) const {
   ASSERT_LT(segmentid, num_segments());
   if(segmentid >= num_segments()) log_and_throw(std::string("Invalid segment ID"));
-  return sframe_iterator(column_data, segmentid, false);
+  return xframe_iterator(column_data, segmentid, false);
 }
 
 
-size_t sframe_reader::read_rows(size_t row_start,
+size_t xframe_reader::read_rows(size_t row_start,
                                 size_t row_end,
                                 std::vector<std::vector<flexible_type> >& out_obj) {
   std::shared_ptr<std::vector<flexible_type> > coldata = column_pool.get_new_buffer();
@@ -91,10 +91,10 @@ size_t sframe_reader::read_rows(size_t row_start,
   return out_obj.size();
 }
 
-size_t sframe_reader::read_rows(size_t row_start,
+size_t xframe_reader::read_rows(size_t row_start,
                                 size_t row_end,
-                                sframe_rows& out_obj) {
-  // sframe_rows is made up of a collection of columns
+                                xframe_rows& out_obj) {
+  // xframe_rows is made up of a collection of columns
   out_obj.resize(column_data.size());
   for (size_t i = 0;i < column_data.size(); ++i) {
     column_data[i]->read_rows(row_start, row_end, *(out_obj.get_columns()[i]));
@@ -102,7 +102,7 @@ size_t sframe_reader::read_rows(size_t row_start,
   return out_obj.num_rows();
 }
 
-void sframe_reader::reset_iterators() {
+void xframe_reader::reset_iterators() {
   for (auto& col: column_data) {
     col->reset_iterators();
   }

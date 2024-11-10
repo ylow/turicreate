@@ -20,7 +20,7 @@ annotated_data = tc.image_classifier.annotate(data)
 
 ```
 
-This utility will only present rows from the SFrame that have non-missing values.
+This utility will only present rows from the XFrame that have non-missing values.
 All missing values won't be shown in the GUI but they will be still included in the result set with default annotation value (undefined value, which denotes missing
 annotation). Exception will be thrown if no valid image is found.
 

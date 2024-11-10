@@ -10,7 +10,7 @@ The unity system basically is a client-server architecture which uses the
 CPPIPC library to share objects on the server, to the client. The server is
 implemented in C++ toolkits/unity, and the client is implemented mostly in
 Cython in src/cython_interface. Much of the common code is in
-src/sframe/unity. This in theory allows the C++ and Python processes to be
+src/xframe/unity. This in theory allows the C++ and Python processes to be
 located in different processes, or even different machines / systems across the
 network. This is less efficient than sharing pointers between C++ and Python
 directly, but this provides a more generic interface for which the Python end
@@ -32,7 +32,7 @@ containing elements of variable types to C++. For instance, a regular
 dictionary gets converted to std::map<std::string, flexible_type>.
 
 \li \ref turi::variant_type A more generic type that describes a union over
-a fixed set of types to support other stuff like passing SFrames, SArrays
+a fixed set of types to support other stuff like passing XFrames, SArrays
  or other user defined classes around. The \ref flex
 
 \section unity_architecture_unity_types Unity Types
@@ -60,7 +60,7 @@ turi::unity_global_base. The proxy class is called
 turi::unity_global_proxy. The unity_global server-side object is in
 unity_global.hpp and is called turi::unity_global.
 
-\li \ref turi::unity_sframe This represents the immutable scalable Dataframe
+\li \ref turi::unity_xframe This represents the immutable scalable Dataframe
 object. It is a lazy evaluated datastructure.
 
 \li \ref turi::model_base The model object describes the interface for the

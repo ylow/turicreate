@@ -84,8 +84,8 @@ class EmbeddedServer(GraphLabServer):
         self.unity_log = unity_log_file
         self.logger = logging.getLogger(__name__)
 
-        root_path = os.path.dirname(os.path.abspath(__file__))  # sframe/connect
-        root_path = os.path.abspath(os.path.join(root_path, os.pardir))  # sframe/
+        root_path = os.path.dirname(os.path.abspath(__file__))  # xframe/connect
+        root_path = os.path.abspath(os.path.join(root_path, os.pardir))  # xframe/
         self.root_path = root_path
         self.started = False
         self._log_progress_enabled = False

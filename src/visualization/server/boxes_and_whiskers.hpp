@@ -6,8 +6,8 @@
 #ifndef __TC_BOXES_AND_WHISKERS
 #define __TC_BOXES_AND_WHISKERS
 
-#include <core/data/sframe/gl_sframe.hpp>
-#include <core/storage/sframe_data/groupby_aggregate_operators.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_operators.hpp>
 #include <visualization/server/plot.hpp>
 #include "groupby.hpp"
 #include "transformation.hpp"
@@ -18,10 +18,10 @@ namespace visualization {
 class boxes_and_whiskers_result: public transformation_output,
                                  public groupby_quantile_result {
   public:
-    virtual std::string vega_column_data(bool sframe) const override;
+    virtual std::string vega_column_data(bool xframe) const override;
 };
 
-// expects a gl_sframe of:
+// expects a gl_xframe of:
 // "x": str,
 // "y": int/float
 class boxes_and_whiskers : public groupby<boxes_and_whiskers_result> {

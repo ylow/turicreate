@@ -44,7 +44,7 @@ sentiment".
 import turicreate as tc
 
 # Only load the first two columns from csv
-data = tc.SFrame.read_csv('SMSSpamCollection', header=False, delimiter='\t', quote_char='\0')
+data = tc.XFrame.read_csv('SMSSpamCollection', header=False, delimiter='\t', quote_char='\0')
 
 # Rename the columns
 data = data.rename({'X1': 'label', 'X2': 'text'})

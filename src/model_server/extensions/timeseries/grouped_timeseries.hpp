@@ -8,7 +8,7 @@
 
 #include <model_server/lib/toolkit_class_macros.hpp>
 #include <model_server/lib/extensions/model_base.hpp>
-#include <model_server/extensions/grouped_sframe.hpp>
+#include <model_server/extensions/grouped_xframe.hpp>
 
 namespace turi {
 namespace timeseries {
@@ -25,66 +25,66 @@ class EXPORT gl_grouped_timeseries : public model_base {
    * TimeSeries.  These are accessed through the interface of this data
    * structure.
    *
-   * \param sf The underlying SFrame of the TimeSeries.
+   * \param sf The underlying XFrame of the TimeSeries.
    * \param index_col_name The index column of the TimeSeries.
    * \param column_names List of column names to group by.
    *
    * Throws if group has already been called on this object, or the column
    * names are not valid.
    */
-  void group(const gl_sframe &sf,
+  void group(const gl_xframe &sf,
              std::string index_col_name,
              const std::vector<std::string> column_names);
 
   /**
-   * Get the SFrame that corresponds to the group named `key`.
+   * Get the XFrame that corresponds to the group named `key`.
    *
    * Each group's name is its distinct value, including its type. This means
-   * that an SFrame grouped by a column of integers that has some 1s and some
+   * that an XFrame grouped by a column of integers that has some 1s and some
    * 2s, the name of the group with ones is the integer 1, not the string '1'.
    * The key is given as a vector because more than one columns can be used to
    * group.
    *
    * \param key Name of group to retrieve.
-   * \returns An SFrame that can immediately be interpreted as a TimeSeries
+   * \returns An XFrame that can immediately be interpreted as a TimeSeries
    * (i.e. it is sorted by its time index column.)
    */
-  gl_sframe get_group(const std::vector<flexible_type> key);
+  gl_xframe get_group(const std::vector<flexible_type> key);
 
   /**
    * The number of distinct groups found.
    */
   size_t num_groups() const {
-    return m_grouped_sframe.num_groups();
+    return m_grouped_xframe.num_groups();
   }
 
   /**
-   * Return an SFrame with group_info i.e key columns + number of rows in each
+   * Return an XFrame with group_info i.e key columns + number of rows in each
    * key column.
    */
-  gl_sframe group_info() const {
-    return m_grouped_sframe.group_info();
+  gl_xframe group_info() const {
+    return m_grouped_xframe.group_info();
   }
 
   /**
    * A list of all the group names.
    */
   gl_sarray groups() {
-    return m_grouped_sframe.groups();
+    return m_grouped_xframe.groups();
   }
 
   void begin_iterator() {
-    m_grouped_sframe.begin_iterator();
+    m_grouped_xframe.begin_iterator();
   }
 
-  std::vector<std::pair<flexible_type, gl_sframe>> iterator_get_next(size_t num);
+  std::vector<std::pair<flexible_type, gl_xframe>> iterator_get_next(size_t num);
 
   /**
    * Return the index column name of the time series (not the same as the group
    * column)
   */
-  gl_sframe get_sframe() const {
-    return m_grouped_sframe.get_sframe();
+  gl_xframe get_xframe() const {
+    return m_grouped_xframe.get_xframe();
   }
 
   /**
@@ -110,7 +110,7 @@ class EXPORT gl_grouped_timeseries : public model_base {
   }
 
  private:
-  grouped_sframe m_grouped_sframe;
+  grouped_xframe m_grouped_xframe;
   std::string m_time_index_name;
   std::vector<std::string> m_key_col_names;
   std::vector<std::string> m_value_col_names;
@@ -128,7 +128,7 @@ class EXPORT gl_grouped_timeseries : public model_base {
       "num_items")
   REGISTER_CLASS_MEMBER_FUNCTION(gl_grouped_timeseries::get_group, "key")
 
-  REGISTER_GETTER("sframe", gl_grouped_timeseries::get_sframe)
+  REGISTER_GETTER("xframe", gl_grouped_timeseries::get_xframe)
   REGISTER_GETTER("index_column_name",
       gl_grouped_timeseries::get_index_column_name)
   REGISTER_GETTER("value_col_names", gl_grouped_timeseries::get_value_col_names)

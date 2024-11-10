@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_UNFAIR_IO_SCHEDULER_HPP
-#define TURI_SFRAME_UNFAIR_IO_SCHEDULER_HPP
+#ifndef TURI_XFRAME_UNFAIR_IO_SCHEDULER_HPP
+#define TURI_XFRAME_UNFAIR_IO_SCHEDULER_HPP
 #include <cstdint>
 #include <cstddef>
 #include <map>
@@ -14,8 +14,8 @@ namespace turi {
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  * \{
  */
 

@@ -3,9 +3,9 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_ENGINE_UTIL_AGGREGATES_HPP
-#define TURI_SFRAME_QUERY_ENGINE_UTIL_AGGREGATES_HPP
-#include <core/storage/sframe_data/sframe.hpp>
+#ifndef TURI_XFRAME_QUERY_ENGINE_UTIL_AGGREGATES_HPP
+#define TURI_XFRAME_QUERY_ENGINE_UTIL_AGGREGATES_HPP
+#include <core/storage/xframe_data/xframe.hpp>
 #include <core/storage/serialization/serialization_includes.hpp>
 #include <core/storage/query_engine/operators/reduce.hpp>
 #include <core/storage/query_engine/planning/planner.hpp>
@@ -13,7 +13,7 @@
 namespace turi {
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup Utilities Utilities
  * \{
  */
@@ -106,7 +106,7 @@ ResultType reduce(
 
   generic_aggregator<ResultType, ReduceFunctionType> agg(reduce_fn, init);
   auto output = op_reduce::make_planner_node(input, agg, flex_type_enum::STRING);
-  sframe sf = planner().materialize(output);
+  xframe sf = planner().materialize(output);
   auto sfreader = sf.get_reader(1);
   auto iter = sfreader->begin(0);
   ResultType result = init;

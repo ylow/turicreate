@@ -3,10 +3,10 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_TESTING_UTILS_H_
-#define TURI_SFRAME_TESTING_UTILS_H_
+#ifndef TURI_XFRAME_TESTING_UTILS_H_
+#define TURI_XFRAME_TESTING_UTILS_H_
 
-#include <core/storage/sframe_data/sframe.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
 #include <core/parallel/pthread_tools.hpp>
 #include <vector>
 #include <string>
@@ -14,7 +14,7 @@
 
 namespace turi {
 
-sframe make_testing_sframe(const std::vector<std::string>& names,
+xframe make_testing_xframe(const std::vector<std::string>& names,
                            const std::vector<flex_type_enum>& types,
                            const std::vector<std::vector<flexible_type> >& data);
 
@@ -23,10 +23,10 @@ using row_gen_func_t = std::function<std::vector<flexible_type>(size_t)>;
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  *
- * A more flexible sframe creator.
+ * A more flexible xframe creator.
  *
  * User can finely control the ratio of certain categories
  * of data. For instance, 70% of 1s and 30% of 0s.
@@ -45,7 +45,7 @@ using row_gen_func_t = std::function<std::vector<flexible_type>(size_t)>;
  */
 
 template <typename Callable>
-sframe make_testing_sframe(const std::vector<std::string>& column_names,
+xframe make_testing_xframe(const std::vector<std::string>& column_names,
                            const std::vector<flex_type_enum>& column_types,
                            size_t nrows, Callable next_row) {
   ASSERT_MSG(column_types.size() == column_names.size(),
@@ -65,11 +65,11 @@ sframe make_testing_sframe(const std::vector<std::string>& column_names,
   }
   write_intervals.back().second = nrows;
 
-  // consturct sframe
-  sframe out;
+  // consturct xframe
+  xframe out;
   out.open_for_write(column_names, column_types, "", nthreads);
 
-  std::vector<turi::sframe_output_iterator> write_iters;
+  std::vector<turi::xframe_output_iterator> write_iters;
   write_iters.resize(nthreads);
   for (size_t ii = 0; ii < nthreads; ii++)
     write_iters[ii] = out.get_output_iterator(ii);
@@ -95,13 +95,13 @@ sframe make_testing_sframe(const std::vector<std::string>& column_names,
 
 
 
-sframe make_testing_sframe(const std::vector<std::string>& names,
+xframe make_testing_xframe(const std::vector<std::string>& names,
                            const std::vector<std::vector<flexible_type> >& data);
 
-sframe make_integer_testing_sframe(const std::vector<std::string>& names,
+xframe make_integer_testing_xframe(const std::vector<std::string>& names,
                                    const std::vector<std::vector<size_t> >& data);
 
-std::vector<std::vector<flexible_type> > testing_extract_sframe_data(const sframe& sf);
+std::vector<std::vector<flexible_type> > testing_extract_xframe_data(const xframe& sf);
 
 
 std::shared_ptr<sarray<flexible_type> >
@@ -112,10 +112,10 @@ make_testing_sarray(flex_type_enum types,
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  *
- *  Creates a random SFrame for testing purposes.  The
+ *  Creates a random XFrame for testing purposes.  The
  *  column_type_info gives the types of the column.
  *
  *  \param[in] n_rows The number of observations to run the timing on.
@@ -146,7 +146,7 @@ make_testing_sarray(flex_type_enum types,
  *  \param[in] create_target_column If true, then create a random
  *  target column called "target" as well.
 */
-sframe make_random_sframe(size_t n_rows, std::string column_types,
+xframe make_random_xframe(size_t n_rows, std::string column_types,
                           bool create_target_column = false,
                           size_t random_seed = 0);
 
@@ -214,7 +214,7 @@ std::shared_ptr<sarray<T> > make_testing_sarray(const std::vector<T>& col) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-sframe slice_sframe(const sframe& src, size_t row_lb, size_t row_ub);
+xframe slice_xframe(const xframe& src, size_t row_lb, size_t row_ub);
 
 }
 

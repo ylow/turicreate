@@ -23,14 +23,14 @@ import pytest
 pytestmark = pytest.mark.minimal
 
 
-class SFrameComparer:
+class XFrameComparer:
     """
-    Helper class for comparing sframe and sarrays
+    Helper class for comparing xframe and sarrays
 
-    Adapted from test_sframe.py
+    Adapted from test_xframe.py
     """
 
-    def _assert_sframe_equal(self, sf1, sf2):
+    def _assert_xframe_equal(self, sf1, sf2):
         assert sf1.num_rows() == sf2.num_rows()
         assert sf1.num_columns() == sf2.num_columns()
         assert set(sf1.column_names()) == set(sf2.column_names())

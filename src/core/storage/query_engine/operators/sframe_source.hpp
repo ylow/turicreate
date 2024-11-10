@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_MANAGER_SFRAME_SOURCE_HPP
-#define TURI_SFRAME_QUERY_MANAGER_SFRAME_SOURCE_HPP
+#ifndef TURI_XFRAME_QUERY_MANAGER_XFRAME_SOURCE_HPP
+#define TURI_XFRAME_QUERY_MANAGER_XFRAME_SOURCE_HPP
 
 #include <sstream>
 #include <core/data/flexible_type/flexible_type.hpp>
@@ -12,36 +12,36 @@
 #include <core/storage/query_engine/operators/sarray_source.hpp>
 #include <core/storage/query_engine/execution/query_context.hpp>
 #include <core/storage/query_engine/operators/operator_properties.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
 #include <core/util/coro.hpp>
 
 namespace turi {
 namespace query_eval {
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup operators Logical Operators
  * \{
  */
 
 /**
- * A "sframe_source" operator generates values from a physical sarray.
+ * A "xframe_source" operator generates values from a physical sarray.
  */
 template <>
-struct operator_impl<planner_node_type::SFRAME_SOURCE_NODE> : public query_operator {
+struct operator_impl<planner_node_type::XFRAME_SOURCE_NODE> : public query_operator {
  public:
   DECL_CORO_STATE(execute);
   size_t start = 0;
-  std::shared_ptr<sframe_rows> rows;
+  std::shared_ptr<xframe_rows> rows;
   size_t block_size = 0;
   bool skip_next_block = false;
   size_t end = 0;
 
-  planner_node_type type() const { return planner_node_type::SFRAME_SOURCE_NODE; }
+  planner_node_type type() const { return planner_node_type::XFRAME_SOURCE_NODE; }
 
-  static std::string name() { return "sframe_source"; }
+  static std::string name() { return "xframe_source"; }
 
-  inline operator_impl(sframe source, size_t begin_index = 0, size_t end_index = size_t(-1) )
+  inline operator_impl(xframe source, size_t begin_index = 0, size_t end_index = size_t(-1) )
       : m_source(source)
       , m_begin_index(begin_index)
       , m_end_index(end_index == size_t(-1) ? m_source.size() : end_index)
@@ -88,7 +88,7 @@ struct operator_impl<planner_node_type::SFRAME_SOURCE_NODE> : public query_opera
   }
 
   static std::shared_ptr<planner_node> make_planner_node(
-      sframe source, size_t begin_index = 0, size_t _end_index = -1) {
+      xframe source, size_t begin_index = 0, size_t _end_index = -1) {
     std::stringstream strm;
     oarchive oarc(strm);
     oarc << source.get_index_info();
@@ -106,21 +106,21 @@ struct operator_impl<planner_node_type::SFRAME_SOURCE_NODE> : public query_opera
 
     // we need to keep a copy of the source in the node for reference counting
     // reasons.
-    return planner_node::make_shared(planner_node_type::SFRAME_SOURCE_NODE,
+    return planner_node::make_shared(planner_node_type::XFRAME_SOURCE_NODE,
                                      {{"index", strm.str()},
                                       {"types", type_list},
                                       {"begin_index", begin_index},
                                       {"end_index", end_index}},
-                                     {{"sframe", any(source)}});
+                                     {{"xframe", any(source)}});
   }
 
   static std::shared_ptr<query_operator> from_planner_node(
       std::shared_ptr<planner_node> pnode) {
     ASSERT_EQ((int)pnode->operator_type,
-              (int)planner_node_type::SFRAME_SOURCE_NODE);
+              (int)planner_node_type::XFRAME_SOURCE_NODE);
 
-    ASSERT_TRUE(pnode->any_operator_parameters.count("sframe"));
-    auto source = pnode->any_operator_parameters.at("sframe").as<sframe>();
+    ASSERT_TRUE(pnode->any_operator_parameters.count("xframe"));
+    auto source = pnode->any_operator_parameters.at("xframe").as<xframe>();
 
     size_t begin_index = pnode->operator_parameters.at("begin_index");
     size_t end_index = pnode->operator_parameters.at("end_index");
@@ -130,7 +130,7 @@ struct operator_impl<planner_node_type::SFRAME_SOURCE_NODE> : public query_opera
 
   static std::vector<flex_type_enum> infer_type(
       std::shared_ptr<planner_node> pnode) {
-    ASSERT_EQ((int)pnode->operator_type, (int)planner_node_type::SFRAME_SOURCE_NODE);
+    ASSERT_EQ((int)pnode->operator_type, (int)planner_node_type::XFRAME_SOURCE_NODE);
     flex_list type = pnode->operator_parameters.at("types");
     std::vector<flex_type_enum> ret;
     for (auto t: type) ret.push_back((flex_type_enum)(flex_int)(t));
@@ -138,7 +138,7 @@ struct operator_impl<planner_node_type::SFRAME_SOURCE_NODE> : public query_opera
   }
 
   static int64_t infer_length(std::shared_ptr<planner_node> pnode) {
-    ASSERT_EQ((int)pnode->operator_type, (int)planner_node_type::SFRAME_SOURCE_NODE);
+    ASSERT_EQ((int)pnode->operator_type, (int)planner_node_type::XFRAME_SOURCE_NODE);
     flex_int length = (pnode->operator_parameters.at("end_index")
                        - pnode->operator_parameters.at("begin_index"));
     return length;
@@ -147,7 +147,7 @@ struct operator_impl<planner_node_type::SFRAME_SOURCE_NODE> : public query_opera
   static std::string repr(std::shared_ptr<planner_node> pnode, pnode_tagger&) {
     std::ostringstream out;
 
-    auto source = pnode->any_operator_parameters.at("sframe").as<sframe>();
+    auto source = pnode->any_operator_parameters.at("xframe").as<xframe>();
 
     out << "SF(";
 
@@ -202,15 +202,15 @@ struct operator_impl<planner_node_type::SFRAME_SOURCE_NODE> : public query_opera
   }
 
  private:
-  sframe m_source;
+  xframe m_source;
   size_t m_begin_index, m_end_index;
-  std::shared_ptr<sframe_reader> m_reader;
+  std::shared_ptr<xframe_reader> m_reader;
 };
 
-typedef operator_impl<planner_node_type::SFRAME_SOURCE_NODE> op_sframe_source;
+typedef operator_impl<planner_node_type::XFRAME_SOURCE_NODE> op_xframe_source;
 
 /// \}
 } // query_eval
 } // turicreate
 
-#endif // TURI_SFRAME_QUERY_MANAGER_SFRAME_SOURCE_HPP
+#endif // TURI_XFRAME_QUERY_MANAGER_XFRAME_SOURCE_HPP

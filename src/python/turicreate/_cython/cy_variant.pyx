@@ -12,11 +12,11 @@ import cython
 import types
 from libcpp.string cimport string
 from libcpp.pair cimport pair
-from . cimport cy_sframe
+from . cimport cy_xframe
 from . cimport cy_sarray
 from .cy_model cimport create_model_from_proxy
 from .cy_model cimport UnityModel
-from .cy_sframe cimport UnitySFrameProxy
+from .cy_xframe cimport UnityXFrameProxy
 from .cy_sarray cimport UnitySArrayProxy
 
 from .cy_flexible_type cimport flexible_type, flex_list, flex_dict, flex_int
@@ -62,11 +62,11 @@ DEF VAR_TR_TUPLE                       = 6
 DEF VAR_TR_LIST                        = 7
 
 # Other general types
-DEF VAR_TR_SFRAME                      = 8
+DEF VAR_TR_XFRAME                      = 8
 DEF VAR_TR_SARRAY                      = 9
 DEF VAR_TR_UNITY_MODEL                 = 11
 DEF VAR_TR_UNITY_MODEL_TKCLASS         = 12
-DEF VAR_TR_SFRAME_PROXY                = 13
+DEF VAR_TR_XFRAME_PROXY                = 13
 DEF VAR_TR_SARRAY_PROXY                = 14
 DEF VAR_TR_FUNCTION                    = 16
 DEF VAR_TR_CLOSURE                     = 17
@@ -78,7 +78,7 @@ DEF VAR_TR_ATTEMPT_OTHER_FLEXIBLE_TYPE = 20  #
 DEF VAR_TYPE_FLEXIBLE_TYPE       = 0
 DEF VAR_TYPE_DATAFRAME           = 2
 DEF VAR_TYPE_MODEL               = 3
-DEF VAR_TYPE_SFRAME              = 4
+DEF VAR_TYPE_XFRAME              = 4
 DEF VAR_TYPE_SARRAY              = 5
 DEF VAR_TYPE_VARIANT_MAP         = 6
 DEF VAR_TYPE_VARIANT_VECTOR      = 7
@@ -89,11 +89,11 @@ cdef type instance_type = getattr(types, 'InstanceType', object)
 cdef type function_type = types.FunctionType
 cdef type lambda_type   = types.LambdaType
 
-# Handle the sframe types.  We don't want to start the server before
+# Handle the xframe types.  We don't want to start the server before
 # we need to, which means that can be imported on demand
 
 cdef bint internal_classes_set = False
-cdef object sframe_class = None
+cdef object xframe_class = None
 cdef object sarray_class = None
 
 cdef object build_native_function_call = None
@@ -101,9 +101,9 @@ cdef object build_native_function_call = None
 # Load all the internal classes
 cdef import_internal_classes():
 
-    global sframe_class
-    from ..data_structures.sframe import SFrame
-    sframe_class = SFrame
+    global xframe_class
+    from ..data_structures.xframe import XFrame
+    xframe_class = XFrame
 
     global sarray_class
     from ..data_structures.sarray import SArray
@@ -146,8 +146,8 @@ cdef int _get_tr_code_by_type_string(object v) except -1:
         ret =  VAR_TR_TUPLE
     elif type(v) is dict:
         ret =  VAR_TR_DICT
-    elif type(v) is sframe_class or v.__class__ is sframe_class:
-        ret =  VAR_TR_SFRAME
+    elif type(v) is xframe_class or v.__class__ is xframe_class:
+        ret =  VAR_TR_XFRAME
     elif type(v) is sarray_class or v.__class__ is sarray_class:
         ret =  VAR_TR_SARRAY
     elif type(v) is UnityModel:
@@ -158,8 +158,8 @@ cdef int _get_tr_code_by_type_string(object v) except -1:
         ret =  VAR_TR_FUNCTION
     elif hasattr(v, '_tkclass') and type(v._tkclass) is UnityModel:
         ret =  VAR_TR_UNITY_MODEL_TKCLASS
-    elif type(v) is UnitySFrameProxy:
-        ret =  VAR_TR_SFRAME_PROXY
+    elif type(v) is UnityXFrameProxy:
+        ret =  VAR_TR_XFRAME_PROXY
     elif type(v) is UnitySArrayProxy:
         ret =  VAR_TR_SARRAY_PROXY
     elif is_function_closure_info(v):
@@ -617,9 +617,9 @@ cdef _convert_to_variant_type(variant_type& ret, object v, int tr_code):
     elif tr_code == VAR_TR_TUPLE:
         _var_set_listlike(ret, <tuple>v)
 
-    # SFrame/SArray objects
-    elif tr_code == VAR_TR_SFRAME:
-        variant_set_sframe(ret, (<UnitySFrameProxy?>(v.__proxy__))._base_ptr)
+    # XFrame/SArray objects
+    elif tr_code == VAR_TR_XFRAME:
+        variant_set_xframe(ret, (<UnityXFrameProxy?>(v.__proxy__))._base_ptr)
     elif tr_code == VAR_TR_SARRAY:
         variant_set_sarray(ret, (<UnitySArrayProxy?>(v.__proxy__))._base_ptr)
 
@@ -630,8 +630,8 @@ cdef _convert_to_variant_type(variant_type& ret, object v, int tr_code):
         variant_set_model(ret, (<UnityModel?>(v._tkclass))._base_ptr)
 
     # Proxy objects
-    elif tr_code == VAR_TR_SFRAME_PROXY:
-        variant_set_sframe(ret, (<UnitySFrameProxy>(v))._base_ptr)
+    elif tr_code == VAR_TR_XFRAME_PROXY:
+        variant_set_xframe(ret, (<UnityXFrameProxy>(v))._base_ptr)
     elif tr_code == VAR_TR_SARRAY_PROXY:
         variant_set_sarray(ret, (<UnitySArrayProxy>(v))._base_ptr)
 
@@ -709,9 +709,9 @@ cdef to_value(variant_type& v):
         return pd_from_gl_dataframe(variant_get_dataframe(v))
     elif var_type == VAR_TYPE_MODEL:
         return create_model_from_proxy(variant_get_model(v))
-    elif var_type == VAR_TYPE_SFRAME:
-        return cy_sframe.create_proxy_wrapper_from_existing_proxy(
-            variant_get_sframe(v))
+    elif var_type == VAR_TYPE_XFRAME:
+        return cy_xframe.create_proxy_wrapper_from_existing_proxy(
+            variant_get_xframe(v))
     elif var_type == VAR_TYPE_SARRAY:
         return cy_sarray.create_proxy_wrapper_from_existing_proxy(
             variant_get_sarray(v))

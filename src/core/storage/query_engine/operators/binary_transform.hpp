@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_MANAGER_BINARY_TRANSFORM_HPP
-#define TURI_SFRAME_QUERY_MANAGER_BINARY_TRANSFORM_HPP
+#ifndef TURI_XFRAME_QUERY_MANAGER_BINARY_TRANSFORM_HPP
+#define TURI_XFRAME_QUERY_MANAGER_BINARY_TRANSFORM_HPP
 
 #include <functional>
 #include <core/logging/assertions.hpp>
@@ -17,11 +17,11 @@
 namespace turi {
 namespace query_eval {
 
-typedef std::function<flexible_type(const sframe_rows::row&,
-                                    const sframe_rows::row&)> binary_transform_type;
+typedef std::function<flexible_type(const xframe_rows::row&,
+                                    const xframe_rows::row&)> binary_transform_type;
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup operators Logical Operators
  * \{
  */
@@ -34,10 +34,10 @@ template<>
 class operator_impl<planner_node_type::BINARY_TRANSFORM_NODE> : public query_operator {
  public:
   DECL_CORO_STATE(execute);
-  std::shared_ptr<const sframe_rows>  rows_left, rows_right;
-  sframe_rows::const_iterator left_iter, right_iter;
-  sframe_rows::iterator out_iter;
-  std::shared_ptr<sframe_rows>  output_buffer;
+  std::shared_ptr<const xframe_rows>  rows_left, rows_right;
+  xframe_rows::const_iterator left_iter, right_iter;
+  xframe_rows::iterator out_iter;
+  std::shared_ptr<xframe_rows>  output_buffer;
 
 
   planner_node_type type() const { return planner_node_type::BINARY_TRANSFORM_NODE; }
@@ -141,4 +141,4 @@ typedef operator_impl<planner_node_type::BINARY_TRANSFORM_NODE> op_binary_transf
 } // query_eval
 } // turicreate
 
-#endif // TURI_SFRAME_QUERY_MANAGER_TRANSFORM_HPP
+#endif // TURI_XFRAME_QUERY_MANAGER_TRANSFORM_HPP

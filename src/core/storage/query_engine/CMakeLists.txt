@@ -1,6 +1,6 @@
 project(Turi)
 
-make_library(sframe_query_engine OBJECT
+make_library(xframe_query_engine OBJECT
    SOURCES
       planning/optimizations/optimization_transforms.cpp
       planning/optimization_engine.cpp
@@ -18,6 +18,6 @@ make_library(sframe_query_engine OBJECT
       algorithm/ec_permute.cpp
       query_engine_lock.cpp
    REQUIRES
-      sframe flexible_type pylambda
+      xframe flexible_type pylambda
    EXTERNAL_VISIBILITY
 )

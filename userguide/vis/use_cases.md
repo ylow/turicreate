@@ -28,18 +28,18 @@ dimensions can help us manipulate data and understand the behavior of a model.
 #### Loading and exploring data
 
 We'll start by loading the dataset and getting an overview of the data. There
-are two useful methods on `SFrame` objects that can help us understand what we
+are two useful methods on `XFrame` objects that can help us understand what we
 just loaded:
 
 * `explore` gives us a table view of rows and columns of raw data.
 * `show` gives us an aggregated overview of each column in the dataset.
 
 ```python
-sf = turicreate.SFrame.read_csv('https://docs-assets.developer.apple.com/turicreate/datasets/tc-clang-format-results.csv')
+sf = turicreate.XFrame.read_csv('https://docs-assets.developer.apple.com/turicreate/datasets/tc-clang-format-results.csv')
 sf.explore()
 ```
 
-![sf.explore()](images/sframe_explore.png)
+![sf.explore()](images/xframe_explore.png)
 
 The explore method opens a scrollable table of the raw data from `sf` arranged
 in rows and columns. This dataset contains the following columns:
@@ -95,7 +95,7 @@ the required cleaning steps.
 sf.show()
 ```
 
-![sf.show()](images/sframe_show.png)
+![sf.show()](images/xframe_show.png)
 
 We can clearly see that in almost all of the config changes, only a few lines
 of code were changed.  In fact, so few lines of code have changed, that almost
@@ -107,7 +107,7 @@ so let's see what they are:
 sf[sf['Lines Added'] > 10000].explore()
 ```
 
-![sf.explore()](images/sframe_explore_2.png)
+![sf.explore()](images/xframe_explore_2.png)
 
 From this subset of the data, we can tell that the files with a large (outlier)
 number of lines added tend to come from `toolkits/coreml_export/MLModel`. Aha!
@@ -121,7 +121,7 @@ sf = sf[mostly_generated_code != 1]
 sf.show()
 ```
 
-![sf.show()](images/sframe_show_2.png)
+![sf.show()](images/xframe_show_2.png)
 
 Now we can have a proper look at the number of changes. It seems that most
 cases only had a few lines changed. From here it looks to go down
@@ -130,7 +130,7 @@ lines changed, and almost none with more than 800 changes. By scrolling down in
 the visualization window, we can also see the distributions of the other
 columns:
 
-![sf.show(), scrolled down](images/sframe_show_3.png)
+![sf.show(), scrolled down](images/xframe_show_3.png)
 
 #### Explore some features
 
@@ -170,7 +170,7 @@ this by visualizing this feature, let's go back and adjust in our dataset for
 the length of the file.
 
 ```python
-file_sizes = turicreate.SFrame.read_csv('https://docs-assets.developer.apple.com/turicreate/datasets/tc-clang-format-file-sizes.csv')
+file_sizes = turicreate.XFrame.read_csv('https://docs-assets.developer.apple.com/turicreate/datasets/tc-clang-format-file-sizes.csv')
 sf = sf.join(file_sizes, on='File Path', how='left')
 sf['Normalized Lines Changed'] = sf['Lines Changed'] / sf['Lines in File']
 turicreate.show(sf['Config.BasedOnStyle'],

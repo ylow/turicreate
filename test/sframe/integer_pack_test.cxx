@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 #include <core/util/test_macros.hpp>
 #include <core/logging/logger.hpp>
-#include <core/storage/sframe_data/integer_pack.hpp>
+#include <core/storage/xframe_data/integer_pack.hpp>
 #include <core/storage/serialization/serialization_includes.hpp>
 using namespace turi;
 using namespace integer_pack;

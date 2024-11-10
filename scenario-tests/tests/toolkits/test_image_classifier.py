@@ -12,7 +12,7 @@ import unittest
 import turicreate as tc
 from turicreate.toolkits._main import ToolkitError as _ToolkitError
 from turicreate.toolkits._internal_utils import (_mac_ver,
-                                                 _raise_error_if_not_sframe,
+                                                 _raise_error_if_not_xframe,
                                                  _raise_error_if_not_sarray)
 import tempfile
 import shutil
@@ -68,7 +68,7 @@ def _get_data(num_examples = 100, label_type = int):
         img = (img + [label * 3, 0, -label * 3]).clip(0, 255)
         pil_img = _PIL_Image.fromarray(img, mode='RGB')
         images.append(from_pil_image(pil_img))
-    data = tc.SFrame({'awesome_image': tc.SArray(images)})
+    data = tc.XFrame({'awesome_image': tc.SArray(images)})
     data['awesome_label'] = random_labels
     return data
 
@@ -150,7 +150,7 @@ class ImageClassifierTest(unittest.TestCase):
         prediction = model.predict(single_image)
         self.assertTrue(isinstance(prediction, (int, str)))
         prediction = model.predict_topk(single_image)
-        _raise_error_if_not_sframe(prediction)
+        _raise_error_if_not_xframe(prediction)
         prediction = model.classify(single_image)
         self.assertTrue(isinstance(prediction, dict) and 'class' in prediction and 'probability' in prediction)
 
@@ -160,9 +160,9 @@ class ImageClassifierTest(unittest.TestCase):
         predictions = model.predict(data)
         _raise_error_if_not_sarray(predictions)
         predictions = model.predict_topk(data)
-        _raise_error_if_not_sframe(predictions)
+        _raise_error_if_not_xframe(predictions)
         predictions = model.classify(data)
-        _raise_error_if_not_sframe(predictions)
+        _raise_error_if_not_xframe(predictions)
 
     def test_junk_input(self):
         model = self.model

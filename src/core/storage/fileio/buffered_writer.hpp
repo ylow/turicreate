@@ -5,7 +5,7 @@
  */
 #include<vector>
 #include<core/parallel/mutex.hpp>
-#include<core/storage/sframe_data/sframe_constants.hpp>
+#include<core/storage/xframe_data/xframe_constants.hpp>
 
 namespace turi {
 /**
@@ -47,8 +47,8 @@ template<typename ValueType, typename OutIterator>
 class buffered_writer {
 public:
   buffered_writer(OutIterator& out, turi::mutex& out_lock,
-                  size_t soft_limit = SFRAME_WRITER_BUFFER_SOFT_LIMIT,
-                  size_t hard_limit = SFRAME_WRITER_BUFFER_HARD_LIMIT) :
+                  size_t soft_limit = XFRAME_WRITER_BUFFER_SOFT_LIMIT,
+                  size_t hard_limit = XFRAME_WRITER_BUFFER_HARD_LIMIT) :
     out(out), out_lock(out_lock),
     soft_limit(soft_limit),
     hard_limit(hard_limit) {

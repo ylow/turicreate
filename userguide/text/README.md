@@ -45,7 +45,7 @@ form, it is straightforward to learn a topic model.
 ```python
 import turicreate as tc
 
-docs = tc.SFrame('wikipedia_data')
+docs = tc.XFrame('wikipedia_data')
 
 # Remove stop words and convert to bag of words
 docs = tc.text_analytics.count_words(docs['X1'])
@@ -66,7 +66,7 @@ The two most commonly used arguments are:
 The returned object is a TopicModel object, which exposes several useful
 methods. For example,
 [turicreate.topic_model.TopicModel.get_topics()](https://apple.github.io/turicreate/docs/api/generated/turicreate.topic_model.TopicModel.get_topics.html)
-returns an SFrame containing the most probable words for each topic and
+returns an XFrame containing the most probable words for each topic and
 a score related to how high that word ranks for that topic.
 
 You may get details on a subset of topics by supplying a list of topic
@@ -96,7 +96,7 @@ print(model.get_topics())
 ```
 
 If we just want to see the top words per topic, this code snippet will
-rearrange the above SFrame to do that.
+rearrange the above XFrame to do that.
 
 ```python
 print(model.get_topics(output_type='topic_words'))
@@ -134,7 +134,7 @@ Topic Model
         Training time:       7.2635
         Verbose:             False
     Accessible fields:
-        m['topics']          An SFrame containing the topics.
+        m['topics']          An XFrame containing the topics.
         m['vocabulary']      An SArray containing the topics.
     Useful methods:
         m.get_topics()       Get the most probable words per topic.
@@ -148,7 +148,7 @@ integers containing the most probable topic ids:
 pred = model.predict(docs)
 ```
 
-Combining the above method with standard SFrame capabilities, one can
+Combining the above method with standard XFrame capabilities, one can
 use predict to find documents related to a particular topic
 
 ```python
@@ -273,7 +273,7 @@ have a high probability under topic 1 and "2008" and "2009" will have a
 high probability under topic 2:
 
 ```python
-associations = tc.SFrame({'word':['season', 'club', '2008', '2009'],
+associations = tc.XFrame({'word':['season', 'club', '2008', '2009'],
                                 'topic': [1, 1, 2, 2]})
 ```
 

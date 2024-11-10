@@ -17,7 +17,7 @@ from turicreate.util import _cloudpickle
 
 import turicreate as tc
 from turicreate import _gl_pickle as gl_pickle
-from turicreate.util import _assert_sframe_equal as assert_sframe_equal
+from turicreate.util import _assert_xframe_equal as assert_xframe_equal
 
 import os as _os
 
@@ -82,12 +82,12 @@ class GLPicklingTest(unittest.TestCase):
                 obj_ret,
             )
 
-    def test_pickling_sframe_types(self):
+    def test_pickling_xframe_types(self):
 
         sarray_list = [
-            tc.SFrame([1, 2, 3]),
-            tc.SFrame([1.0, 2.0, 3.5]),
-            tc.SFrame(["foo", "bar"]),
+            tc.XFrame([1, 2, 3]),
+            tc.XFrame([1.0, 2.0, 3.5]),
+            tc.XFrame(["foo", "bar"]),
         ]
         for obj in sarray_list:
             pickler = gl_pickle.GLPickler(self.filename)
@@ -96,7 +96,7 @@ class GLPicklingTest(unittest.TestCase):
             unpickler = gl_pickle.GLUnpickler(self.filename)
             obj_ret = unpickler.load()
             unpickler.close()
-            assert_sframe_equal(obj, obj_ret)
+            assert_xframe_equal(obj, obj_ret)
 
 
     def test_combination_gl_python_types(self):
@@ -109,11 +109,11 @@ class GLPicklingTest(unittest.TestCase):
             ]
         )
         sarray_test_1 = tc.SArray([1, 2, 3])
-        sframe_test_1 = tc.SFrame([1, 2, 3])
+        xframe_test_1 = tc.XFrame([1, 2, 3])
 
         obj_list = [
-            [sg_test_1, sframe_test_1, sarray_test_1],
-            {0: sg_test_1, 1: sframe_test_1, 2: sarray_test_1},
+            [sg_test_1, xframe_test_1, sarray_test_1],
+            {0: sg_test_1, 1: xframe_test_1, 2: sarray_test_1},
         ]
 
         for obj in obj_list:
@@ -123,9 +123,9 @@ class GLPicklingTest(unittest.TestCase):
             unpickler = gl_pickle.GLUnpickler(self.filename)
             obj_ret = unpickler.load()
             unpickler.close()
-            assert_sframe_equal(obj[0].get_vertices(), obj_ret[0].get_vertices())
-            assert_sframe_equal(obj[0].get_edges(), obj_ret[0].get_edges())
-            assert_sframe_equal(obj[1], obj_ret[1])
+            assert_xframe_equal(obj[0].get_vertices(), obj_ret[0].get_vertices())
+            assert_xframe_equal(obj[0].get_edges(), obj_ret[0].get_edges())
+            assert_xframe_equal(obj[1], obj_ret[1])
             assert list(obj[2]) == list(obj_ret[2])
 
     def test_pickle_compatibility(self):
@@ -182,7 +182,7 @@ class GLPicklingTest(unittest.TestCase):
 
     def test_relative_path(self):
         # Arrange
-        sf1 = tc.SFrame(list(range(10)))
+        sf1 = tc.XFrame(list(range(10)))
         relative_path = "tmp/%s" % self.filename
 
         # Act
@@ -194,7 +194,7 @@ class GLPicklingTest(unittest.TestCase):
         unpickler.close()
 
         # Assert
-        assert_sframe_equal(sf1, sf2)
+        assert_xframe_equal(sf1, sf2)
 
         # Clean up
         shutil.rmtree(relative_path)
@@ -202,9 +202,9 @@ class GLPicklingTest(unittest.TestCase):
     def test_save_over_previous(self):
 
         sarray_list = [
-            tc.SFrame([1, 2, 3]),
-            tc.SFrame([1.0, 2.0, 3.5]),
-            tc.SFrame(["foo", "bar"]),
+            tc.XFrame([1, 2, 3]),
+            tc.XFrame([1.0, 2.0, 3.5]),
+            tc.XFrame(["foo", "bar"]),
         ]
         for obj in sarray_list:
             pickler = gl_pickle.GLPickler(self.filename)
@@ -214,7 +214,7 @@ class GLPicklingTest(unittest.TestCase):
             unpickler = gl_pickle.GLUnpickler(self.filename)
             obj_ret = unpickler.load()
             unpickler.close()
-            assert_sframe_equal(obj, obj_ret)
+            assert_xframe_equal(obj, obj_ret)
 
             pickler = gl_pickle.GLPickler(self.filename)
             pickler.dump(obj)

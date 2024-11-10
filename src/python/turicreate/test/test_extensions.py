@@ -8,7 +8,7 @@
 
 import unittest
 from ..data_structures.sarray import SArray
-from ..data_structures.sframe import SFrame
+from ..data_structures.xframe import XFrame
 
 import sys
 
@@ -39,7 +39,7 @@ class VariantCheckTest(unittest.TestCase):
                 self.identical(reference[i], b[i])
         if isinstance(reference, SArray):
             self.identical(list(reference), list(b))
-        if isinstance(reference, SFrame):
+        if isinstance(reference, XFrame):
             self.identical(list(reference), list(b))
 
     def variant_turnaround(self, reference, expected_result=None):
@@ -51,7 +51,7 @@ class VariantCheckTest(unittest.TestCase):
 
     def test_variant_check(self):
         sa = SArray([1, 2, 3, 4, 5])
-        sf = SFrame({"a": sa})
+        sf = XFrame({"a": sa})
         import array
 
         self.variant_turnaround(1)
@@ -109,7 +109,7 @@ class VariantCheckTest(unittest.TestCase):
                 return SArray([random.randint(0, 100000) for i in range(2)])
             elif s == 3:
                 A.flextype_encodable = False
-                return SFrame(
+                return XFrame(
                     {
                         "a": [random.randint(0, 100000) for i in range(2)],
                         "b": [str(random.randint(0, 100000)) for i in range(2)],

@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_ENGINE_QUERY_OPTIMIZATION_TRANSFORMS_H_
-#define TURI_SFRAME_QUERY_ENGINE_QUERY_OPTIMIZATION_TRANSFORMS_H_
+#ifndef TURI_XFRAME_QUERY_ENGINE_QUERY_OPTIMIZATION_TRANSFORMS_H_
+#define TURI_XFRAME_QUERY_ENGINE_QUERY_OPTIMIZATION_TRANSFORMS_H_
 
 #include <core/storage/query_engine/planning/optimization_node_info.hpp>
 #include <string>

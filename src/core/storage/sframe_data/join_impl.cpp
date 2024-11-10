@@ -3,10 +3,10 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include <core/storage/sframe_data/join_impl.hpp>
+#include <core/storage/xframe_data/join_impl.hpp>
 #include <core/system/cppipc/server/cancel_ops.hpp>
 #include <core/util/cityhash_tc.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
 
 namespace turi {
 namespace join_impl {
@@ -135,8 +135,8 @@ std::unordered_map<size_t, std::list<join_hash_table::value_type>>::const_iterat
   return _hash_table.cend();
 }
 
-hash_join_executor::hash_join_executor(const sframe &left,
-                                       const sframe &right,
+hash_join_executor::hash_join_executor(const xframe &left,
+                                       const xframe &right,
                                        const std::vector<size_t> &left_join_positions,
                                        const std::vector<size_t> &right_join_positions,
                                        join_type_t join_type,
@@ -175,8 +175,8 @@ hash_join_executor::hash_join_executor(const sframe &left,
   }
 
   /*
-   * using names from sframe: unique and non-empty
-   * the new names in result sframe should have no confilict
+   * using names from xframe: unique and non-empty
+   * the new names in result xframe should have no confilict
    *
    * this is order dependent; doing in reverse will result in
    * different result.
@@ -185,7 +185,7 @@ hash_join_executor::hash_join_executor(const sframe &left,
    * we have to obtain the original construction
    **/
 
-  // get orginal left sframe's column names
+  // get orginal left xframe's column names
   auto col_names_original_order = left.column_names();
   _output_column_names = left.column_names();
   _output_column_types = left.column_types();
@@ -194,7 +194,7 @@ hash_join_executor::hash_join_executor(const sframe &left,
       std::make_move_iterator(col_names_original_order.begin()),
       std::make_move_iterator(col_names_original_order.end())};
 
-  // get orginal right sframe's column names
+  // get orginal right xframe's column names
   col_names_original_order = right.column_names();
 
   /* check the name resolution is order dependent or not.
@@ -211,7 +211,7 @@ hash_join_executor::hash_join_executor(const sframe &left,
     if (unique_names_from_right.count(entry.first) == 0) {
           std::stringstream ss;
           ss << "user provided column name { " << entry.first
-             << " } is not found in right SFrame.";
+             << " } is not found in right XFrame.";
           log_and_throw(ss.str());
     }
 
@@ -225,12 +225,12 @@ hash_join_executor::hash_join_executor(const sframe &left,
     if (unique_names_from_right.count(entry.second)) {
           std::stringstream ss;
           ss << "user provided resolution name { " << entry.second
-             << " } is not allowed to be same with any name in right SFrame.";
+             << " } is not allowed to be same with any name in right XFrame.";
           log_and_throw(ss.str());
     }
   }
 
-  // check the original right sframe columns
+  // check the original right xframe columns
   for (auto& name : col_names_original_order) {
     // skip join_keys
     if (_right_to_left_join_positions.count(right.column_index(name)))
@@ -246,7 +246,7 @@ hash_join_executor::hash_join_executor(const sframe &left,
         auto itr = _alter_names_right.find(name);
         if (!new_table.insert(itr->second).second) {
           std::stringstream ss;
-          ss << "user provided column name { " << itr->second << " } conflicts with table name used in SFrame";
+          ss << "user provided column name { " << itr->second << " } conflicts with table name used in XFrame";
           log_and_throw(ss.str());
         }
         _output_column_types.push_back(right.column_type(right.column_index(name)));
@@ -254,8 +254,8 @@ hash_join_executor::hash_join_executor(const sframe &left,
         new_table.insert(itr->second);
       } else {
         _output_column_types.push_back(right.column_type(right.column_index(name)));
-        // default collision resolv. see SFrame::generate_valid_column_name.
-        // if SFrame::generate_valid_column_name changes, this will break.
+        // default collision resolv. see XFrame::generate_valid_column_name.
+        // if XFrame::generate_valid_column_name changes, this will break.
         name.append(".1", 2);
         _output_column_names.push_back(name);
         new_table.insert(std::move(name));
@@ -280,7 +280,7 @@ hash_join_executor::hash_join_executor(const sframe &left,
   }
 }
 
-void hash_join_executor::init_result_frame(sframe &result_frame) {
+void hash_join_executor::init_result_frame(xframe &result_frame) {
   // Check which of the right frame's column names changed
   if (_reverse_output_column_order) {
     std::vector<std::string> res_column_names(_output_column_names.size());
@@ -332,7 +332,7 @@ void hash_join_executor::init_result_frame(sframe &result_frame) {
     size_t num_segments = std::max(
         {_left_frame.num_segments(), _right_frame.num_segments(),
          thread::cpu_count() * std::max<size_t>(1, log2(thread::cpu_count()))});
-    // Will throw if the SFrame is not in the state we expect
+    // Will throw if the XFrame is not in the state we expect
     result_frame.open_for_write(res_column_names, res_column_types, "",
                                 num_segments, false);
 
@@ -340,7 +340,7 @@ void hash_join_executor::init_result_frame(sframe &result_frame) {
     size_t num_segments = std::max(
         {_left_frame.num_segments(), _right_frame.num_segments(),
          thread::cpu_count() * std::max<size_t>(1, log2(thread::cpu_count()))});
-    // Will throw if the SFrame is not in the state we expect
+    // Will throw if the XFrame is not in the state we expect
     result_frame.open_for_write(_output_column_names, _output_column_types, "",
                                 num_segments, false);
   }
@@ -357,11 +357,11 @@ std::vector<flexible_type> hash_join_executor::unpack_row(
   return row;
 }
 
-sframe hash_join_executor::grace_hash_join() {
-  sframe result_frame;
+xframe hash_join_executor::grace_hash_join() {
+  xframe result_frame;
 
-  std::shared_ptr<sframe> grace_left;
-  std::shared_ptr<sframe> grace_right;
+  std::shared_ptr<xframe> grace_left;
+  std::shared_ptr<xframe> grace_right;
   timer full_ti;
   timer ti;
   std::tie(grace_left, grace_right) = this->grace_partition_frames();
@@ -385,14 +385,14 @@ sframe hash_join_executor::grace_hash_join() {
   }
 
   // Instantiate all output iterators
-  std::vector<sframe::iterator> result_output_iterators(result_frame.num_segments());
+  std::vector<xframe::iterator> result_output_iterators(result_frame.num_segments());
   for(size_t i = 0; i < result_frame.num_segments(); ++i) {
     result_output_iterators[i] = result_frame.get_output_iterator(i);
   }
 
   // Split each segment of the right frame into num_segments (of output frame) pieces
   // This is so I can parallelize the hash table lookups when scanning the right
-  // frame.  There is one thread per output segment, and each SFrame segment
+  // frame.  There is one thread per output segment, and each XFrame segment
   // must be split up into this many pieces to parallelize.
   std::vector<size_t> logical_right_segment_sizes;
   for(size_t i = 0; i < num_segments; ++i) {
@@ -425,7 +425,7 @@ sframe hash_join_executor::grace_hash_join() {
             num_segments*result_frame.num_segments());
 
   // Readers for the left and right SArray used in the join
-  std::unique_ptr<sframe::reader_type> l_rdr;
+  std::unique_ptr<xframe::reader_type> l_rdr;
   if(_frames_partitioned) {
     l_rdr = grace_left->get_reader();
   } else {
@@ -516,15 +516,15 @@ sframe hash_join_executor::grace_hash_join() {
       swapped_names[entry.second] = result_frame.column_name(entry.first);
     }
 
-    sframe swapped_result_frame(swapped_columns, swapped_names, false);
+    xframe swapped_result_frame(swapped_columns, swapped_names, false);
     return swapped_result_frame;
   }
 
   return result_frame;
 }
 
-void hash_join_executor::merge_rows_for_output(sframe &result_frame,
-                                               sframe::iterator result_iter,
+void hash_join_executor::merge_rows_for_output(xframe &result_frame,
+                                               xframe::iterator result_iter,
                                                const std::vector<std::vector<flexible_type>> &left_rows,
                                                const std::vector<std::vector<flexible_type>> &right_rows) {
   // Size of cross product of left and right rows
@@ -606,19 +606,19 @@ void hash_join_executor::merge_rows_for_output(sframe &result_frame,
   }
 }
 
-size_t hash_join_executor::get_num_cells(const sframe &sf) {
+size_t hash_join_executor::get_num_cells(const xframe &sf) {
   return (sf.num_rows() * sf.num_columns());
 }
 
-size_t hash_join_executor::choose_number_of_grace_partitions(const sframe &sf) {
+size_t hash_join_executor::choose_number_of_grace_partitions(const xframe &sf) {
   size_t num_cells = get_num_cells(sf);
   return (num_cells / _max_buffer_size) + 1;
 }
 
 
-std::pair<std::shared_ptr<sframe>,std::shared_ptr<sframe>> hash_join_executor::grace_partition_frames() {
+std::pair<std::shared_ptr<xframe>,std::shared_ptr<xframe>> hash_join_executor::grace_partition_frames() {
   // Pick # of partitions
-  // TODO: Add estimated disk and memory size to SFrames.
+  // TODO: Add estimated disk and memory size to XFrames.
   // This way we can check when to do GRACE recursively
   size_t left_partitions = choose_number_of_grace_partitions(_left_frame);
   size_t right_partitions = choose_number_of_grace_partitions(_right_frame);
@@ -628,40 +628,40 @@ std::pair<std::shared_ptr<sframe>,std::shared_ptr<sframe>> hash_join_executor::g
     " partitions for GRACE hash join\n";
 
   // Hash join columns into separate partitions
-  // (each partition is a segment of an SFrame)
+  // (each partition is a segment of an XFrame)
   auto parted_left_frame = grace_partition_frame(_left_frame, _left_join_positions, num_partitions);
   auto parted_right_frame = grace_partition_frame(_right_frame, _right_join_positions, num_partitions);
 
   return std::make_pair(parted_left_frame, parted_right_frame);
 }
 
-std::shared_ptr<sframe> hash_join_executor::grace_partition_frame(
-    const sframe &sf,
+std::shared_ptr<xframe> hash_join_executor::grace_partition_frame(
+    const xframe &sf,
     const std::vector<size_t> &join_col_nums,
     size_t num_partitions) {
   //TODO: for now
   log_func_entry();
   // We don't need to partition if only 1 is needed
   if(num_partitions == 1) {
-    return std::make_shared<sframe>(sf);
+    return std::make_shared<xframe>(sf);
   } else if(num_partitions < 1) {
     log_and_throw("Cannot make < 1 partitions!");
   }
 
-  // Open the partitioned sframe
-  auto parted_array = std::make_shared<sframe>();
+  // Open the partitioned xframe
+  auto parted_array = std::make_shared<xframe>();
   parted_array->open_for_write({"data"},{flex_type_enum::STRING},"",num_partitions);
 
   // Get all iterators
   // Create a mutex for each iterator
-  std::vector<sframe::iterator> outiter_vector(num_partitions);
+  std::vector<xframe::iterator> outiter_vector(num_partitions);
   std::vector<mutex> outiter_mutexes(num_partitions);
   for(size_t i = 0; i < num_partitions; ++i) {
     outiter_vector[i] = parted_array->get_output_iterator(i);
   }
 
-  // Iterate over each row of the given SFrame, hash on the join columns,
-  // and write that row to the appropriate segment of the partitioned sframe
+  // Iterate over each row of the given XFrame, hash on the join columns,
+  // and write that row to the appropriate segment of the partitioned xframe
   auto rdr = sf.get_reader(thread::cpu_count());
   parallel_for(0, rdr->num_segments(), [&](size_t seg_num) {
     oarchive oarc;

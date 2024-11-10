@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_OPTIMIZATION_APPEND_TRANSFORMS_H_
-#define TURI_SFRAME_QUERY_OPTIMIZATION_APPEND_TRANSFORMS_H_
+#ifndef TURI_XFRAME_QUERY_OPTIMIZATION_APPEND_TRANSFORMS_H_
+#define TURI_XFRAME_QUERY_OPTIMIZATION_APPEND_TRANSFORMS_H_
 
 #include <core/storage/query_engine/planning/optimizations/optimization_transforms.hpp>
 #include <core/storage/query_engine/planning/optimization_engine.hpp>
@@ -30,14 +30,14 @@ class opt_append_on_source : public opt_append_transform {
 
   std::string description() { return "append(source, source) -> source"; }
 
-  std::pair<bool, sframe> try_sframe_append(cnode_info_ptr n) {
-    sframe new_sf;
+  std::pair<bool, xframe> try_xframe_append(cnode_info_ptr n) {
+    xframe new_sf;
     for (const auto& input: n->inputs) {
-      if (input->type != planner_node_type::SFRAME_SOURCE_NODE) return {false, new_sf};
+      if (input->type != planner_node_type::XFRAME_SOURCE_NODE) return {false, new_sf};
       auto begin = input->p("begin_index");
       auto end = input->p("end_index");
 
-      const auto& sf = input->any_p<sframe>("sframe");
+      const auto& sf = input->any_p<xframe>("xframe");
 
       if (begin == 0 && end == sf.size()) {
         // stupidly we need the names to match for the append to work...
@@ -54,7 +54,7 @@ class opt_append_on_source : public opt_append_transform {
     }
 
     if(new_sf.num_rows() == 0) {
-      new_sf = n->inputs[0]->any_p<sframe>("sframe");
+      new_sf = n->inputs[0]->any_p<xframe>("xframe");
     }
 
     return {true, new_sf};
@@ -91,23 +91,23 @@ class opt_append_on_source : public opt_append_transform {
     // and all have the same begin and end positions
     ASSERT_NE(n->inputs.size(), 0);
 
-    // Quickly fail if not dealing with two sframe/sarray sources
-    if(! ((n->inputs[0]->type == planner_node_type::SFRAME_SOURCE_NODE
+    // Quickly fail if not dealing with two xframe/sarray sources
+    if(! ((n->inputs[0]->type == planner_node_type::XFRAME_SOURCE_NODE
            || n->inputs[0]->type == planner_node_type::SARRAY_SOURCE_NODE)
           &&
-          (n->inputs[1]->type == planner_node_type::SFRAME_SOURCE_NODE
+          (n->inputs[1]->type == planner_node_type::XFRAME_SOURCE_NODE
            || n->inputs[1]->type == planner_node_type::SARRAY_SOURCE_NODE))) {
 
       return false;
     }
 
-    // Try append as sframe
-    auto sframe_append_result = try_sframe_append(n);
+    // Try append as xframe
+    auto xframe_append_result = try_xframe_append(n);
 
-    if (sframe_append_result.first) {
-      auto& new_sf = sframe_append_result.second;
+    if (xframe_append_result.first) {
+      auto& new_sf = xframe_append_result.second;
       // we can rewrite the current node.
-      pnode_ptr new_pnode = op_sframe_source::make_planner_node(new_sf,
+      pnode_ptr new_pnode = op_xframe_source::make_planner_node(new_sf,
                                                                 0,
                                                                 new_sf.num_rows());
       opt_manager->replace_node(n, new_pnode);

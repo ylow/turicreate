@@ -204,7 +204,7 @@ user or the item.
 
 Including side data is easy with the `user_data` or `item_data`
 parameters to the `recommender.create()` function.  These arguments
-are SFrames and must have a user or item column that corresponds to
+are XFrames and must have a user or item column that corresponds to
 the `user_id` and `item_id` columns in the observation data.  Internally,
 the data is joined to the particular user or item when training the
 model, the data is saved with the model and also used to make
@@ -225,7 +225,7 @@ argument.
 Side data may also be provided for each observation. For example, it
 might be useful to have recommendations change based on the time at
 which the query is being made. To do so, you could create a model using
-an SFrame that contains a time column, in addition to a user and item
+an XFrame that contains a time column, in addition to a user and item
 column. For example, a "time" column could include a string indicating
 the hour; this will be treated as a categorical variable and the model
 will learn a latent factor for each unique hour.
@@ -236,13 +236,13 @@ m = tc.ranking_factorization_recommender.create(sf)
 ```
 
 In order to include this information when requesting observations, you
-may include the desired additional data as columns in an SFrame for the
+may include the desired additional data as columns in an XFrame for the
 `users` argument to `m.recommend()`. In our example above, when querying
 for recommendations, you would include the time that you want to use for
 each set of recommendations.
 
 ```python
-users_query = tc.SFrame({'user_id': [1, 2, 3], 'time': ['10pm', '10pm', '11pm']})
+users_query = tc.XFrame({'user_id': [1, 2, 3], 'time': ['10pm', '10pm', '11pm']})
 m.recommend(users=user_query)
 ```
 
@@ -258,7 +258,7 @@ You may check the number of columns used as side information by querying
 `m['item_side_data_column_names']`. By printing the model, you can also
 see this information. In the following model, we had four columns in the
 observation data (two of which were `user_id` and `item_id`) and four
-columns in the SFrame passed to `item_side_data` (one of which was
+columns in the XFrame passed to `item_side_data` (one of which was
 `item_id`):
 
 ```no-highlight
@@ -333,7 +333,7 @@ recommender system will perform in practice.
 The Turi Create recommender toolkit includes a function,
 [tc.recommender.random_split_by_user](https://apple.github.io/turicreate/docs/api/generated/turicreate.recommender.util.random_split_by_user.html),
 to easily generate training and test sets from observation data.
-Unlike `tc.SFrame.random_split`, it only puts data for a subset of the
+Unlike `tc.XFrame.random_split`, it only puts data for a subset of the
 users into the test set.  This is typically sufficient for evaluating
 recommender systems.
 
@@ -355,7 +355,7 @@ working with rating data while ensuring good precision-recall.  To
 accurately evaluate the precision-recall of a model trained on explicit
 rating data, it's important to only include highly rated items in your
 test set as these are the items a user would likely choose.  Creating
-such a test set can be done with a handful of SFrame operations and
+such a test set can be done with a handful of XFrame operations and
 `tc.recommender.random_split_by_user`:
 
 ```no-highlight

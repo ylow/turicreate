@@ -36,12 +36,12 @@ from .cy_cpp_utils cimport to_nested_vectors_of_strings, dict_to_string_string_m
 from ..data_structures.serialization import _safe_serialization_directory
 import os
 
-cdef create_proxy_wrapper_from_existing_proxy(const unity_sframe_base_ptr& proxy):
+cdef create_proxy_wrapper_from_existing_proxy(const unity_xframe_base_ptr& proxy):
     if proxy.get() == NULL:
         return None
-    ret = UnitySFrameProxy(True)
+    ret = UnityXFrameProxy(True)
     ret._base_ptr = proxy
-    ret.thisptr = <unity_sframe*>(ret._base_ptr.get())
+    ret.thisptr = <unity_xframe*>(ret._base_ptr.get())
     return ret
 
 cdef pydict_from_gl_error_map(gl_error_map& d):
@@ -59,25 +59,25 @@ cdef pydict_from_gl_error_map(gl_error_map& d):
 
 
 
-cdef class UnitySFrameProxy:
+cdef class UnityXFrameProxy:
 
     def __cinit__(self, do_not_allocate=None):
         if do_not_allocate:
             self._base_ptr.reset()
             self.thisptr = NULL
         else:
-            self.thisptr = new unity_sframe()
-            self._base_ptr.reset(<unity_sframe_base*>(self.thisptr))
+            self.thisptr = new unity_xframe()
+            self._base_ptr.reset(<unity_xframe_base*>(self.thisptr))
 
     cpdef load_from_dataframe(self, dataframe):
         cdef gl_dataframe gldf = gl_dataframe_from_dict_of_arrays(dataframe)
         with nogil:
             self.thisptr.construct_from_dataframe(gldf)
 
-    cpdef load_from_sframe_index(self, index_file):
+    cpdef load_from_xframe_index(self, index_file):
         cdef string str_index_file = str_to_cpp(index_file)
         with nogil:
-            self.thisptr.construct_from_sframe_index(str_index_file)
+            self.thisptr.construct_from_xframe_index(str_index_file)
 
     cpdef load_from_csvs(self, _url, object csv_config, dict column_type_hints):
         cdef map[string, flex_type_enum] c_column_type_hints
@@ -113,13 +113,13 @@ cdef class UnitySFrameProxy:
         return from_vector_of_strings(self.thisptr.column_names())
 
     cpdef head(self, size_t n):
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = (self.thisptr.head(n))
         return create_proxy_wrapper_from_existing_proxy(proxy)
 
     cpdef tail(self, size_t n):
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = (self.thisptr.tail(n))
         return create_proxy_wrapper_from_existing_proxy(proxy)
@@ -177,7 +177,7 @@ cdef class UnitySFrameProxy:
         else:
             from .. import util
             lambda_str = util._pickle_to_temp_location_or_memory(fn)
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         skip_undefined = 0
         with nogil:
             proxy = (self.thisptr.flat_map(lambda_str,
@@ -185,14 +185,14 @@ cdef class UnitySFrameProxy:
         return create_proxy_wrapper_from_existing_proxy(proxy)
 
     cpdef logical_filter(self, UnitySArrayProxy other):
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = (self.thisptr.logical_filter(other._base_ptr))
         return create_proxy_wrapper_from_existing_proxy(proxy)
 
     cpdef select_columns(self, _keylist):
         cdef vector[string] keylist = to_vector_of_strings(_keylist)
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = (self.thisptr.select_columns(keylist))
         return create_proxy_wrapper_from_existing_proxy(proxy)
@@ -247,24 +247,24 @@ cdef class UnitySFrameProxy:
             self.thisptr.save_as_csv(url, csv_options)
 
     cpdef sample(self, float percent, int random_seed, bint exact=False):
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = self.thisptr.sample(percent, random_seed, exact)
         return create_proxy_wrapper_from_existing_proxy(proxy)
 
     cpdef random_split(self, float percent, int random_seed, bint exact=False):
-        cdef cpplist[unity_sframe_base_ptr] sf_array
+        cdef cpplist[unity_xframe_base_ptr] sf_array
         with nogil:
             sf_array = self.thisptr.random_split(percent, random_seed, exact)
         assert sf_array.size() == 2
-        cdef unity_sframe_base_ptr proxy_first = (sf_array.front())
-        cdef unity_sframe_base_ptr proxy_second = (sf_array.back())
+        cdef unity_xframe_base_ptr proxy_first = (sf_array.front())
+        cdef unity_xframe_base_ptr proxy_second = (sf_array.back())
         first = create_proxy_wrapper_from_existing_proxy(proxy_first)
         second = create_proxy_wrapper_from_existing_proxy(proxy_second)
         return (first, second)
 
     cpdef shuffle(self):
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = (self.thisptr.shuffle())
         return create_proxy_wrapper_from_existing_proxy(proxy)
@@ -275,14 +275,14 @@ cdef class UnitySFrameProxy:
         cdef vector[string] group_output_columns = to_vector_of_strings(_group_output_columns)
         cdef vector[string] column_ops           = to_vector_of_strings(_column_ops)
 
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = self.thisptr.groupby_aggregate(key_columns, group_column,
                                                    group_output_columns, column_ops)
         return create_proxy_wrapper_from_existing_proxy(proxy)
 
-    cpdef append(self, UnitySFrameProxy other):
-        cdef unity_sframe_base_ptr proxy
+    cpdef append(self, UnityXFrameProxy other):
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = (self.thisptr.append(other._base_ptr))
         return create_proxy_wrapper_from_existing_proxy(proxy)
@@ -299,8 +299,8 @@ cdef class UnitySFrameProxy:
     cpdef query_plan_string(self):
         return cpp_to_str(self.thisptr.query_plan_string())
 
-    cpdef join(self, UnitySFrameProxy right, _how, dict _on):
-        cdef unity_sframe_base_ptr proxy
+    cpdef join(self, UnityXFrameProxy right, _how, dict _on):
+        cdef unity_xframe_base_ptr proxy
         cdef map[string,string] on = dict_to_string_string_map(_on)
         cdef string how = str_to_cpp(_how)
         with nogil:
@@ -308,8 +308,8 @@ cdef class UnitySFrameProxy:
 
         return create_proxy_wrapper_from_existing_proxy(proxy)
 
-    cpdef join_with_custom_name(self, UnitySFrameProxy right, _how, dict _on, dict _alter_name):
-        cdef unity_sframe_base_ptr proxy
+    cpdef join_with_custom_name(self, UnityXFrameProxy right, _how, dict _on, dict _alter_name):
+        cdef unity_xframe_base_ptr proxy
         cdef map[string,string] on = dict_to_string_string_map(_on)
         cdef string how = str_to_cpp(_how)
         cdef map[string,string] alter_name = dict_to_string_string_map(_alter_name)
@@ -337,14 +337,14 @@ cdef class UnitySFrameProxy:
         for t in new_column_types:
             column_types.push_back(flex_type_enum_from_pytype(t))
 
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = self.thisptr.stack(column_name, new_column_names, column_types, b_drop_na)
         return create_proxy_wrapper_from_existing_proxy(proxy)
 
     cpdef sort(self, _sort_columns, vector[int] sort_orders):
         cdef vector[string] sort_columns = to_vector_of_strings(_sort_columns)
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         # some how c++ side doesn't support vector[bool], using vector[int] here
         cdef vector[int] orders = [int(i) for i in sort_orders]
         with nogil:
@@ -354,12 +354,12 @@ cdef class UnitySFrameProxy:
 
     cpdef drop_missing_values(self, _columns, bint is_all, bint split, bint recursive):
         cdef vector[string] columns = to_vector_of_strings(_columns)
-        cdef cpplist[unity_sframe_base_ptr] sf_array
+        cdef cpplist[unity_xframe_base_ptr] sf_array
         with nogil:
             sf_array = self.thisptr.drop_missing_values(columns, is_all, split, recursive)
         assert sf_array.size() == 2
-        cdef unity_sframe_base_ptr proxy_first = (sf_array.front())
-        cdef unity_sframe_base_ptr proxy_second
+        cdef unity_xframe_base_ptr proxy_first = (sf_array.front())
+        cdef unity_xframe_base_ptr proxy_second
         first = create_proxy_wrapper_from_existing_proxy(proxy_first)
         if split:
             proxy_second = (sf_array.back())
@@ -373,7 +373,7 @@ cdef class UnitySFrameProxy:
 
 
     cpdef copy_range(self, size_t start, size_t step, size_t end):
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = (self.thisptr.copy_range(start, step, end))
         return create_proxy_wrapper_from_existing_proxy(proxy)
@@ -387,17 +387,17 @@ cdef class UnitySFrameProxy:
         import uuid
 
         save_dir = _safe_serialization_directory()
-        sframe_id = str(uuid.uuid4())
+        xframe_id = str(uuid.uuid4())
         
-        self.save(os.path.join(save_dir, sframe_id))
-        return (_UnitySFrame_unpickler, (sframe_id,) )
+        self.save(os.path.join(save_dir, xframe_id))
+        return (_UnityXFrame_unpickler, (xframe_id,) )
 
-def _UnitySFrame_unpickler(sframe_id):
-    proxy = UnitySFrameProxy()
+def _UnityXFrame_unpickler(xframe_id):
+    proxy = UnityXFrameProxy()
 
     load_dir = _safe_serialization_directory()
 
-    proxy.load_from_sframe_index(os.path.join(load_dir, sframe_id))
+    proxy.load_from_xframe_index(os.path.join(load_dir, xframe_id))
 
     return proxy
 

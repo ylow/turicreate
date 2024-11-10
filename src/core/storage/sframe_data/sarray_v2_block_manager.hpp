@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_SARRAY_V2_BLOCK_MANAGER_HPP
-#define TURI_SFRAME_SARRAY_V2_BLOCK_MANAGER_HPP
+#ifndef TURI_XFRAME_SARRAY_V2_BLOCK_MANAGER_HPP
+#define TURI_XFRAME_SARRAY_V2_BLOCK_MANAGER_HPP
 #include <stdint.h>
 #include <vector>
 #include <fstream>
@@ -12,10 +12,10 @@
 #include <core/parallel/pthread_tools.hpp>
 #include <core/parallel/atomic.hpp>
 #include <core/storage/fileio/general_fstream.hpp>
-#include <core/storage/sframe_data/sarray_index_file.hpp>
+#include <core/storage/xframe_data/sarray_index_file.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/util/buffer_pool.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_types.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_types.hpp>
 
 // forward declaration for LZ4. required here annoyingly since I have a template
 // function here which calls it
@@ -27,13 +27,13 @@ namespace turi {
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  * \{
  */
 
 /**
- * SFrame v2 Format Implementation Detail
+ * XFrame v2 Format Implementation Detail
  */
 namespace v2_block_impl {
 
@@ -88,7 +88,7 @@ namespace v2_block_impl {
  *     this, but the writer will always produce this result)
  *  2) Blocks can be of different sizes. (the block_manager and block_writer
  *     do not have a block size constraint. The \ref sarray_group_format_writer_v2
- *     tries to keep to a block size of SFRAME_DEFAULT_BLOCK_SIZE
+ *     tries to keep to a block size of XFRAME_DEFAULT_BLOCK_SIZE
  *     after compression, but this is done by performing block size estimation
  *     (#bytes written / #rows written). But the format itself does not care.
  *  3) Blocks can be laid out in arbitrary order across columns. Striping of

@@ -3,32 +3,32 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_UNITY_SFRAME_SARRAY_HPP
-#define TURI_UNITY_SFRAME_SARRAY_HPP
+#ifndef TURI_UNITY_XFRAME_SARRAY_HPP
+#define TURI_UNITY_XFRAME_SARRAY_HPP
 #include <set>
 #include <iterator>
 #include <type_traits>
 #include <core/logging/logger.hpp>
 #include <core/logging/assertions.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <core/storage/sframe_data/output_iterator.hpp>
+#include <core/storage/xframe_data/output_iterator.hpp>
 #include <core/storage/serialization/iarchive.hpp>
 #include <core/storage/serialization/oarchive.hpp>
 #include <core/parallel/pthread_tools.hpp>
 #include <core/parallel/lambda_omp.hpp>
-#include <core/storage/sframe_data/swriter_base.hpp>
-#include <core/storage/sframe_data/sarray_file_format_v2.hpp>
-#include <core/storage/sframe_data/sarray_index_file.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
+#include <core/storage/xframe_data/swriter_base.hpp>
+#include <core/storage/xframe_data/sarray_file_format_v2.hpp>
+#include <core/storage/xframe_data/sarray_index_file.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
+#include <core/storage/xframe_data/xframe_config.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/storage/fileio/fixed_size_cache_manager.hpp>
 #include <core/storage/fileio/file_ownership_handle.hpp>
 #include <core/storage/fileio/file_handle_pool.hpp>
 #include <core/system/exceptions/error_types.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
-#include <core/storage/sframe_data/sarray_saving.hpp>
-#include <core/storage/sframe_data/sframe_compact.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
+#include <core/storage/xframe_data/sarray_saving.hpp>
+#include <core/storage/xframe_data/xframe_compact.hpp>
 
 
 namespace turi {
@@ -40,16 +40,16 @@ namespace swriter_impl {
   // We define the iterator type here so as not to polute the outer namesapce
   //
 template <typename T>
-using output_iterator = turi::sframe_function_output_iterator<
+using output_iterator = turi::xframe_function_output_iterator<
               T,
               std::function<void(const T&)>,
               std::function<void(T&&)>,
-              std::function<void(const sframe_rows&)> >;
+              std::function<void(const xframe_rows&)> >;
 } // namespace swriter_impl
 
 /**
- * \ingroup sframe_physical
- * \addtogroup sframe_main Main SFrame Objects
+ * \ingroup xframe_physical
+ * \addtogroup xframe_main Main XFrame Objects
  * \{
  */
 
@@ -203,7 +203,7 @@ class sarray : public swriter_base<swriter_impl::output_iterator<T> > {
    * Create an sarray of given value and size.
    */
   sarray(const flexible_type& value, size_t size,
-         size_t num_segments = SFRAME_DEFAULT_NUM_SEGMENTS,
+         size_t num_segments = XFRAME_DEFAULT_NUM_SEGMENTS,
          flex_type_enum type = flex_type_enum::UNDEFINED) {
     if (type == flex_type_enum::UNDEFINED) {
       type = value.get_type();
@@ -240,7 +240,7 @@ class sarray : public swriter_base<swriter_impl::output_iterator<T> > {
     if (index_info.version == 0) {
       logprogress_stream << "Version 0 file format has been deprecated. "
                          << "Operations may not work as expected, or will be slow."
-                         << "Please re-save the SFrame/SArray to update it to "
+                         << "Please re-save the XFrame/SArray to update it to "
                          << "the latest version which has substantial "
                          << "performance optimizations\n";
     }
@@ -263,7 +263,7 @@ class sarray : public swriter_base<swriter_impl::output_iterator<T> > {
     if (index_info.version == 0) {
       logprogress_stream << "Version 0 file format has been deprecated. "
                          << "Operations may not work as expected, or will be slow."
-                         << "Please re-save the SFrame/SArray to update it to "
+                         << "Please re-save the XFrame/SArray to update it to "
                          << "the latest version which has substantial "
                          << "performance optimizations\n";
 
@@ -277,7 +277,7 @@ class sarray : public swriter_base<swriter_impl::output_iterator<T> > {
    *
    * \param num_segments The number of segments in the array
    */
-  void open_for_write(size_t num_segments = SFRAME_DEFAULT_NUM_SEGMENTS,
+  void open_for_write(size_t num_segments = XFRAME_DEFAULT_NUM_SEGMENTS,
                       bool disable_padding = false) {
     ASSERT_MSG(!inited, "Attempting to init an SArray "
                "which has already been inited");
@@ -305,7 +305,7 @@ class sarray : public swriter_base<swriter_impl::output_iterator<T> > {
    * \param num_segments The number of segments in the array
    */
   void open_for_write(std::string sidx_file,
-                      size_t num_segments = SFRAME_DEFAULT_NUM_SEGMENTS) {
+                      size_t num_segments = XFRAME_DEFAULT_NUM_SEGMENTS) {
     ASSERT_MSG(!inited, "Attempting to init an SArray "
         "which has already been inited");
     index_file = sidx_file;
@@ -527,12 +527,12 @@ class sarray : public swriter_base<swriter_impl::output_iterator<T> > {
 
   /**
    * Attempts to compact if the number of segments in the SArray
-   * exceeds SFRAME_COMPACTION_THRESHOLD.
+   * exceeds XFRAME_COMPACTION_THRESHOLD.
    */
   void try_compact() {
-    if (SFRAME_COMPACTION_THRESHOLD > 0 &&
-        index_info.segment_files.size() > SFRAME_COMPACTION_THRESHOLD) {
-      sarray_compact(*this, SFRAME_COMPACTION_THRESHOLD);
+    if (XFRAME_COMPACTION_THRESHOLD > 0 &&
+        index_info.segment_files.size() > XFRAME_COMPACTION_THRESHOLD) {
+      sarray_compact(*this, XFRAME_COMPACTION_THRESHOLD);
     }
   }
 
@@ -767,7 +767,7 @@ typename sarray<T>::iterator inline sarray<T>::get_output_iterator(size_t segmen
       [=](T&& val)->void {
         writer->write_segment(0, segmentid, std::forward<T>(val));
       },
-      [=](const sframe_rows&)->void {
+      [=](const xframe_rows&)->void {
         ASSERT_TRUE(false);
       } );
 }
@@ -815,7 +815,7 @@ inline sarray<flexible_type>::get_output_iterator(size_t segmentid) {
               throw(bad_cast(message));
             }
       },
-      [=](const sframe_rows& sfr)->void {
+      [=](const xframe_rows& sfr)->void {
         ASSERT_TRUE(sfr.num_columns() == 1);
         writer->write_segment(segmentid, sfr.type_check({stored_type}));
       });
@@ -824,8 +824,8 @@ inline sarray<flexible_type>::get_output_iterator(size_t segmentid) {
 
 } // namespace turi
 
-#include <core/storage/sframe_data/sarray_reader.hpp>
-#include <core/storage/sframe_data/sframe_compact_impl.hpp>
+#include <core/storage/xframe_data/sarray_reader.hpp>
+#include <core/storage/xframe_data/xframe_compact_impl.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Implement serialization for

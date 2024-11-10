@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef SFRAME_ALGORITHM_EC_PERMUTE_HPP
-#define SFRAME_ALGORITHM_EC_PERMUTE_HPP
+#ifndef XFRAME_ALGORITHM_EC_PERMUTE_HPP
+#define XFRAME_ALGORITHM_EC_PERMUTE_HPP
 
 
 #include <vector>
@@ -13,7 +13,7 @@
  * See ec_sort.hpp for details
  */
 namespace turi {
-class sframe;
+class xframe;
 
 template <typename T>
 class sarray;
@@ -21,23 +21,23 @@ class sarray;
 namespace query_eval {
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup Algorithms Algorithms
  * \{
  */
 /**
- * Permutes an sframe by a forward map.
- * forward_map has the same length as the sframe and must be a permutation
+ * Permutes an xframe by a forward map.
+ * forward_map has the same length as the xframe and must be a permutation
  * of all the integers [0, len-1].
  *
- * The input sframe is then permuted so that sframe row i is written to row
- * forward_map[i] of the returned sframe.
+ * The input xframe is then permuted so that xframe row i is written to row
+ * forward_map[i] of the returned xframe.
  *
  * \note The forward_map is not checked that it is a valid permutation
  * If the constraints is not met, either an exception will be thrown, or
  * the result is ill-defined.
  */
-sframe permute_sframe(sframe &values_sframe,
+xframe permute_xframe(xframe &values_xframe,
                       std::shared_ptr<sarray<flexible_type> > forward_map);
 
 /// \}

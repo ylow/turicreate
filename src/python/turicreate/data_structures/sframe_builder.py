@@ -4,38 +4,38 @@
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
 """
-An interface for creating an SFrame over time.
+An interface for creating an XFrame over time.
 """
 
 
 
 
-from .._cython.cy_sframe_builder import UnitySFrameBuilderProxy
-from .sframe import SFrame
+from .._cython.cy_xframe_builder import UnityXFrameBuilderProxy
+from .xframe import XFrame
 from ..util import _make_internal_url
 import logging as _logging
 
 __LOGGER__ = _logging.getLogger(__name__)
 
 
-class SFrameBuilder(object):
+class XFrameBuilder(object):
     """
-    An interface to incrementally build an SFrame (row by row). It has some
+    An interface to incrementally build an XFrame (row by row). It has some
     basic features such as appending multiple rows at once, polling the last N
     rows appended, and a primitive parallel insert interface.
 
-    Once closed, the SFrame cannot be "reopened" using this interface.
+    Once closed, the XFrame cannot be "reopened" using this interface.
 
     Parameters
     ----------
     column_types : list[type]
-        The column types of the result SFrame. Types must be of the python
-        types that are supported by SFrame (int, float, str, array.array, list,
+        The column types of the result XFrame. Types must be of the python
+        types that are supported by XFrame (int, float, str, array.array, list,
         dict, datetime.datetime). Column types are strictly enforced
         while appending.
 
     column_names : list[str], optional
-        Column names of the result SFrame. If given, length of the list must
+        Column names of the result XFrame. If given, length of the list must
         equal the length of `column_types`. If not given, names are generated.
 
     num_segments : int, optional
@@ -47,13 +47,13 @@ class SFrameBuilder(object):
 
     Returns
     -------
-    out : SFrameBuilder
+    out : XFrameBuilder
 
     Examples
     --------
-    >>> from turicreate import SFrameBuilder
+    >>> from turicreate import XFrameBuilder
 
-    >>> sb = SFrameBuilder([int,float,str])
+    >>> sb = XFrameBuilder([int,float,str])
 
     >>> sb.append([1,1.0,"1"])
 
@@ -104,7 +104,7 @@ class SFrameBuilder(object):
         else:
             raise AssertionError("Column types must be defined!")
 
-        self._builder = UnitySFrameBuilderProxy()
+        self._builder = UnityXFrameBuilderProxy()
         self._builder.init(
             self._column_types,
             self._column_names,
@@ -119,7 +119,7 @@ class SFrameBuilder(object):
 
     def append(self, data, segment=0):
         """
-        Append a single row to an SFrame.
+        Append a single row to an XFrame.
 
         Throws a RuntimeError if one or more column's type is incompatible with
         a type appended.
@@ -135,14 +135,14 @@ class SFrameBuilder(object):
             any value in segment 0, and the order of rows in each segment is
             preserved as they are added.
         """
-        # Assume this case refers to an SFrame with a single column
+        # Assume this case refers to an XFrame with a single column
         if not hasattr(data, "__iter__"):
             data = [data]
         self._builder.append(data, segment)
 
     def append_multiple(self, data, segment=0):
         """
-        Append multiple rows to an SFrame.
+        Append multiple rows to an XFrame.
 
         Throws a RuntimeError if one or more column's type is incompatible with
         a type appended.
@@ -198,12 +198,12 @@ class SFrameBuilder(object):
 
     def close(self):
         """
-        Creates an SFrame from all values that were appended to the
-        SFrameBuilder. No function that appends data may be called after this
+        Creates an XFrame from all values that were appended to the
+        XFrameBuilder. No function that appends data may be called after this
         is called.
 
         Returns
         -------
-        out : SFrame
+        out : XFrame
         """
-        return SFrame(_proxy=self._builder.close())
+        return XFrame(_proxy=self._builder.close())

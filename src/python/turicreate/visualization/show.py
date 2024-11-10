@@ -368,14 +368,14 @@ def box_plot(x, y, xlabel=LABEL_DEFAULT, ylabel=LABEL_DEFAULT, title=LABEL_DEFAU
 
 def columnwise_summary(sf):
     """
-    Plots a columnwise summary of the sframe provided as input,
+    Plots a columnwise summary of the xframe provided as input,
     and returns the resulting Plot object.
 
-    The function supports SFrames.
+    The function supports XFrames.
 
     Parameters
     ----------
-    sf : SFrame
+    sf : XFrame
       The data to get a columnwise summary for.
 
     Returns
@@ -385,16 +385,16 @@ def columnwise_summary(sf):
 
     Examples
     --------
-    Make a columnwise summary of an SFrame.
+    Make a columnwise summary of an XFrame.
 
     >>> x = turicreate.SArray([1,2,3,4,5])
     >>> s = turicreate.SArray(['a','b','c','a','a'])
-    >>> sf_test = turicreate.SFrame([x,x,x,x,s,s,s,x,s,x,s,s,s,x,x])
+    >>> sf_test = turicreate.XFrame([x,x,x,x,s,s,s,x,s,x,s,s,s,x,x])
     >>> colsum = turicreate.visualization.columnwise_summary(sf_test)
     """
-    if not isinstance(sf, tc.data_structures.sframe.SFrame):
+    if not isinstance(sf, tc.data_structures.xframe.XFrame):
         raise ValueError(
-            "turicreate.visualization.columnwise_summary " + "supports SFrame"
+            "turicreate.visualization.columnwise_summary " + "supports XFrame"
         )
     plt_ref = tc.extensions.plot_columnwise_summary(sf)
     return Plot(_proxy=plt_ref)

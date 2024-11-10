@@ -1,6 +1,6 @@
-# SFrame Query Operator Design Doc
+# XFrame Query Operator Design Doc
 
-The new SFrame Query Engine design doc is to allow for greater performance
+The new XFrame Query Engine design doc is to allow for greater performance
 optimizations by increasing abstraction of data representation from computation,
 and to set the path for going distributed.
 
@@ -86,11 +86,11 @@ The invariant any planner graph modification functions have to maintain is:
  to the result of materialization of $ X $ after calling mutate.
 
 Within these constraints allow for certain capabilities to be well defined.
-For instance, given a graph of SFrame.
+For instance, given a graph of XFrame.
 
    S1-->S2-->S3-->S4
 
-If S3 is ever materialized, it could be rewritten inplace become an SFrame
+If S3 is ever materialized, it could be rewritten inplace become an XFrame
 source node thus spliting the graph:
 
    S1-->S2  S3-->S4
@@ -122,16 +122,16 @@ Get a printable node name from the enum, or vice versa.
     planner_node_name_to_type and planner_node_type_to_name
 
 
-## SArray / Sframe execution process
-unity_sframe / unity_sarray are the outward facing wrappers of the SFrame and
+## SArray / XFrame execution process
+unity_xframe / unity_sarray are the outward facing wrappers of the XFrame and
 SArray. These classes will each maintain:
  - A schema (types and column names)
- - Length of the SFrame / Sarray if known
+ - Length of the XFrame / Sarray if known
  - A shared_ptr<planner_node> for lazy evaluation.
-    - even if the SFrame/SArray is already materialized, this should
-      contain an sframe_source or an sarray_source node.
+    - even if the XFrame/SArray is already materialized, this should
+      contain an xframe_source or an sarray_source node.
 
-To materialize an SFrame, the following is necessary:
+To materialize an XFrame, the following is necessary:
   sf = query_planner().materialize(std::shared_ptr<planner_node>)
 
 ## Query Planner
@@ -151,13 +151,13 @@ The output graph is then partitioned into sections to be executed by the
 subplan_executor.
 
 The subplan executor takes a vector<shared_ptr<planner_node> > and returns an
-sframe which is the result of the concatenation of executing each of the plans.
+xframe which is the result of the concatenation of executing each of the plans.
 
 ## Global Lock
 Planner nodes are ... not very parallel.
-Many different objects (like unity_sframe / unity_sarray) contain planner_nodes,
+Many different objects (like unity_xframe / unity_sarray) contain planner_nodes,
 but the planner_nodes reference each other to get things done.
-So adding locks to the higher level objects (unity_sframe / unity_sarray) do
+So adding locks to the higher level objects (unity_xframe / unity_sarray) do
 not keep things safe.
 
 A better solution could be introduced here, but for now a global lock will

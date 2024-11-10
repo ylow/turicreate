@@ -3,21 +3,21 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_ENGINE_HPP
-#define TURI_SFRAME_QUERY_ENGINE_HPP
+#ifndef TURI_XFRAME_QUERY_ENGINE_HPP
+#define TURI_XFRAME_QUERY_ENGINE_HPP
 #include <vector>
 #include <string>
 #include <utility>
 #include <memory>
-#include <core/storage/sframe_data/group_aggregate_value.hpp>
+#include <core/storage/xframe_data/group_aggregate_value.hpp>
 
 namespace turi {
-class sframe;
+class xframe;
 namespace query_eval {
 struct planner_node;
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup Algorithms Algorithms
  * \{
  */
@@ -42,7 +42,7 @@ struct planner_node;
  *               'group_output_columns' parameter.
 
  */
-std::shared_ptr<sframe> groupby_aggregate(
+std::shared_ptr<xframe> groupby_aggregate(
       const std::shared_ptr<planner_node>& source,
       const std::vector<std::string>& source_column_names,
       const std::vector<std::string>& keys,

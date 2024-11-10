@@ -4,8 +4,8 @@
 #include <core/storage/query_engine/execution/execution_node.hpp>
 #include <core/storage/query_engine/operators/sarray_source.hpp>
 #include <core/storage/query_engine/operators/binary_transform.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
 
 #include "check_node.hpp"
 
@@ -25,10 +25,10 @@ struct binary_transform_test {
     sa_right->open_for_write();
     turi::copy(data.begin(), data.end(), *sa_right);
     sa_right->close();
-    typedef std::function<flexible_type(const sframe_rows::row&, 
-                                    const sframe_rows::row&)> binary_transform_type;
+    typedef std::function<flexible_type(const xframe_rows::row&, 
+                                    const xframe_rows::row&)> binary_transform_type;
 
-    binary_transform_type fn = [](const sframe_rows::row& left, const sframe_rows::row& right) {
+    binary_transform_type fn = [](const xframe_rows::row& left, const xframe_rows::row& right) {
       return left[0] + right[0];
     };
 

@@ -12,14 +12,14 @@
 #include <iterator>
 #include <core/parallel/lambda_omp.hpp>
 #include <core/random/random.hpp>
-#include <core/storage/sframe_data/siterable.hpp>
-#include <core/storage/sframe_data/swriter_base.hpp>
-#include <core/storage/sframe_data/sarray_reader.hpp>
-#include <core/storage/sframe_data/is_sarray_like.hpp>
+#include <core/storage/xframe_data/siterable.hpp>
+#include <core/storage/xframe_data/swriter_base.hpp>
+#include <core/storage/xframe_data/sarray_reader.hpp>
+#include <core/storage/xframe_data/is_sarray_like.hpp>
 namespace turi {
 /**
- * \ingroup sframe_physical
- * \addtogroup eager_algorithms Generic SFrame Eager Algorithms
+ * \ingroup xframe_physical
+ * \addtogroup eager_algorithms Generic XFrame Eager Algorithms
  * \{
  */
 /**************************************************************************/
@@ -59,8 +59,8 @@ namespace turi {
  *                            segment numbers will be operated on.
  */
 template <typename S, typename T, typename TransformFn,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<S>::value>::type,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<T>::value>::type>
+typename = typename std::enable_if<xframe_impl::is_sarray_like<S>::value>::type,
+typename = typename std::enable_if<xframe_impl::is_sarray_like<T>::value>::type>
 void transform(S&& input, T&& output,
                TransformFn transformfn,
                std::set<size_t> constraint_segments = std::set<size_t>()) {
@@ -132,8 +132,8 @@ void transform(S&& input, T&& output,
  *                            segment numbers will be operated on.
  */
 template <typename S, typename T, typename FilterFn,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<S>::value>::type,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<T>::value>::type>
+typename = typename std::enable_if<xframe_impl::is_sarray_like<S>::value>::type,
+typename = typename std::enable_if<xframe_impl::is_sarray_like<T>::value>::type>
 void copy_if(S&& input, T&& output,
              FilterFn filterfn,
              std::set<size_t> constraint_segments = std::set<size_t>(),
@@ -206,8 +206,8 @@ void copy_if(S&& input, T&& output,
  *                            segment numbers will be operated on.
  */
 template <typename S, typename T, typename FilterFn, typename TransformFn,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<S>::value>::type,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<T>::value>::type>
+typename = typename std::enable_if<xframe_impl::is_sarray_like<S>::value>::type,
+typename = typename std::enable_if<xframe_impl::is_sarray_like<T>::value>::type>
 void copy_transform_if(S&& input, T&& output,
              FilterFn filterfn,
              TransformFn transformfn,
@@ -288,8 +288,8 @@ void copy_transform_if(S&& input, T&& output,
  *                 evaluates to true, the input is copied to the output1, else output2.
  */
 template <typename S, typename T, typename FilterFn,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<S>::value>::type,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<T>::value>::type>
+typename = typename std::enable_if<xframe_impl::is_sarray_like<S>::value>::type,
+typename = typename std::enable_if<xframe_impl::is_sarray_like<T>::value>::type>
 void split(S&& input, T&& output1, T&& output2,
            FilterFn filterfn,
            size_t random_seed=std::time(NULL)) {
@@ -334,7 +334,7 @@ void split(S&& input, T&& output1, T&& output2,
 /*                                                                        */
 /**************************************************************************/
 
-namespace sframe_impl {
+namespace xframe_impl {
 
 template <typename Iterator, typename SWriter>
 void do_copy(Iterator begin, Iterator end, SWriter&& writer,
@@ -385,7 +385,7 @@ void do_copy(Iterator begin, Iterator end, SWriter&& writer,
                });
 }
 
-} // namespace sframe_impl
+} // namespace xframe_impl
 
 
 /**
@@ -412,10 +412,10 @@ void do_copy(Iterator begin, Iterator end, SWriter&& writer,
  * \param output The output writer to write to. Must be a descendent of swriter_base
  */
 template <typename Iterator, typename SWriter,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<SWriter>::value>::type>
+typename = typename std::enable_if<xframe_impl::is_sarray_like<SWriter>::value>::type>
 void copy(Iterator begin, Iterator end, SWriter&& writer) {
   ASSERT_TRUE(writer.is_opened_for_write());
-  sframe_impl::do_copy(begin, end, std::forward<SWriter>(writer),
+  xframe_impl::do_copy(begin, end, std::forward<SWriter>(writer),
                  typename std::iterator_traits<Iterator>::iterator_category());
 }
 
@@ -437,7 +437,7 @@ void copy(Iterator begin, Iterator end, SWriter&& writer) {
  * \param output The output iterator to write to.
  */
 template <typename S, typename Iterator,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<S>::value>::type>
+typename = typename std::enable_if<xframe_impl::is_sarray_like<S>::value>::type>
 void copy(S&& array, Iterator output, size_t limit=(size_t)(-1)) {
   log_func_entry();
   ASSERT_TRUE(array.is_opened_for_read());
@@ -487,7 +487,7 @@ void copy(S&& array, Iterator output, size_t limit=(size_t)(-1)) {
  * parallel. i.e. ResultType of bool should not be used.
  */
 template <typename ResultType, typename S, typename FunctionType,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<S>::value>::type>
+typename = typename std::enable_if<xframe_impl::is_sarray_like<S>::value>::type>
 std::vector<ResultType> reduce(S&& input, FunctionType f,
                                 ResultType init = ResultType()) {
   log_func_entry();
@@ -537,9 +537,9 @@ std::vector<ResultType> reduce(S&& input, FunctionType f,
  *                    to generate the output
  */
 template <typename S1, typename S2, typename T, typename TransformFn,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<S1>::value>::type,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<S2>::value>::type,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<T>::value>::type>
+typename = typename std::enable_if<xframe_impl::is_sarray_like<S1>::value>::type,
+typename = typename std::enable_if<xframe_impl::is_sarray_like<S2>::value>::type,
+typename = typename std::enable_if<xframe_impl::is_sarray_like<T>::value>::type>
 void binary_transform(S1&& input1, S2&& input2, T&& output,
                TransformFn transformfn) {
   log_func_entry();
@@ -594,8 +594,8 @@ void binary_transform(S1&& input1, S2&& input2, T&& output,
  * \param end One past the last row to read
  */
 template <typename S, typename T,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<S>::value>::type,
-typename = typename std::enable_if<sframe_impl::is_sarray_like<T>::value>::type>
+typename = typename std::enable_if<xframe_impl::is_sarray_like<S>::value>::type,
+typename = typename std::enable_if<xframe_impl::is_sarray_like<T>::value>::type>
 void copy_range(S&& input, T&& output,
                 size_t start,
                 size_t step,

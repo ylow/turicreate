@@ -7,7 +7,7 @@ query row. This is a two-stage process, analogous to many other Turi
 Create toolkits. First we create a
 [NearestNeighborsModel](https://apple.github.io/turicreate/docs/api/generated/turicreate.nearest_neighbors.NearestNeighborsModel.html),
 using a **reference dataset** contained in an
-[SFrame](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.html).
+[XFrame](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.html).
 Next we query the model, using either the `query` or the
 `similarity_graph` method. Each of these methods is explained further
 below.
@@ -16,7 +16,7 @@ For this chapter we use an example dataset of house attributes and prices:
 
 ```python
 import turicreate as tc
-sf = tc.SFrame.read_csv('houses.csv')
+sf = tc.XFrame.read_csv('houses.csv')
 sf.head(5)
 ```
 ```no-highlight
@@ -48,9 +48,9 @@ for c in sf.column_names():
 
 First, we **create a nearest neighbors model**. We can list specific features to
 use in our distance computations, or default to using all features in the
-reference SFrame. In the model summary below the following code snippet, note
+reference XFrame. In the model summary below the following code snippet, note
 that there are three features, because our second command specifies three
-numeric SFrame columns as features for the model. There are also three unpacked
+numeric XFrame columns as features for the model. There are also three unpacked
 features, because each feature is in its own column.
 
 ```python
@@ -78,9 +78,9 @@ Leaf size                     : 1000
 
 To retrieve the five closest neighbors for *new* data points or a *subset* of
 the original reference data, we **query** the model with the `query` method.
-Query points must also be contained in an SFrame, and must have columns with the
+Query points must also be contained in an XFrame, and must have columns with the
 same names as those used to construct the model (additional columns are allowed,
-but ignored). The result of the `query` method is an SFrame with four columns:
+but ignored). The result of the `query` method is an XFrame with four columns:
 query label, reference label, distance, and rank of the reference point among
 the query point's nearest neighbors.
 
@@ -302,9 +302,9 @@ to 5 above.
 
 The reference dataset that is used to create the nearest neighbors model
 cannot have missing data. Please use the
-[SFrame.fillna](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.fillna.html)
+[XFrame.fillna](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.fillna.html)
 and
-[SFrame.dropna](https://apple.github.io/turicreate/docs/api/generated/turicreate.SArray.dropna.html)
+[XFrame.dropna](https://apple.github.io/turicreate/docs/api/generated/turicreate.SArray.dropna.html)
 utilities to preprocess missing values before creating a nearest
 neighbors model.
 

@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
 """
-Wraps utilities for generating random sframes for testing and
+Wraps utilities for generating random xframes for testing and
 benchmarking.
 """
 
@@ -12,14 +12,14 @@ benchmarking.
 
 
 
-def generate_random_sframe(num_rows, column_codes, random_seed=0):
+def generate_random_xframe(num_rows, column_codes, random_seed=0):
     """
-    Creates a random SFrame with `num_rows` rows and randomly
+    Creates a random XFrame with `num_rows` rows and randomly
     generated column types determined by `column_codes`.  The output
-    SFrame is deterministic based on `random_seed`.
+    XFrame is deterministic based on `random_seed`.
 
      `column_types` is a string with each character denoting one type
-     of column, with the output SFrame having one column for each
+     of column, with the output XFrame having one column for each
      character in the string.  The legend is as follows:
 
         n:  numeric column, uniform 0-1 distribution.
@@ -56,35 +56,35 @@ def generate_random_sframe(num_rows, column_codes, random_seed=0):
 
     For example::
 
-      X = generate_random_sframe(10, 'nnv')
+      X = generate_random_xframe(10, 'nnv')
 
-    will generate a 10 row SFrame with 2 floating point columns and
+    will generate a 10 row XFrame with 2 floating point columns and
     one column of length 10 vectors.
     """
 
-    from ..extensions import _generate_random_sframe
+    from ..extensions import _generate_random_xframe
 
     assert isinstance(column_codes, str)
     assert isinstance(num_rows, int)
     assert isinstance(random_seed, int)
 
-    X = _generate_random_sframe(num_rows, column_codes, random_seed, False, 0)
+    X = _generate_random_xframe(num_rows, column_codes, random_seed, False, 0)
     X.materialize()
     return X
 
 
-def generate_random_regression_sframe(
+def generate_random_regression_xframe(
     num_rows, column_codes, random_seed=0, target_noise_level=0.25
 ):
     """
-    Creates a random SFrame with `num_rows` rows and randomly
+    Creates a random XFrame with `num_rows` rows and randomly
     generated column types determined by `column_codes`.  The output
-    SFrame is deterministic based on `random_seed`.  In addition, a
+    XFrame is deterministic based on `random_seed`.  In addition, a
     target column is generated with values dependent on the randomly
     generated features in a given row.
 
      `column_types` is a string with each character denoting one type
-     of column, with the output SFrame having one column for each
+     of column, with the output XFrame having one column for each
      character in the string.  The legend is as follows:
 
         n:  numeric column, uniform 0-1 distribution.
@@ -121,9 +121,9 @@ def generate_random_regression_sframe(
 
     For example::
 
-      X = generate_random_sframe(10, 'nnv')
+      X = generate_random_xframe(10, 'nnv')
 
-    will generate a 10 row SFrame with 2 floating point columns and
+    will generate a 10 row XFrame with 2 floating point columns and
     one column of length 10 vectors.
 
     Target Generation
@@ -151,20 +151,20 @@ def generate_random_regression_sframe(
     The final target values are then scaled to [0, 1].
     """
 
-    from ..extensions import _generate_random_sframe
+    from ..extensions import _generate_random_xframe
 
     assert isinstance(column_codes, str)
     assert isinstance(num_rows, int)
     assert isinstance(random_seed, int)
 
-    X = _generate_random_sframe(
+    X = _generate_random_xframe(
         num_rows, column_codes, random_seed, True, target_noise_level
     )
     X.materialize()
     return X
 
 
-def generate_random_classification_sframe(
+def generate_random_classification_xframe(
     num_rows,
     column_codes,
     num_classes,
@@ -173,14 +173,14 @@ def generate_random_classification_sframe(
     random_seed=0,
 ):
     """
-    Creates a random SFrame with `num_rows` rows and randomly
+    Creates a random XFrame with `num_rows` rows and randomly
     generated column types determined by `column_codes`.  The output
-    SFrame is deterministic based on `random_seed`.  In addition, a
+    XFrame is deterministic based on `random_seed`.  In addition, a
     target column is generated with values dependent on the randomly
     generated features in a given row.
 
      `column_types` is a string with each character denoting one type
-     of column, with the output SFrame having one column for each
+     of column, with the output XFrame having one column for each
      character in the string.  The legend is as follows:
 
         n:  numeric column, uniform 0-1 distribution.
@@ -217,9 +217,9 @@ def generate_random_classification_sframe(
 
     For example::
 
-      X = generate_random_sframe(10, 'nnv')
+      X = generate_random_xframe(10, 'nnv')
 
-    will generate a 10 row SFrame with 2 floating point columns and
+    will generate a 10 row XFrame with 2 floating point columns and
     one column of length 10 vectors.
 
     Target Generation
@@ -238,7 +238,7 @@ def generate_random_classification_sframe(
     the class, meaning the actual class may be mispredicted.
     """
 
-    from ..extensions import _generate_random_classification_sframe
+    from ..extensions import _generate_random_classification_xframe
 
     if num_classes < 2:
         raise ValueError("num_classes must be >= 2.")
@@ -258,7 +258,7 @@ def generate_random_classification_sframe(
     assert isinstance(num_classes, int)
     assert isinstance(num_extra_class_bins, int)
 
-    X = _generate_random_classification_sframe(
+    X = _generate_random_classification_xframe(
         num_rows,
         column_codes,
         random_seed,

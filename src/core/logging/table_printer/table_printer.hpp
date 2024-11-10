@@ -10,7 +10,7 @@
 #include <core/logging/assertions.hpp>
 #include <timer/timer.hpp>
 #include <core/parallel/pthread_tools.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
 #include <core/parallel/atomic.hpp>
 #include <sstream>
 #include <vector>
@@ -184,7 +184,7 @@ struct progress_time {
  * --------------------------------------------------------------------------------
  *
  * Optionally, the table printer can track the calls to the progress
- * row functions by storing each call as a row in an SFrame that can
+ * row functions by storing each call as a row in an XFrame that can
  * be retrieved at the end.  This is useful for recording the training
  * statistics of an algorithm for reporting at the end with
  * get_tracked_table().
@@ -192,7 +192,7 @@ struct progress_time {
  * Not every call to the progress functions are printed; the on-screen
  * printing is designed for a pleasing visual report.  Tracking,
  * however, is determined by an interval specified in the constructor
- * -- a row is recorded in the sframe every track_interval calls to
+ * -- a row is recorded in the xframe every track_interval calls to
  * one of the progress printing calls.  It may be turned off by
  * setting track_interval to be 0.
  *
@@ -210,8 +210,8 @@ class table_printer {
    * the column name.  See class header for examples.
    *
    * The track_interval determines how often a result is stored in the
-   * SFrame tracking the row progress.  Every track_interval calls to
-   * get_tracked_table, the row is written to the sframe.  If
+   * XFrame tracking the row progress.  Every track_interval calls to
+   * get_tracked_table, the row is written to the xframe.  If
    * track_interval is 0, then tracking is turned off.
    */
   table_printer(const std::vector<std::pair<std::string, size_t> >& _format,
@@ -426,7 +426,7 @@ class table_printer {
    *  added to another table.
    *
    */
-  sframe get_tracked_table();
+  xframe get_tracked_table();
 
 private:
 
@@ -657,16 +657,16 @@ private:
   using style_type = table_internal::table_printer_element_base::style_type;
 
   mutable mutex track_register_lock;
-  sframe track_sframe;
+  xframe track_xframe;
   bool tracker_is_initialized = false;
   bool track_row_was_printed_ = false;
-  sframe::iterator tracking_out_iter;
+  xframe::iterator tracking_out_iter;
   std::vector<flexible_type> track_row_values_;
   std::vector<style_type> track_row_styles_;
   size_t track_interval = 1;
 
 
-  /**  Record a row in the tracking SFrame.
+  /**  Record a row in the tracking XFrame.
    */
   template <typename... Args>
   inline GL_HOT_NOINLINE void _track_progress(
@@ -695,7 +695,7 @@ private:
 
     size_t n = track_row_buffer.size();
     if(!tracker_is_initialized) {
-      track_sframe = sframe();
+      track_xframe = xframe();
 
       // Get the names
       std::vector<std::string> column_names(n);
@@ -706,8 +706,8 @@ private:
         column_types[i] = track_row_buffer[i].get_type();
       }
 
-      track_sframe.open_for_write(column_names, column_types, "", 1);
-      tracking_out_iter = track_sframe.get_output_iterator(0);
+      track_xframe.open_for_write(column_names, column_types, "", 1);
+      tracking_out_iter = track_xframe.get_output_iterator(0);
       tracker_is_initialized = true;
     }
 

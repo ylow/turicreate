@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include <core/data/sframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
 
 #include "groupby.hpp"
 #include "transformation.hpp"
@@ -14,19 +14,19 @@ namespace visualization {
 
   class scatter_result: public transformation_output {
     private:
-      gl_sframe m_sf;
+      gl_xframe m_sf;
 
     public:
-      scatter_result(gl_sframe sf);
+      scatter_result(gl_xframe sf);
       virtual std::string vega_column_data(bool) const override;
   };
 
   class scatter: public transformation_base {
     private:
-      gl_sframe m_sf;
+      gl_xframe m_sf;
 
     public:
-      void init(gl_sframe sf);
+      void init(gl_xframe sf);
       virtual std::shared_ptr<transformation_output> get() override;
       virtual bool eof() const override;
       virtual size_t get_batch_size() const override;

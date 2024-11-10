@@ -56,7 +56,7 @@ The usage is similar to the logistic regression module:
 import turicreate as tc
 
 # Load the data
-data =  tc.SFrame('ratings-data.csv')
+data =  tc.XFrame('ratings-data.csv')
 
 # Restaurants with rating >=3 are good
 data['is_good'] = data['stars'] >= 3
@@ -71,7 +71,7 @@ model = tc.svm_classifier.create(train_data, target='is_good',
                                                 'user_review_count',
                                                 'business_review_count'])
 
-# Save predictions (class only) to an SFrame
+# Save predictions (class only) to an XFrame
 predictions = model.predict(test_data)
 
 # Evaluate the model and save the results into a dictionary
@@ -124,7 +124,7 @@ print(predictions)
 |  ...  |
 +-------+
 [43414 rows x 1 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 

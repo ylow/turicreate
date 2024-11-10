@@ -15,9 +15,9 @@ subdirs(
         flexible_type
         parallel
         lambda
-        sframe
+        xframe
         lazy_eval
-        sframe_query_engine
+        xframe_query_engine
         unity
         sketches
         generics

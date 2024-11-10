@@ -13,13 +13,13 @@ instances.
 
 In this example, the goal is to **predict** if there are **bikes or cars** in a
 picture and where in the picture they are located (Go to [Data
-Preparation](data-preparation.md) to find out how to get `ig02.sframe`).
+Preparation](data-preparation.md) to find out how to get `ig02.xframe`).
 
 ```python
 import turicreate as tc
 
 # Load the data
-data = tc.SFrame('ig02.sframe')
+data = tc.XFrame('ig02.xframe')
 
 # Make a train-test split
 train_data, test_data = data.random_split(0.8)
@@ -100,7 +100,7 @@ similar objects. In the photo above, the presence of an apple and a clementine
 may actually help to prevent such mistakes, even though they are not marked up
 explicitly.
 
-The lists of bounding boxes should be placed inside an SFrame alongside the
+The lists of bounding boxes should be placed inside an XFrame alongside the
 images:
 
 ```python
@@ -175,7 +175,7 @@ images so far unseen by the model.
 If `images` is a list of `tc.Image` instances, we can make predictions:
 
 ```python
-test = tc.SFrame({'image': images})
+test = tc.XFrame({'image': images})
 test['predictions'] = model.predict(test)
 ```
 
@@ -212,7 +212,7 @@ test[['image', 'image_with_predictions']].explore()
 ![Predicted bounding boxes visualized](images/explore_predictions.png)
 
 Another useful way to inspect predictions is to convert them to *stacked
-format*, which is an SFrame where each row represents a bounding box (see
+format*, which is an XFrame where each row represents a bounding box (see
 [Advanced Usage](advanced-usage.md#stacked)).
 
 #### Evaluation

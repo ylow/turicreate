@@ -17,7 +17,7 @@ namespace shmipc {
 class server;
 }
 
-class sframe_rows;
+class xframe_rows;
 
 namespace lambda {
 
@@ -49,14 +49,14 @@ struct lambda_call_by_dict_data {
   flexible_type* output_values = nullptr;
 };
 
-/** The data used in the call by sframe rows call type.
+/** The data used in the call by xframe rows call type.
  */
-struct lambda_call_by_sframe_rows_data {
+struct lambda_call_by_xframe_rows_data {
   flex_type_enum output_enum_type = flex_type_enum::UNDEFINED;
   bool skip_undefined = false;
 
   const std::vector<std::string>* input_keys = nullptr;
-  const sframe_rows* input_rows = nullptr;
+  const xframe_rows* input_rows = nullptr;
   flexible_type* output_values = nullptr;
 };
 
@@ -66,7 +66,7 @@ struct pylambda_evaluation_functions {
   void (*release_lambda)(size_t);
   void (*eval_lambda)(size_t, lambda_call_data*);
   void (*eval_lambda_by_dict)(size_t, lambda_call_by_dict_data*);
-  void (*eval_lambda_by_sframe_rows)(size_t, lambda_call_by_sframe_rows_data*);
+  void (*eval_lambda_by_xframe_rows)(size_t, lambda_call_by_xframe_rows_data*);
 };
 
 /** This is called through the cython functions to set up the
@@ -166,7 +166,7 @@ class pylambda_evaluator : public lambda_evaluator_interface {
    * the cppipc interface doesn't support true overload
    */
   std::vector<flexible_type> bulk_eval_rows(size_t lambda_hash,
-                                            const sframe_rows& values, bool skip_undefined, uint64_t seed);
+                                            const xframe_rows& values, bool skip_undefined, uint64_t seed);
 
   /**
    * Evaluate the lambda function on each element separately in the values.
@@ -183,7 +183,7 @@ class pylambda_evaluator : public lambda_evaluator_interface {
    */
   std::vector<flexible_type> bulk_eval_dict_rows(size_t lambda_hash,
                                                  const std::vector<std::string>& keys,
-                                                 const sframe_rows& values,
+                                                 const xframe_rows& values,
                                                  bool skip_undefined, uint64_t seed);
 
 

@@ -57,7 +57,7 @@ import turicreate as tc
 from sklearn.datasets import make_moons
 
 data = make_moons(n_samples=200, shuffle=True, noise=0.1, random_state=19)
-sf = tc.SFrame(data[0]).unpack('X1')
+sf = tc.XFrame(data[0]).unpack('X1')
 
 dbscan_model = tc.dbscan.create(sf, radius=0.25)
 dbscan_model.summary()
@@ -210,8 +210,8 @@ articles.
 ```python
 import turicreate as tc
 
-sf = tc.SFrame.read_csv('wikipedia-data.csv', header=False)
-sf.save('wikipedia.sframe')
+sf = tc.XFrame.read_csv('wikipedia-data.csv', header=False)
+sf.save('wikipedia.xframe')
 ```
 
 This particular subset of wikipedia has over 72,000 documents; in the interest

@@ -6,11 +6,11 @@
 # This software may be modified and distributed under the terms
 # of the BSD license. See the LICENSE file for details.
 
-# This file tests validity of the JSON export produced by SFrame/SArray.
+# This file tests validity of the JSON export produced by XFrame/SArray.
 # NOTE: Complex types like datetime are likely broken.
 # TODO: When https://github.com/apple/turicreate/issues/89 is fixed,
 # also check inverse (exported JSON, when loaded, should produce original
-# SFrame.)
+# XFrame.)
 
 
 
@@ -36,7 +36,7 @@ class JSONExporterTest(unittest.TestCase):
     # tests int/float/str
     def test_simple_types(self):
         np.random.seed(42)
-        sf = tc.SFrame()
+        sf = tc.XFrame()
         sf["idx"] = list(range(_TEST_CASE_SIZE))
         sf["ints"] = np.random.randint(-100000, 100000, _TEST_CASE_SIZE)
         sf["strings"] = sf["ints"].astype(str)
@@ -53,7 +53,7 @@ class JSONExporterTest(unittest.TestCase):
 
     def test_array_dtype(self):
         np.random.seed(42)
-        sf = tc.SFrame()
+        sf = tc.XFrame()
         sf["arr"] = np.random.rand(100, 3)
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as json_file:
             sf.save(json_file.name, format="json")

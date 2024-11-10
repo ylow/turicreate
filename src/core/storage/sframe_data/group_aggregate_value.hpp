@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_GROUP_AGGREGATE_VALUE_HPP
-#define TURI_SFRAME_GROUP_AGGREGATE_VALUE_HPP
+#ifndef TURI_XFRAME_GROUP_AGGREGATE_VALUE_HPP
+#define TURI_XFRAME_GROUP_AGGREGATE_VALUE_HPP
 
 #include <core/data/flexible_type/flexible_type.hpp>
 
@@ -12,7 +12,7 @@ namespace turi {
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup groupby_aggregate Groupby Aggregation
  * \{
  */
@@ -156,4 +156,4 @@ std::shared_ptr<group_aggregate_value> get_builtin_group_aggregator(const std::s
 
 /// \}
 } // end of turi
-#endif // TURI_SFRAME_GROUP_AGGREGATE_VALUE_HPP
+#endif // TURI_XFRAME_GROUP_AGGREGATE_VALUE_HPP

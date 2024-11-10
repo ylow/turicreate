@@ -1,7 +1,7 @@
 
 /**
  *
-\ingroup sframe_query_engine
+\ingroup xframe_query_engine
 \addtogroup operators Logical Operators
 
 All the available query plan operators are defined in here.
@@ -94,7 +94,7 @@ inline void execute(query_context& context) {
       // gets the next batch of rows from the 0'th input stream. Since this
       // operator only takes 1 input stream (unlike say... a binary transform
       // like '+' which would take 2 input streams.
-      // rows here is a shared pointer to a \ref sframe_rows object
+      // rows here is a shared pointer to a \ref xframe_rows object
       auto rows = context.get_next(0);
       // when rows returns a null pointer, we are done
       if (rows == nullptr) break;

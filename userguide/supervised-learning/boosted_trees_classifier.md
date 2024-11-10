@@ -15,7 +15,7 @@ In this example, we will use the [Mushrooms dataset](https://archive.ics.uci.edu
 import turicreate as tc
 
 # Load the data
-data =  tc.SFrame.read_csv('https://raw.githubusercontent.com/apple/turicreate/master/src/python/turicreate/test/mushroom.csv')
+data =  tc.XFrame.read_csv('https://raw.githubusercontent.com/apple/turicreate/master/src/python/turicreate/test/mushroom.csv')
 
 # Label 'c' is edible
 data['label'] = data['label'] == 'c'
@@ -28,7 +28,7 @@ model = tc.boosted_trees_classifier.create(train_data, target='label',
                                            max_iterations=2,
                                            max_depth = 3)
 
-# Save predictions to an SFrame (class and corresponding class-probabilities)
+# Save predictions to an XFrame (class and corresponding class-probabilities)
 predictions = model.classify(test_data)
 
 # Evaluate the model and save the results into a dictionary

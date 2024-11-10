@@ -1,9 +1,9 @@
 #define BOOST_TEST_MODULE
 #include <boost/test/unit_test.hpp>
 #include <core/util/test_macros.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/sarray_v2_encoded_block.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/sarray_v2_encoded_block.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
 #include <core/storage/fileio/temp_files.hpp>
 
 using namespace turi;
@@ -524,7 +524,7 @@ struct sarray_test {
 
     // try it again changing the compaction threshold so that we trigger
     // the slow compact route
-    auto OLD_SFRAME_COMPACTION_THRESHOLD = SFRAME_COMPACTION_THRESHOLD; 
+    auto OLD_XFRAME_COMPACTION_THRESHOLD = XFRAME_COMPACTION_THRESHOLD; 
     auto OLD_FAST_COMPACT_BLOCKS_IN_SMALL_SEGMENT = FAST_COMPACT_BLOCKS_IN_SMALL_SEGMENT;
     for (size_t i = 0;i < 512; ++i) {
       array2 = array2.append(array);
@@ -536,9 +536,9 @@ struct sarray_test {
     for (size_t i = 0;i < 1024; ++i) {
       TS_ASSERT_EQUALS(rval[i], data[0]);
     }
-    TS_ASSERT(array2.get_index_info().segment_files.size() <= SFRAME_COMPACTION_THRESHOLD);
+    TS_ASSERT(array2.get_index_info().segment_files.size() <= XFRAME_COMPACTION_THRESHOLD);
 
-    SFRAME_COMPACTION_THRESHOLD = OLD_SFRAME_COMPACTION_THRESHOLD; 
+    XFRAME_COMPACTION_THRESHOLD = OLD_XFRAME_COMPACTION_THRESHOLD; 
     FAST_COMPACT_BLOCKS_IN_SMALL_SEGMENT = OLD_FAST_COMPACT_BLOCKS_IN_SMALL_SEGMENT;
   }
 
@@ -553,7 +553,7 @@ struct sarray_test {
       array = array.append(array);
     }
     TS_ASSERT_EQUALS(array.size(), 1048576);
-    TS_ASSERT(array.get_index_info().segment_files.size() <= SFRAME_COMPACTION_THRESHOLD);
+    TS_ASSERT(array.get_index_info().segment_files.size() <= XFRAME_COMPACTION_THRESHOLD);
     auto reader = array.get_reader();
     std::vector<flexible_type> rval;
     reader->read_rows(0, 1048576, rval);
@@ -653,7 +653,7 @@ struct sarray_test {
 
 
 
-  void test_sarray_sframe_rows(void) {
+  void test_sarray_xframe_rows(void) {
     // write the initial sarray
     std::string test_prefix = get_temp_name();
     std::string test_file_name = test_prefix + ".sidx";
@@ -673,7 +673,7 @@ struct sarray_test {
     array.set_metadata(std::string("type"), std::string("int"));
     array.close();
     auto reader = array.get_reader(1);
-    sframe_rows rows;
+    xframe_rows rows;
     ctr = 0;
     for (size_t i = 0;i < reader->size(); i += 256) {
       size_t rend = std::min(i + 256, reader->size());
@@ -732,7 +732,7 @@ BOOST_AUTO_TEST_CASE(test_sarray_logical_segments) {
 BOOST_AUTO_TEST_CASE(test_sarray_v2_encoded_block) {
   sarray_test::test_sarray_v2_encoded_block();
 }
-BOOST_AUTO_TEST_CASE(test_sarray_sframe_rows) {
-  sarray_test::test_sarray_sframe_rows();
+BOOST_AUTO_TEST_CASE(test_sarray_xframe_rows) {
+  sarray_test::test_sarray_xframe_rows();
 }
 BOOST_AUTO_TEST_SUITE_END()

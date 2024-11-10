@@ -11,13 +11,13 @@
 
 namespace turi {
 
-  class sframe_reader;
-  class unity_sframe;
+  class xframe_reader;
+  class unity_xframe;
 
   namespace visualization {
-    std::string table_spec(const std::shared_ptr<unity_sframe>& table, const std::string& title, std::string table_id = "");
-    std::string table_data(const std::shared_ptr<unity_sframe>& table, sframe_reader* reader, size_t start, size_t end);
-    std::string table_accordion(const std::shared_ptr<unity_sframe>& table, const std::string& column_name, size_t row_idx);
+    std::string table_spec(const std::shared_ptr<unity_xframe>& table, const std::string& title, std::string table_id = "");
+    std::string table_data(const std::shared_ptr<unity_xframe>& table, xframe_reader* reader, size_t start, size_t end);
+    std::string table_accordion(const std::shared_ptr<unity_xframe>& table, const std::string& column_name, size_t row_idx);
   }
 
 }

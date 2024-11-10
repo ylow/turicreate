@@ -24,7 +24,7 @@ using namespace turi::visualization;
 static const std::string x_name = "x";
 static const std::string y_name = "y";
 
-std::string boxes_and_whiskers_result::vega_column_data(bool sframe) const {
+std::string boxes_and_whiskers_result::vega_column_data(bool xframe) const {
   std::stringstream ss;
 
   std::unordered_map<flexible_type, flexible_type> grouped = get_grouped();
@@ -92,7 +92,7 @@ std::shared_ptr<Plot> turi::visualization::plot_boxes_and_whiskers(
 
   boxes_and_whiskers bw;
 
-  gl_sframe temp_sf;
+  gl_xframe temp_sf;
   temp_sf[x_name] = x;
   temp_sf[y_name] = y;
 

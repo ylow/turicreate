@@ -6,9 +6,9 @@
 
 
 
-from ..util import generate_random_sframe
-from ..util import generate_random_regression_sframe
-from ..util import generate_random_classification_sframe
+from ..util import generate_random_xframe
+from ..util import generate_random_regression_xframe
+from ..util import generate_random_classification_xframe
 
 import unittest
 import array
@@ -18,7 +18,7 @@ import pytest
 pytestmark = [pytest.mark.minimal]
 
 
-class SFrameGeneration(unittest.TestCase):
+class XFrameGeneration(unittest.TestCase):
     def test_data_types(self):
         column_codes = {
             "n": float,
@@ -47,7 +47,7 @@ class SFrameGeneration(unittest.TestCase):
         }
 
         test_codes = "".join(list(column_codes.keys()))
-        X = generate_random_sframe(10, test_codes)
+        X = generate_random_xframe(10, test_codes)
         column_names = X.column_names()
 
         for c, n in zip(test_codes, column_names):
@@ -56,7 +56,7 @@ class SFrameGeneration(unittest.TestCase):
     def test_regression_result(self):
 
         for L in range(1, 10):
-            X = generate_random_regression_sframe(100, "n" * L, target_noise_level=0)
+            X = generate_random_regression_xframe(100, "n" * L, target_noise_level=0)
             X["target_2"] = X.apply(
                 lambda d: sum(v for k, v in list(d.items()) if k != "target")
             )
@@ -68,7 +68,7 @@ class SFrameGeneration(unittest.TestCase):
     def test_classification_result(self):
 
         for L in range(1, 10):
-            X = generate_random_classification_sframe(
+            X = generate_random_classification_xframe(
                 100,
                 "n" * L,
                 misclassification_spread=0,

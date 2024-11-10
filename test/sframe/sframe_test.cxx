@@ -4,21 +4,21 @@
 #include <iostream>
 #include <typeinfo>
 #include <boost/filesystem.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/parallel_csv_parser.hpp>
-#include <core/storage/sframe_data/csv_line_tokenizer.hpp>
-#include <core/storage/sframe_data/csv_writer.hpp>
+#include <core/storage/xframe_data/parallel_csv_parser.hpp>
+#include <core/storage/xframe_data/csv_line_tokenizer.hpp>
+#include <core/storage/xframe_data/csv_writer.hpp>
 #include <core/random/random.hpp>
-#include <core/storage/sframe_data/groupby_aggregate.hpp>
-#include <core/storage/sframe_data/groupby_aggregate_operators.hpp>
-#include <core/storage/sframe_data/sframe_saving.hpp>
+#include <core/storage/xframe_data/groupby_aggregate.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_operators.hpp>
+#include <core/storage/xframe_data/xframe_saving.hpp>
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE(std::vector<double>)
 BOOST_TEST_DONT_PRINT_LOG_VALUE(std::vector<std::string>)
 using namespace turi;
-struct sframe_test  {
+struct xframe_test  {
   std::string test_writer_prefix;
   std::string test_writer_dbl_prefix;
   std::string test_writer_str_prefix;
@@ -29,7 +29,7 @@ struct sframe_test  {
   std::string test_writer_seg_size_err_prefix;
 
   public:
-    sframe_test() {
+    xframe_test() {
       sarray<flexible_type> test_writer;
       sarray<flexible_type> test_writer_dbl;
       sarray<flexible_type> test_writer_str;
@@ -120,7 +120,7 @@ struct sframe_test  {
       test_writer_seg_size_err.close();
     }
 
-    void test_sframe_construction() {
+    void test_xframe_construction() {
       // Create an sarray from on-disk representation
       auto tmp_ptr = new sarray<flexible_type>(test_writer_prefix);
       std::shared_ptr<sarray<flexible_type> > sa_ptr(tmp_ptr);
@@ -131,7 +131,7 @@ struct sframe_test  {
       v.push_back(sa_ptr);
       v.push_back(sa_ptr);
 
-      // Create an sframe where the first column is named and the rest
+      // Create an xframe where the first column is named and the rest
       // get an automatic name
       std::vector<std::string> name_vector;
       name_vector.push_back(std::string("the_cool_column"));
@@ -140,7 +140,7 @@ struct sframe_test  {
 
       // ...and test that the name_vector doesn't have to be the same size
       // as the vector v.
-      sframe sf(v, name_vector);
+      xframe sf(v, name_vector);
 
       TS_ASSERT_EQUALS(sf.num_segments(), sa_ptr->num_segments());
       TS_ASSERT_EQUALS(sf.num_columns(), 3);
@@ -162,7 +162,7 @@ struct sframe_test  {
         }
         TS_ASSERT_EQUALS(sf.column_type(i), flex_type_enum::INTEGER);
       }
-      // verify contents of the sframe
+      // verify contents of the xframe
       std::vector<std::vector<flexible_type> > frame;
       turi::copy(sf, std::inserter(frame, frame.end()));
       TS_ASSERT_EQUALS(frame.size(), 20);
@@ -177,7 +177,7 @@ struct sframe_test  {
       auto tmp_ptr_seg = new sarray<flexible_type>(test_writer_seg_size_err_prefix);
       std::shared_ptr<sarray<flexible_type> > seg_size_ptr(tmp_ptr_seg);
       v.push_back(seg_size_ptr);
-      sframe sf2(v);
+      xframe sf2(v);
 
       // and that the contents match up
       frame.clear();
@@ -192,11 +192,11 @@ struct sframe_test  {
 
       // Unique column name
       name_vector.push_back(std::string("the_cool_column"));
-      TS_ASSERT_THROWS_ANYTHING(sframe sf3(v, name_vector));
+      TS_ASSERT_THROWS_ANYTHING(xframe sf3(v, name_vector));
     }
 
-    void test_empty_sframe() {
-      sframe sf;
+    void test_empty_xframe() {
+      xframe sf;
       sf.open_for_write({"hello","world","pika"},
                   {flex_type_enum::FLOAT, flex_type_enum::FLOAT, flex_type_enum::INTEGER});
       sf.close();
@@ -204,13 +204,13 @@ struct sframe_test  {
       auto reader = sf.get_reader();
       TS_ASSERT_EQUALS(sf.size(), 0);
 
-      sframe sf2 = sf.select_columns({"hello","world"});
+      xframe sf2 = sf.select_columns({"hello","world"});
       TS_ASSERT(sf2.is_opened_for_read() == true);
       auto reader2 = sf2.get_reader();
       TS_ASSERT_EQUALS(sf2.size(), 0);
     }
 
-    void test_sframe_save() {
+    void test_xframe_save() {
       // Create an sarray from on-disk representation
       auto tmp_ptr = new sarray<flexible_type>(test_writer_prefix);
       std::shared_ptr<sarray<flexible_type> > sa_ptr(tmp_ptr);
@@ -221,8 +221,8 @@ struct sframe_test  {
       v.push_back(sa_ptr);
       v.push_back(sa_ptr);
 
-      // Create SFrame with auto-named columns
-      sframe *sf = new sframe(v);
+      // Create XFrame with auto-named columns
+      xframe *sf = new xframe(v);
       size_t exp_num_rows = sf->num_rows();
       size_t exp_num_cols = sf->num_columns();
 
@@ -246,8 +246,8 @@ struct sframe_test  {
       // Check that new files are in their spot
       TS_ASSERT(boost::filesystem::exists(index_file));
 
-      // Load sframe back and check that the contents are right
-      sframe *sf2 = new sframe(index_file);
+      // Load xframe back and check that the contents are right
+      xframe *sf2 = new xframe(index_file);
       TS_ASSERT_EQUALS(sf2->num_rows(), exp_num_rows);
       TS_ASSERT_EQUALS(sf2->num_columns(), exp_num_cols);
 
@@ -263,7 +263,7 @@ struct sframe_test  {
 
       // serialize sf2
       {
-        std::string dirpath = "sframe_test_dir";
+        std::string dirpath = "xframe_test_dir";
         turi::dir_archive dir;
         dir.open_directory_for_write(dirpath);
         turi::oarchive oarc(dir);
@@ -272,11 +272,11 @@ struct sframe_test  {
       delete sf2;
 
       {
-        // Load sframe back and check that the contents are right
-        std::string dirpath = "sframe_test_dir";
+        // Load xframe back and check that the contents are right
+        std::string dirpath = "xframe_test_dir";
         turi::dir_archive dir;
         dir.open_directory_for_read(dirpath);
-        sframe sf3;
+        xframe sf3;
         turi::iarchive iarc(dir);
         iarc >> sf3;
         TS_ASSERT_EQUALS(sf3.num_rows(), exp_num_rows);
@@ -295,7 +295,7 @@ struct sframe_test  {
     }
 
 
-    void test_sframe_save_reference_no_copy() {
+    void test_xframe_save_reference_no_copy() {
       // Create an sarray from on-disk representation
       auto tmp_ptr = new sarray<flexible_type>(test_writer_prefix);
       std::shared_ptr<sarray<flexible_type> > sa_ptr(tmp_ptr);
@@ -306,8 +306,8 @@ struct sframe_test  {
       v.push_back(sa_ptr);
       v.push_back(sa_ptr);
 
-      // Create SFrame with auto-named columns
-      sframe *sf = new sframe(v);
+      // Create XFrame with auto-named columns
+      xframe *sf = new xframe(v);
       size_t exp_num_rows = sf->num_rows();
       size_t exp_num_cols = sf->num_columns();
 
@@ -319,7 +319,7 @@ struct sframe_test  {
       std::cerr << index_file;
 
       // Save in a different spot
-      sframe_save_weak_reference(*sf, index_file);
+      xframe_save_weak_reference(*sf, index_file);
 
       std::vector<std::vector<flexible_type> > frame;
       turi::copy(*sf, std::inserter(frame, frame.end()));
@@ -329,8 +329,8 @@ struct sframe_test  {
       TS_ASSERT(boost::filesystem::exists(index_file));
 
 
-      // Load sframe back and check that the contents are right
-      sframe *sf2 = new sframe(index_file);
+      // Load xframe back and check that the contents are right
+      xframe *sf2 = new xframe(index_file);
       TS_ASSERT_EQUALS(sf2->num_rows(), exp_num_rows);
       TS_ASSERT_EQUALS(sf2->num_columns(), exp_num_cols);
 
@@ -345,32 +345,32 @@ struct sframe_test  {
       }
     }
 
-    void test_sframe_save_reference_one_copy() {
+    void test_xframe_save_reference_one_copy() {
       /*
-       * Create a saved sframe of 2 columns.
+       * Create a saved xframe of 2 columns.
        * create one more cache column.
-       * save a reference to this new sframe
+       * save a reference to this new xframe
        */
       // the original sarray we are going to replicate
       auto tmp_ptr = new sarray<flexible_type>(test_writer_prefix);
       std::shared_ptr<sarray<flexible_type> > sa_ptr(tmp_ptr);
-      // save an sframe of 2 columns
-      auto base_sframe = get_temp_name() + ".frame_idx";
+      // save an xframe of 2 columns
+      auto base_xframe = get_temp_name() + ".frame_idx";
       {
         // Create an sarray from on-disk representation
         std::vector<std::shared_ptr<sarray<flexible_type> > > v;
         v.push_back(sa_ptr);
         v.push_back(sa_ptr);
-        // Create SFrame with auto-named columns
-        sframe sf(v);
-        sf.save(base_sframe);
+        // Create XFrame with auto-named columns
+        xframe sf(v);
+        sf.save(base_xframe);
 
       }
-      sframe bsf(base_sframe);
+      xframe bsf(base_xframe);
       // create an inmemory sarray and append to it
       std::shared_ptr<sarray<flexible_type> > sa2 = std::make_shared<sarray<flexible_type>>();
       sa2->open_for_write(1);
-      sframe_rows rows;
+      xframe_rows rows;
       sa_ptr->get_reader()->read_rows(0, sa_ptr->size(), rows);
       (*sa2->get_output_iterator(0)) = rows;
       sa2->close();
@@ -386,7 +386,7 @@ struct sframe_test  {
       std::cerr << index_file;
 
       // Save in a different spot
-      sframe_save_weak_reference(sf, index_file);
+      xframe_save_weak_reference(sf, index_file);
 
       std::vector<std::vector<flexible_type> > frame;
       turi::copy(sf, std::inserter(frame, frame.end()));
@@ -396,8 +396,8 @@ struct sframe_test  {
       TS_ASSERT(boost::filesystem::exists(index_file));
 
 
-      // Load sframe back and check that the contents are right
-      sframe *sf2 = new sframe(index_file);
+      // Load xframe back and check that the contents are right
+      xframe *sf2 = new xframe(index_file);
       TS_ASSERT_EQUALS(sf2->num_rows(), exp_num_rows);
       TS_ASSERT_EQUALS(sf2->num_columns(), exp_num_cols);
 
@@ -417,29 +417,29 @@ struct sframe_test  {
       delete sf2;
     }
 
-    void test_sframe_save_empty_columns() {
-      sframe sf;
+    void test_xframe_save_empty_columns() {
+      xframe sf;
       sf.open_for_write({"col1", "col2"}, {flex_type_enum::INTEGER, flex_type_enum::STRING});
       sf.close();
       std::string index = get_temp_name() + ".frame_idx";
       sf.save(index);
 
-      sframe newsf(index);
+      xframe newsf(index);
       TS_ASSERT_EQUALS(newsf.size(), 0);
     }
 
-    void test_sframe_save_really_empty() {
-      sframe sf;
+    void test_xframe_save_really_empty() {
+      xframe sf;
       sf.open_for_write(std::vector<std::string>(), std::vector<flex_type_enum>());
       sf.close();
       std::string index = get_temp_name() + ".frame_idx";
       sf.save(index);
 
-      sframe newsf(index);
+      xframe newsf(index);
       TS_ASSERT_EQUALS(newsf.size(), 0);
     }
 
-    void test_sframe_dataframe_conversion() {
+    void test_xframe_dataframe_conversion() {
       std::vector<flexible_type> int_col{0,1,2,3,4,5};
       std::vector<flexible_type> float_col{.0,.1,.2,.3,.4,.5};
       std::vector<flexible_type> str_col{".0",".1",".2",".3",".4",".5"};
@@ -451,7 +451,7 @@ struct sframe_test  {
       df.set_column("vec_col", vec_col, flex_type_enum::VECTOR);
 
       // Test df -> sf
-      sframe sf(df);
+      xframe sf(df);
       TS_ASSERT_EQUALS(sf.num_rows(), 6);
       TS_ASSERT_EQUALS(sf.num_columns(), 4);
       std::vector<flex_type_enum> expected_types{flex_type_enum::INTEGER, flex_type_enum::FLOAT, flex_type_enum::STRING, flex_type_enum::VECTOR};
@@ -491,7 +491,7 @@ struct sframe_test  {
       TS_ASSERT_EQUALS(df2.values, df.values);
     }
 
-    void test_sframe_dataframe_conversion_with_na() {
+    void test_xframe_dataframe_conversion_with_na() {
       std::vector<flexible_type> int_col{0,1,2,3,4,5};
       std::vector<flexible_type> float_col{.0,.1,.2,.3,.4,.5};
       std::vector<flexible_type> str_col{".0",".1",".2",".3",".4",".5"};
@@ -508,7 +508,7 @@ struct sframe_test  {
       df.set_column("vec_col", vec_col, flex_type_enum::VECTOR);
 
       // Test df -> sf
-      sframe sf(df);
+      xframe sf(df);
       TS_ASSERT_EQUALS(sf.num_rows(), 6);
       TS_ASSERT_EQUALS(sf.num_columns(), 4);
       std::vector<flex_type_enum> expected_types{flex_type_enum::INTEGER, flex_type_enum::FLOAT, flex_type_enum::STRING, flex_type_enum::VECTOR};
@@ -564,8 +564,8 @@ struct sframe_test  {
       }
     }
 
-    void test_sframe_iterate() {
-      // Create an sframe
+    void test_xframe_iterate() {
+      // Create an xframe
       std::vector<std::shared_ptr<sarray<flexible_type>>>
         v{std::make_shared<sarray<flexible_type>>(test_writer_prefix),
           std::make_shared<sarray<flexible_type>>(test_writer_dbl_prefix),
@@ -575,7 +575,7 @@ struct sframe_test  {
           std::make_shared<sarray<flexible_type>>(test_writer_ndarr_prefix)
         };
 
-      sframe sf(v);
+      xframe sf(v);
       size_t nrows = sf.num_rows();
 
       auto reader = sf.get_reader();
@@ -597,7 +597,7 @@ struct sframe_test  {
                                                flex_vec(10, rowid+1),
                                                flex_date_time(rowid+1),
                                                flex_nd_vec(std::vector<double>(10, rowid+1), {2,5})};
-          sframe::value_type actual = *iter;
+          xframe::value_type actual = *iter;
           TS_ASSERT_EQUALS(actual.size(), expected.size());
           for (size_t j = 0; j < actual.size(); ++j) {
             TS_ASSERT_EQUALS(actual[j], expected[j]);
@@ -662,11 +662,11 @@ struct sframe_test  {
             }
           });
 
-      // once again using the sframe_rows datastructure
+      // once again using the xframe_rows datastructure
       // make 15 threads, each read 5 rows
       parallel_for(0, (size_t)15,
           [&](size_t startrow) {
-            sframe_rows rows;
+            xframe_rows rows;
             size_t nrows = reader->read_rows(startrow, startrow + 5, rows);
             TS_ASSERT_EQUALS(nrows, 5);
             TS_ASSERT_EQUALS(rows.num_rows(), 5);
@@ -689,12 +689,12 @@ struct sframe_test  {
           });
 
       // randomaccess
-      // once again using the sframe_rows datastructure
+      // once again using the xframe_rows datastructure
       // make 15 threads, each read 5 rows
       parallel_for(0, (size_t)15,
           [&](size_t seed) {
             size_t startrow = (std::hash<unsigned long>()((unsigned long)seed)) % nrows;
-            sframe_rows rows;
+            xframe_rows rows;
             size_t nrows = reader->read_rows(startrow, startrow + 5, rows);
             TS_ASSERT_EQUALS(nrows, 5);
             TS_ASSERT_EQUALS(rows.num_rows(), 5);
@@ -732,7 +732,7 @@ struct sframe_test  {
     }
 
 
-    void validate_test_sframe_logical_segments(std::unique_ptr<sframe_reader> reader,
+    void validate_test_xframe_logical_segments(std::unique_ptr<xframe_reader> reader,
                                                size_t nsegments) {
       TS_ASSERT_EQUALS(reader->num_segments(), nsegments);
       // read the data we wrote the last time
@@ -756,7 +756,7 @@ struct sframe_test  {
       }
     }
 
-    void test_sframe_logical_segments() {
+    void test_xframe_logical_segments() {
       // Copy integers to some other target with 4 segments
       sarray<flexible_type> src_integers(test_writer_prefix);
       std::shared_ptr<sarray<flexible_type> > integers(new sarray<flexible_type>);
@@ -769,20 +769,20 @@ struct sframe_test  {
       copy_sarray(src_doubles, *doubles, 6);
       for (size_t i = 0;i < 6; ++i) TS_ASSERT(doubles->segment_length(i) > 0);
 
-      sframe sf(std::vector<std::shared_ptr<sarray<flexible_type>>>{integers, doubles});
+      xframe sf(std::vector<std::shared_ptr<sarray<flexible_type>>>{integers, doubles});
 
-      validate_test_sframe_logical_segments(sf.get_reader(), 4);
-      validate_test_sframe_logical_segments(sf.get_reader(8), 8);
-      validate_test_sframe_logical_segments(sf.get_reader(200), 200);
+      validate_test_xframe_logical_segments(sf.get_reader(), 4);
+      validate_test_xframe_logical_segments(sf.get_reader(8), 8);
+      validate_test_xframe_logical_segments(sf.get_reader(200), 200);
       std::vector<size_t> custom_sizes{4,0,6,10};
-      validate_test_sframe_logical_segments(sf.get_reader(custom_sizes), 4);
+      validate_test_xframe_logical_segments(sf.get_reader(custom_sizes), 4);
     }
 
 
-    void test_sframe_write() {
+    void test_xframe_write() {
       // Build data
       std::vector<std::string> words {"hello", "this", "is", "a",
-        "test", "of", "writing", "an", "sframe", "let's", "have", "some",
+        "test", "of", "writing", "an", "xframe", "let's", "have", "some",
         "more", "words", "for", "good", "measure"};
 
       std::vector<std::vector<flexible_type>> data_rows;
@@ -798,9 +798,9 @@ struct sframe_test  {
       std::vector<std::string> column_names {"nums", "decimal_nums", "words"};
 
 
-      // Write a new sframe from a vector of data
+      // Write a new xframe from a vector of data
       for(size_t num_segments = 1; num_segments <= 10; ++num_segments) {
-        sframe frame;
+        xframe frame;
         frame.open_for_write(column_names, column_types, "", num_segments);
 
         // Throw if open before closed
@@ -809,7 +809,7 @@ struct sframe_test  {
                                  {flex_type_enum::INTEGER,
                                    flex_type_enum::STRING}));
 
-        // Add my data rows to an sframe
+        // Add my data rows to an xframe
         turi::copy(data_rows.begin(), data_rows.end(), frame);
 
         // Not used for anything, just to see if exceptions are thrown when
@@ -835,13 +835,13 @@ struct sframe_test  {
         }
 
 
-        // Check the data of the sframe
+        // Check the data of the xframe
         size_t cntr = 0;
         auto reader = frame.get_reader();
         for(size_t i = 0; i < reader->num_segments(); ++i) {
           for(auto iter = reader->begin(i); iter != reader->end(i); ++iter, ++cntr) {
             std::vector<flexible_type> expected = data_rows[cntr];
-            sframe::value_type actual = *iter;
+            xframe::value_type actual = *iter;
             TS_ASSERT_EQUALS(iter->size(), expected.size());
 
             for(size_t j = 0; j < actual.size(); ++j) {
@@ -853,13 +853,13 @@ struct sframe_test  {
     }
 
     void test_select_column() {
-      // Create an sframe
+      // Create an xframe
       std::vector<std::shared_ptr<sarray<flexible_type>>>
         v{std::make_shared<sarray<flexible_type>>(test_writer_prefix),
           std::make_shared<sarray<flexible_type>>(test_writer_dbl_prefix),
           std::make_shared<sarray<flexible_type>>(test_writer_str_prefix)};
 
-      sframe sf(v);
+      xframe sf(v);
 
       for(size_t i = 0; i < sf.num_columns(); ++i) {
         auto column = sf.select_column(i);
@@ -888,14 +888,14 @@ struct sframe_test  {
           std::make_shared<sarray<flexible_type>>(test_writer_dbl_prefix),
           std::make_shared<sarray<flexible_type>>(test_writer_str_prefix)};
 
-      sframe sf(v);
+      xframe sf(v);
 
       auto sa_ptr_add_col =
         std::make_shared<sarray<flexible_type>>(test_writer_add_col_prefix);
 
-      // Column in the original sframe that is the same as the new column
+      // Column in the original xframe that is the same as the new column
       size_t src_col = 1;
-      sframe sf2 = sf.add_column(sa_ptr_add_col, std::string("copy_col"));
+      xframe sf2 = sf.add_column(sa_ptr_add_col, std::string("copy_col"));
       TS_ASSERT_EQUALS(sf2.num_columns(), sf.num_columns()+1);
 
       size_t dst_col = sf2.num_columns()-1;
@@ -933,7 +933,7 @@ struct sframe_test  {
     }
 
     // helper for the test below
-    void check_basic_csv_values(sframe& frame) {
+    void check_basic_csv_values(xframe& frame) {
      std::vector<std::vector<flexible_type> > vals;
      turi::copy(frame, std::inserter(vals, vals.end()));
 
@@ -1009,7 +1009,7 @@ struct sframe_test  {
 
 
     // helper for the test below
-    void check_basic_csv_string_values(sframe& frame) {
+    void check_basic_csv_string_values(xframe& frame) {
      std::vector<std::vector<flexible_type> > vals;
      turi::copy(frame, std::inserter(vals, vals.end()));
 
@@ -1058,7 +1058,7 @@ struct sframe_test  {
      csv_line_tokenizer tokenizer;
      tokenizer.delimiter = ',';
      tokenizer.init();
-     sframe frame;
+     xframe frame;
      frame.init_from_csvs(basic_csv_file,
                           tokenizer,
                           true,   // header
@@ -1093,14 +1093,14 @@ struct sframe_test  {
    void run_groupby_aggregate_sum_test(size_t NUM_GROUPS,
                                        size_t NUM_ROWS,
                                        size_t BUFFER_SIZE) {
-     // create an SFrame with 5 columns, string, int, float, int, unused
-     sframe input;
+     // create an XFrame with 5 columns, string, int, float, int, unused
+     xframe input;
      input.open_for_write({"str","int","float","int2","unused","vector"},
                           {flex_type_enum::STRING, flex_type_enum::INTEGER,
                           flex_type_enum::FLOAT, flex_type_enum::INTEGER,
                           flex_type_enum::INTEGER, flex_type_enum::VECTOR},
                           "", 4 /* 4 segments*/);
-     // we will emit the following into the sframe
+     // we will emit the following into the xframe
      // "0", 0, 0.0, 1, 2, {0.0, 0.0, ...}
      // "1", 1, 0.5, 2, 3, {1.0, 1.0, ...}
      // "2", 2, 1.0, 3, 4, {2.0, 2.0, ...}
@@ -1142,7 +1142,7 @@ struct sframe_test  {
      input.close();
      std::cout << "Starting groupby: " << std::endl;
      turi::timer ti;
-     sframe output = turi::groupby_aggregate(input,
+     xframe output = turi::groupby_aggregate(input,
                                        {"str"},
                                        {"intsum","floatsum","","",""},
                                        {{{"int"}, std::make_shared<groupby_operators::sum>()},
@@ -1188,15 +1188,15 @@ struct sframe_test  {
    void run_multikey_groupby_aggregate_sum_test(size_t NUM_GROUPS,
                                                 size_t NUM_ROWS,
                                                 size_t BUFFER_SIZE) {
-     // create an SFrame with 7 columns, string, int, float, int, unused, vec
-     sframe input;
+     // create an XFrame with 7 columns, string, int, float, int, unused, vec
+     xframe input;
      input.open_for_write({"str1","str2","int","float","int2","unused", "vector"},
                           {flex_type_enum::STRING, flex_type_enum::STRING,
                           flex_type_enum::INTEGER,
                           flex_type_enum::FLOAT, flex_type_enum::INTEGER,
                           flex_type_enum::INTEGER, flex_type_enum::VECTOR},
                           "", 4 /* 4 segments*/);
-     // we will emit the following into the sframe
+     // we will emit the following into the xframe
      // "", "0", 0, 0.0, 1, 2, {0.0, 0.0, ...}
      // "", "1", 1, 0.5, 2, 3, {1.0, 1.0, ...}
      // "", "2", 2, 1.0, 3, 4, {2.0, 2.0, ...}
@@ -1241,7 +1241,7 @@ struct sframe_test  {
      input.close();
      std::cout << "Starting multikey groupby: " << std::endl;
      turi::timer ti;
-     sframe output = turi::groupby_aggregate(input,
+     xframe output = turi::groupby_aggregate(input,
                                        {"str1", "str2"},
                                        {"intsum", "floatsum", "", "", ""},
                                        {{{"int"}, std::make_shared<groupby_operators::sum>()},
@@ -1288,14 +1288,14 @@ struct sframe_test  {
    void run_groupby_aggregate_average_test(size_t NUM_GROUPS,
                                        size_t NUM_ROWS,
                                        size_t BUFFER_SIZE) {
-     // create an SFrame with 6 columns, string, int, float, int,unused, vec
-     sframe input;
+     // create an XFrame with 6 columns, string, int, float, int,unused, vec
+     xframe input;
      input.open_for_write({"str","int","float","int2","unused","vector"},
                           {flex_type_enum::STRING, flex_type_enum::FLOAT,
                           flex_type_enum::FLOAT, flex_type_enum::FLOAT,
                           flex_type_enum::FLOAT, flex_type_enum::VECTOR},
                           "", 4 /* 4 segments*/);
-     // we will emit the following into the sframe
+     // we will emit the following into the xframe
      // "0", 0, 0.0, 1, 2, {0.0,0.0,0.0,..}
      // "1", 1, 0.5, 2, 3, {1.0, 1.0, 1.0, ...}
      // "2", 2, 1.0, 3, 4, {2.0, 2.0, 2.0, ...}
@@ -1337,7 +1337,7 @@ struct sframe_test  {
      input.close();
      std::cout << "Starting groupby: " << std::endl;
      turi::timer ti;
-     sframe output = turi::groupby_aggregate(input,
+     xframe output = turi::groupby_aggregate(input,
                                        {"str"},
                                        {"intavg","floatavg","","",""},
                                        {{{"int"}, std::make_shared<groupby_operators::average>()},
@@ -1388,15 +1388,15 @@ struct sframe_test  {
    void run_multikey_groupby_aggregate_average_test(size_t NUM_GROUPS,
                                                 size_t NUM_ROWS,
                                                 size_t BUFFER_SIZE) {
-     // create an SFrame with 7 columns, string, string, int, float, int, unused
-     sframe input;
+     // create an XFrame with 7 columns, string, string, int, float, int, unused
+     xframe input;
      input.open_for_write({"str1","str2","int","float","int2","unused","vector"},
                           {flex_type_enum::STRING, flex_type_enum::STRING,
                           flex_type_enum::FLOAT,
                           flex_type_enum::FLOAT, flex_type_enum::FLOAT,
                           flex_type_enum::FLOAT, flex_type_enum::VECTOR},
                           "", 4 /* 4 segments*/);
-     // we will emit the following into the sframe
+     // we will emit the following into the xframe
      // "", "0", 0, 0.0, 1, 2, {0.0, 0.0, 0.0, ...}
      // "", "1", 1, 0.5, 2, 3, {1.0, 1.0, 1.0, ...}
      // "", "2", 2, 1.0, 3, 4, {2.0, 2.0, 2.0, ...}
@@ -1441,7 +1441,7 @@ struct sframe_test  {
      input.close();
      std::cout << "Starting multikey groupby: " << std::endl;
      turi::timer ti;
-     sframe output = turi::groupby_aggregate(input,
+     xframe output = turi::groupby_aggregate(input,
                                        {"str1", "str2"},
                                        {"intavg", "floatavg", "", "",""},
                                        {{{"int"}, std::make_shared<groupby_operators::average>()},
@@ -1492,7 +1492,7 @@ struct sframe_test  {
    }
 
 
-   void test_sframe_groupby_aggregate() {
+   void test_xframe_groupby_aggregate() {
      //small number of groups
      run_groupby_aggregate_sum_test(100, 100000, 100);
      run_groupby_aggregate_average_test(100, 100000, 100);
@@ -1511,7 +1511,7 @@ struct sframe_test  {
    
    }
 
-   void test_sframe_multikey_groupby_aggregate() {
+   void test_xframe_multikey_groupby_aggregate() {
      //small number of groups
      run_multikey_groupby_aggregate_sum_test(100, 100000, 100);
      run_multikey_groupby_aggregate_average_test(100, 100000, 100);
@@ -1530,13 +1530,13 @@ struct sframe_test  {
   
    }
 
-   void test_sframe_groupby_aggregate_negative_tests() {
-     sframe input;
+   void test_xframe_groupby_aggregate_negative_tests() {
+     xframe input;
      input.open_for_write({"str","int","float"},
                           {flex_type_enum::STRING, flex_type_enum::INTEGER,
                           flex_type_enum::FLOAT},
                           "", 4 /* 4 segments*/);
-     // we will emit the following into the sframe
+     // we will emit the following into the xframe
      // "0", 0, 0.0
      // "1", 1, 1.0
      // "2", 2, 2.0
@@ -1581,7 +1581,7 @@ struct sframe_test  {
    }
 
 
-   void run_sframe_aggregate_operators_test(std::shared_ptr<group_aggregate_value> val,
+   void run_xframe_aggregate_operators_test(std::shared_ptr<group_aggregate_value> val,
                                             const std::vector<size_t>& vals,
                                             const std::vector<flex_type_enum>& input_types,
                                             size_t expected_result) {
@@ -1614,7 +1614,7 @@ struct sframe_test  {
      }
    }
 
-   void test_sframe_aggregate_operators() {
+   void test_xframe_aggregate_operators() {
      std::vector<size_t> vals;
      for (size_t i = 0;i < 100000; ++i) vals.push_back(i);
 
@@ -1626,26 +1626,26 @@ struct sframe_test  {
        sum += val;
      }
 
-     run_sframe_aggregate_operators_test(std::make_shared<groupby_operators::sum>(),
+     run_xframe_aggregate_operators_test(std::make_shared<groupby_operators::sum>(),
                                          vals,
                                          {flex_type_enum::INTEGER},
                                          sum);
-     run_sframe_aggregate_operators_test(std::make_shared<groupby_operators::min>(),
+     run_xframe_aggregate_operators_test(std::make_shared<groupby_operators::min>(),
                                          vals,
                                          {flex_type_enum::INTEGER},
                                          min);
-     run_sframe_aggregate_operators_test(std::make_shared<groupby_operators::max>(),
+     run_xframe_aggregate_operators_test(std::make_shared<groupby_operators::max>(),
                                          vals,
                                          {flex_type_enum::INTEGER},
                                          max);
-     run_sframe_aggregate_operators_test(std::make_shared<groupby_operators::count>(),
+     run_xframe_aggregate_operators_test(std::make_shared<groupby_operators::count>(),
                                          vals,
                                          {},
                                          count);
    }
 
 
-   void append_some_data_to_sframe(sframe& sframe_out) {
+   void append_some_data_to_xframe(xframe& xframe_out) {
      std::vector<flexible_type> int_col{0,1,2,3,4,5};
      std::vector<flexible_type> float_col{0,1,2,3,4,5};
      std::vector<flexible_type> str_col{"0","1","2","3","4","5"};
@@ -1653,8 +1653,8 @@ struct sframe_test  {
      df.set_column("int_col", int_col, flex_type_enum::INTEGER);
      df.set_column("float_col", float_col, flex_type_enum::FLOAT);
      df.set_column("str_col", str_col, flex_type_enum::STRING);
-     sframe sf(df);
-     sframe_out = sframe_out.append(sf);
+     xframe sf(df);
+     xframe_out = xframe_out.append(sf);
      // make sure sf is still accessible
      std::vector<std::vector<flexible_type> > result;
      turi::copy(sf, std::inserter(result, result.end()));
@@ -1667,19 +1667,19 @@ struct sframe_test  {
    }
 
 
-   void test_sframe_append() {
-     // Create an sframe
-     sframe sframe_out;
-     sframe frame2;
+   void test_xframe_append() {
+     // Create an xframe
+     xframe xframe_out;
+     xframe frame2;
 
-     append_some_data_to_sframe(frame2);
-     sframe_out = sframe_out.append(frame2);
+     append_some_data_to_xframe(frame2);
+     xframe_out = xframe_out.append(frame2);
 
      // check that the copy is good
-     TS_ASSERT_EQUALS(sframe_out.size(), 6);
-     TS_ASSERT_EQUALS(sframe_out.num_columns(), 3);
+     TS_ASSERT_EQUALS(xframe_out.size(), 6);
+     TS_ASSERT_EQUALS(xframe_out.num_columns(), 3);
      std::vector<std::vector<flexible_type> > result;
-     turi::copy(sframe_out, std::inserter(result, result.end()));
+     turi::copy(xframe_out, std::inserter(result, result.end()));
      TS_ASSERT_EQUALS(result.size(), 6);
      for (size_t i = 0;i < result.size(); ++i) {
        TS_ASSERT_EQUALS(result[i][0], i);
@@ -1701,13 +1701,13 @@ struct sframe_test  {
 
      // do it again
 
-     append_some_data_to_sframe(sframe_out);
+     append_some_data_to_xframe(xframe_out);
 
      // check that the move is good
-     TS_ASSERT_EQUALS(sframe_out.size(), 2 * 6);
-     TS_ASSERT_EQUALS(sframe_out.num_columns(), 3);
+     TS_ASSERT_EQUALS(xframe_out.size(), 2 * 6);
+     TS_ASSERT_EQUALS(xframe_out.num_columns(), 3);
      result.clear();
-     turi::copy(sframe_out, std::inserter(result, result.end()));
+     turi::copy(xframe_out, std::inserter(result, result.end()));
      TS_ASSERT_EQUALS(result.size(), 2 * 6);
      for (size_t i = 0;i < result.size(); ++i) {
        TS_ASSERT_EQUALS(result[i][0], i % 6);
@@ -1723,14 +1723,14 @@ struct sframe_test  {
      df.set_column("int_col", int_col, flex_type_enum::INTEGER);
      df.set_column("float_col", float_col, flex_type_enum::FLOAT);
      df.set_column("str_col", str_col, flex_type_enum::STRING);
-     sframe sf(df);
+     xframe sf(df);
 
      for (size_t i = 0;i < 20; ++i) {
        sf = sf.append(sf);
      }
      TS_ASSERT_EQUALS(sf.size(), 1048576);
      auto reader = sf.get_reader();
-     sframe_rows rows;
+     xframe_rows rows;
      reader->read_rows(0, 1048576, rows);
      TS_ASSERT_EQUALS(rows.num_rows(), 1048576);
      for (auto& row: rows) {
@@ -1740,12 +1740,12 @@ struct sframe_test  {
      }
    }
 
-   void test_sframe_rows() {
+   void test_xframe_rows() {
      std::vector<std::vector<flexible_type> > data{{1,2,3,4,5},
                                                    {6,7,8,9,10},
                                                    {11,12,13,14,15},
                                                    {16,17,18,19,20}};
-     sframe_rows rows;
+     xframe_rows rows;
      rows.clear();
      rows.add_decoded_column(std::make_shared<std::vector<flexible_type>>(data[0]));
      TS_ASSERT_EQUALS(rows.num_rows(), 5);
@@ -1756,7 +1756,7 @@ struct sframe_test  {
        ++i;
      }
    }
-   void test_sframe_ndarray() {
+   void test_xframe_ndarray() {
      flex_nd_vec fortran({0,5,1,6,2,7,3,8,4,9},
                           {2,5},
                           {1,2});
@@ -1795,7 +1795,7 @@ struct sframe_test  {
      for(auto& v: values) {
        v.mutable_get<flex_nd_vec>() = v.get<flex_nd_vec>().compact();
      }
-     sframe_rows rows;
+     xframe_rows rows;
      sa.get_reader()->read_rows(0, sa.size(), rows);
 
      auto values_iter = values.begin();
@@ -1806,71 +1806,71 @@ struct sframe_test  {
    }
 };
 
-BOOST_FIXTURE_TEST_SUITE(_sframe_test, sframe_test)
-BOOST_AUTO_TEST_CASE(test_sframe_construction) {
-  sframe_test::test_sframe_construction();
+BOOST_FIXTURE_TEST_SUITE(_xframe_test, xframe_test)
+BOOST_AUTO_TEST_CASE(test_xframe_construction) {
+  xframe_test::test_xframe_construction();
 }
-BOOST_AUTO_TEST_CASE(test_empty_sframe) {
-  sframe_test::test_empty_sframe();
+BOOST_AUTO_TEST_CASE(test_empty_xframe) {
+  xframe_test::test_empty_xframe();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_save) {
-  sframe_test::test_sframe_save();
+BOOST_AUTO_TEST_CASE(test_xframe_save) {
+  xframe_test::test_xframe_save();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_save_reference_no_copy) {
-  sframe_test::test_sframe_save_reference_no_copy();
+BOOST_AUTO_TEST_CASE(test_xframe_save_reference_no_copy) {
+  xframe_test::test_xframe_save_reference_no_copy();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_save_reference_one_copy) {
-  sframe_test::test_sframe_save_reference_one_copy();
+BOOST_AUTO_TEST_CASE(test_xframe_save_reference_one_copy) {
+  xframe_test::test_xframe_save_reference_one_copy();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_save_empty_columns) {
-  sframe_test::test_sframe_save_empty_columns();
+BOOST_AUTO_TEST_CASE(test_xframe_save_empty_columns) {
+  xframe_test::test_xframe_save_empty_columns();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_save_really_empty) {
-  sframe_test::test_sframe_save_really_empty();
+BOOST_AUTO_TEST_CASE(test_xframe_save_really_empty) {
+  xframe_test::test_xframe_save_really_empty();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_dataframe_conversion) {
-  sframe_test::test_sframe_dataframe_conversion();
+BOOST_AUTO_TEST_CASE(test_xframe_dataframe_conversion) {
+  xframe_test::test_xframe_dataframe_conversion();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_dataframe_conversion_with_na) {
-  sframe_test::test_sframe_dataframe_conversion_with_na();
+BOOST_AUTO_TEST_CASE(test_xframe_dataframe_conversion_with_na) {
+  xframe_test::test_xframe_dataframe_conversion_with_na();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_iterate) {
-  sframe_test::test_sframe_iterate();
+BOOST_AUTO_TEST_CASE(test_xframe_iterate) {
+  xframe_test::test_xframe_iterate();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_logical_segments) {
-  sframe_test::test_sframe_logical_segments();
+BOOST_AUTO_TEST_CASE(test_xframe_logical_segments) {
+  xframe_test::test_xframe_logical_segments();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_write) {
-  sframe_test::test_sframe_write();
+BOOST_AUTO_TEST_CASE(test_xframe_write) {
+  xframe_test::test_xframe_write();
 }
 BOOST_AUTO_TEST_CASE(test_select_column) {
-  sframe_test::test_select_column();
+  xframe_test::test_select_column();
 }
 BOOST_AUTO_TEST_CASE(test_add_column) {
-  sframe_test::test_add_column();
+  xframe_test::test_add_column();
 }
 BOOST_AUTO_TEST_CASE(test_column_name_wrangling) {
-  sframe_test::test_column_name_wrangling();
+  xframe_test::test_column_name_wrangling();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_groupby_aggregate) {
-  sframe_test::test_sframe_groupby_aggregate();
+BOOST_AUTO_TEST_CASE(test_xframe_groupby_aggregate) {
+  xframe_test::test_xframe_groupby_aggregate();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_multikey_groupby_aggregate) {
-  sframe_test::test_sframe_multikey_groupby_aggregate();
+BOOST_AUTO_TEST_CASE(test_xframe_multikey_groupby_aggregate) {
+  xframe_test::test_xframe_multikey_groupby_aggregate();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_groupby_aggregate_negative_tests) {
-  sframe_test::test_sframe_groupby_aggregate_negative_tests();
+BOOST_AUTO_TEST_CASE(test_xframe_groupby_aggregate_negative_tests) {
+  xframe_test::test_xframe_groupby_aggregate_negative_tests();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_aggregate_operators) {
-  sframe_test::test_sframe_aggregate_operators();
+BOOST_AUTO_TEST_CASE(test_xframe_aggregate_operators) {
+  xframe_test::test_xframe_aggregate_operators();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_append) {
-  sframe_test::test_sframe_append();
+BOOST_AUTO_TEST_CASE(test_xframe_append) {
+  xframe_test::test_xframe_append();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_rows) {
-  sframe_test::test_sframe_rows();
+BOOST_AUTO_TEST_CASE(test_xframe_rows) {
+  xframe_test::test_xframe_rows();
 }
-BOOST_AUTO_TEST_CASE(test_sframe_ndarray) {
-  sframe_test::test_sframe_ndarray();
+BOOST_AUTO_TEST_CASE(test_xframe_ndarray) {
+  xframe_test::test_xframe_ndarray();
 }
 BOOST_AUTO_TEST_SUITE_END()

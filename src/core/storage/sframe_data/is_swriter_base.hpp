@@ -9,13 +9,13 @@
 
 #include <iterator>
 #include <type_traits>
-#include <core/storage/sframe_data/swriter_base.hpp>
+#include <core/storage/xframe_data/swriter_base.hpp>
 namespace turi {
-namespace sframe_impl {
+namespace xframe_impl {
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * is_swriter_base<T>::value is true if T inherits from swriter_base
  */
 template <typename T,
@@ -34,7 +34,7 @@ struct is_swriter_base<T,void,void> {
 
 
 
-} // sframe_impl
+} // xframe_impl
 } // turicreate
 
 #endif

@@ -1,8 +1,8 @@
 #define BOOST_TEST_MODULE
 #include <boost/test/unit_test.hpp>
 #include <core/util/test_macros.hpp>
-#include <core/storage/sframe_data/shuffle.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
+#include <core/storage/xframe_data/shuffle.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
 #include <timer/timer.hpp>
 
 using namespace turi;
@@ -11,10 +11,10 @@ BOOST_TEST_DONT_PRINT_LOG_VALUE(std::set<flexible_type>::iterator)
 struct shuffle_test {
 
     /**
-     * Create input sframe contains 5k rows and 2 columns: "key" and "value".
+     * Create input xframe contains 5k rows and 2 columns: "key" and "value".
      * The key contains the row id, and the corresponding value is identical to the key.
      */
-    sframe create_input_sframe(size_t num_rows) {
+    xframe create_input_xframe(size_t num_rows) {
       std::vector<flexible_type> row_ids;
       for (size_t i = 0; i < num_rows; ++i) {
         row_ids.push_back(i);
@@ -28,34 +28,34 @@ struct shuffle_test {
       key_column->close();
       value_column->close();
 
-      sframe ret({key_column, value_column}, {"key", "value"});
+      xframe ret({key_column, value_column}, {"key", "value"});
       return ret;
     }
 
   public:
 
     /**
-     * Test we can shuffle an sframe with 5000 rows into
+     * Test we can shuffle an xframe with 5000 rows into
      * odd rows and even rows.
      */
     void test_basic_shuffle() {
       size_t num_rows = 5000;
-      sframe sframe_in = create_input_sframe(num_rows);
+      xframe xframe_in = create_input_xframe(num_rows);
 
-      // shuffle the sframe into odd rows and even rows.
+      // shuffle the xframe into odd rows and even rows.
       std::function<size_t(const std::vector<flexible_type>&)> hash_fn = 
         [&](const std::vector<flexible_type>& row) {
           return (size_t)(row[0] % 2 == 0);
         };
 
-      std::vector<sframe> sframe_out  = shuffle(sframe_in, 2, hash_fn);
+      std::vector<xframe> xframe_out  = shuffle(xframe_in, 2, hash_fn);
 
-      TS_ASSERT_EQUALS(sframe_out[0].num_rows(), num_rows / 2);
-      TS_ASSERT_EQUALS(sframe_out[1].num_rows(), num_rows / 2);
+      TS_ASSERT_EQUALS(xframe_out[0].num_rows(), num_rows / 2);
+      TS_ASSERT_EQUALS(xframe_out[1].num_rows(), num_rows / 2);
 
       std::vector<std::vector<flexible_type>> odd_rows, even_rows;
-      sframe_out[0].get_reader()->read_rows(0, num_rows / 2, odd_rows);
-      sframe_out[1].get_reader()->read_rows(0, num_rows / 2, even_rows);
+      xframe_out[0].get_reader()->read_rows(0, num_rows / 2, odd_rows);
+      xframe_out[1].get_reader()->read_rows(0, num_rows / 2, even_rows);
 
       std::set<flexible_type> expected_odd_ids;
       for (size_t i = 0; i < num_rows/2; ++i) {
@@ -84,11 +84,11 @@ struct shuffle_test {
      */
     void test_stress() {
       for (size_t input_size = 1000; input_size < 10000; input_size += 4000) {
-        sframe sframe_in = create_input_sframe(input_size);
+        xframe xframe_in = create_input_xframe(input_size);
         for (size_t output_size : {5, 11, 23, 31, 47, 59}) {
           std::cout << "Input size: " << input_size << std::endl;
           std::cout << "Output size: " << output_size << std::endl;
-          __test_shuffle__(sframe_in, output_size);
+          __test_shuffle__(xframe_in, output_size);
         }
       }
     }
@@ -101,54 +101,54 @@ struct shuffle_test {
     void test_bench() {
 #ifdef NDEBUG
         size_t input_size = 20000000;
-        sframe sframe_in = create_input_sframe(input_size);
+        xframe xframe_in = create_input_xframe(input_size);
         for (size_t output_size : {5, 11, 23, 31, 47, 59}) {
-          __test_shuffle__(sframe_in, output_size);
+          __test_shuffle__(xframe_in, output_size);
         }
 #endif
     }
 
     /**
-     * Test the edge case that we can shuffle empty sframe or sframe with one rows.
+     * Test the edge case that we can shuffle empty xframe or xframe with one rows.
      */
     void test_edge() {
-      sframe sframe_in = create_input_sframe(0);
+      xframe xframe_in = create_input_xframe(0);
       for (size_t output_size = 1; output_size < 5; ++output_size) {
-        __test_shuffle__(sframe_in, output_size);
+        __test_shuffle__(xframe_in, output_size);
       }
 
-      sframe_in = create_input_sframe(1);
+      xframe_in = create_input_xframe(1);
       for (size_t output_size = 1; output_size < 5; ++output_size) {
-        __test_shuffle__(sframe_in, output_size);
+        __test_shuffle__(xframe_in, output_size);
       }
     }
 
     /**
      *
-     * Helper function to test we can shuffle an sframe
-     * rows into any number of output sframes.
+     * Helper function to test we can shuffle an xframe
+     * rows into any number of output xframes.
      */
-    void __test_shuffle__(sframe sframe_in, size_t n) {
+    void __test_shuffle__(xframe xframe_in, size_t n) {
       std::function<size_t(const std::vector<flexible_type>&)> hash_fn = 
         [&](const std::vector<flexible_type>& row) {
           return (size_t)(row[0] % n == 0);
         };
-      std::cout << "Input size: " << sframe_in.num_rows() << std::endl;
+      std::cout << "Input size: " << xframe_in.num_rows() << std::endl;
       std::cout << "Output size: " << n << std::endl;
       timer my_timer;
-      std::vector<sframe> sframe_out = shuffle(sframe_in, n, hash_fn);
+      std::vector<xframe> xframe_out = shuffle(xframe_in, n, hash_fn);
       std::cout << "Takes " << my_timer.current_time() << " secs" << std::endl;
 
       // // Check that shuffle preserve the size.
       // size_t num_rows = 0;
-      // for (auto sf: sframe_out) {
+      // for (auto sf: xframe_out) {
       //   num_rows += sf.num_rows();
       // }
-      // TS_ASSERT_EQUALS(num_rows, sframe_in.num_rows());
+      // TS_ASSERT_EQUALS(num_rows, xframe_in.num_rows());
       //
       // // Check the correctness of shuffle.
       // size_t sf_id = 0;
-      // for (auto sf: sframe_out) {
+      // for (auto sf: xframe_out) {
       //   std::vector<std::vector<flexible_type>> buffer;
       //   sf.get_reader()->read_rows(0, sf.num_rows(), buffer);
       //   for (auto& row: buffer) {

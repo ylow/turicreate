@@ -6,8 +6,8 @@
 #ifndef __TC_CATEGORICAL_HEATMAP
 #define __TC_CATEGORICAL_HEATMAP
 
-#include <core/data/sframe/gl_sframe.hpp>
-#include <core/storage/sframe_data/groupby_aggregate_operators.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_operators.hpp>
 #include <visualization/server/plot.hpp>
 #include "transformation.hpp"
 
@@ -17,13 +17,13 @@ namespace visualization {
 class categorical_heatmap_result: public transformation_output,
                                  public ::turi::groupby_operators::frequency_count {
   public:
-    virtual std::string vega_column_data(bool sframe) const override;
+    virtual std::string vega_column_data(bool xframe) const override;
 };
 
-// expects a gl_sframe of:
+// expects a gl_xframe of:
 // "x": str,
 // "y": float
-typedef transformation<gl_sframe, categorical_heatmap_result> categorical_heatmap_parent;
+typedef transformation<gl_xframe, categorical_heatmap_result> categorical_heatmap_parent;
 
 class categorical_heatmap : public categorical_heatmap_parent {
   public:

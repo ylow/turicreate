@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_OPTIMIZATION_UNION_TRANSFORMS_H_
-#define TURI_SFRAME_QUERY_OPTIMIZATION_UNION_TRANSFORMS_H_
+#ifndef TURI_XFRAME_QUERY_OPTIMIZATION_UNION_TRANSFORMS_H_
+#define TURI_XFRAME_QUERY_OPTIMIZATION_UNION_TRANSFORMS_H_
 
 #include <core/storage/query_engine/planning/optimizations/optimization_transforms.hpp>
 #include <core/storage/query_engine/planning/optimization_engine.hpp>
@@ -73,7 +73,7 @@ class opt_union_on_source : public opt_union_transform {
     size_t num_sources_present = 0;
     for(size_t i = 0; i < n->inputs.size(); ++i) {
       auto t = n->inputs[i]->type;
-      if(t == planner_node_type::SFRAME_SOURCE_NODE
+      if(t == planner_node_type::XFRAME_SOURCE_NODE
          || t == planner_node_type::SARRAY_SOURCE_NODE) {
         ++num_sources_present;
       }
@@ -96,7 +96,7 @@ class opt_union_on_source : public opt_union_transform {
 
       for(size_t i = 0; i < n->inputs.size(); ++i) {
         auto t = n->inputs[i]->type;
-        if(t == planner_node_type::SFRAME_SOURCE_NODE
+        if(t == planner_node_type::XFRAME_SOURCE_NODE
            || t == planner_node_type::SARRAY_SOURCE_NODE) {
 
           size_t begin_index = n->inputs[i]->p("begin_index");
@@ -104,9 +104,9 @@ class opt_union_on_source : public opt_union_transform {
 
           size_t size = 0;
 
-          if(t == planner_node_type::SFRAME_SOURCE_NODE) {
-            // Get the size of the sframe
-            size = n->inputs[i]->any_p<sframe>("sframe").num_rows();
+          if(t == planner_node_type::XFRAME_SOURCE_NODE) {
+            // Get the size of the xframe
+            size = n->inputs[i]->any_p<xframe>("xframe").num_rows();
           } else {
             // Get the size of the sarray
             size = n->inputs[i]->any_p<std::shared_ptr<sarray<flexible_type> > >("sarray")->size();
@@ -149,7 +149,7 @@ class opt_union_on_source : public opt_union_transform {
     size_t current_output_idx = 0;
     for(size_t i = 0; i < n->inputs.size(); ++i) {
       auto t = n->inputs[i]->type;
-      if(t == planner_node_type::SFRAME_SOURCE_NODE
+      if(t == planner_node_type::XFRAME_SOURCE_NODE
          || t == planner_node_type::SARRAY_SOURCE_NODE) {
 
         size_t begin_index = n->inputs[i]->p("begin_index");
@@ -172,9 +172,9 @@ class opt_union_on_source : public opt_union_transform {
 
         // Add this to the appropriate info struct
 
-        if(t == planner_node_type::SFRAME_SOURCE_NODE) {
+        if(t == planner_node_type::XFRAME_SOURCE_NODE) {
 
-          sframe sf = n->inputs[i]->any_p<sframe>("sframe");
+          xframe sf = n->inputs[i]->any_p<xframe>("xframe");
 
           for(size_t i = 0; i < sf.num_columns(); ++i) {
             map_info[map_idx].sa_v.push_back({current_output_idx, sf.select_column(i)});
@@ -214,7 +214,7 @@ class opt_union_on_source : public opt_union_transform {
         }
       }
 
-      pnode_ptr rep = op_sframe_source::make_planner_node(sframe(columns), m.begin_index, m.end_index);
+      pnode_ptr rep = op_xframe_source::make_planner_node(xframe(columns), m.begin_index, m.end_index);
       opt_manager->replace_node(n, rep);
       return true;
     }
@@ -243,7 +243,7 @@ class opt_union_on_source : public opt_union_transform {
           ++current_output_idx;
         }
 
-        inputs.push_back(op_sframe_source::make_planner_node(sframe(columns), m.begin_index, m.end_index));
+        inputs.push_back(op_xframe_source::make_planner_node(xframe(columns), m.begin_index, m.end_index));
       } else {
 
         inputs.push_back(n->inputs[m.input_index]->pnode);

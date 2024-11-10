@@ -7,12 +7,12 @@
 #include <boost/test/unit_test.hpp>
 #include <core/util/test_macros.hpp>
 #include <boost/range/combine.hpp>
-#include <core/data/sframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
 #include <core/parallel/lambda_omp.hpp>
-#include <core/data/sframe/gl_sframe.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
 
 using namespace turi;
 
@@ -286,7 +286,7 @@ struct gl_sarray_test {
 
       typedef flex_date_time date_time;
       gl_sarray sa{ date_time(0, 0), date_time(1, 0), date_time(2, 0) };
-      gl_sframe sf = sa.split_datetime();
+      gl_xframe sf = sa.split_datetime();
       _assert_sarray_equals(sf["X.year"], {1970, 1970, 1970});
       _assert_sarray_equals(sf["X.month"], {1, 1, 1});
       _assert_sarray_equals(sf["X.day"], {1, 1, 1});
@@ -309,7 +309,7 @@ struct gl_sarray_test {
       array.push_back(dict{ {"b", 1}, {"common", 1} });
       array.push_back(dict{ {"c", 2}, {"common", 2} });
       gl_sarray sa(array);
-      gl_sframe sf = sa.unpack("X");
+      gl_xframe sf = sa.unpack("X");
       TS_ASSERT_EQUALS(sf.num_columns(), 4);
       _assert_sarray_equals(sf["X.a"], {0, None, None});
       _assert_sarray_equals(sf["X.b"], {None, 1, None});
@@ -394,7 +394,7 @@ struct gl_sarray_test {
       gl_sarray sa = gl_sarray::from_const(0, 1000) + 1;
       atomic<size_t> ctr;
       sa.materialize_to_callback([&](size_t thrid,
-                                    const std::shared_ptr<sframe_rows>& rows) {
+                                    const std::shared_ptr<xframe_rows>& rows) {
                                       ctr += rows->num_rows();
                                       return false;
                                     });

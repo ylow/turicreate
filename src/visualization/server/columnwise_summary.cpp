@@ -1,16 +1,16 @@
 #include "batch_size.hpp"
 #include "columnwise_summary.hpp"
-#include <core/storage/sframe_interface/unity_sframe.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
 
 namespace turi {
   namespace visualization {
-    std::shared_ptr<Plot> plot_columnwise_summary(std::shared_ptr<unity_sframe_base> sf) {
+    std::shared_ptr<Plot> plot_columnwise_summary(std::shared_ptr<unity_xframe_base> sf) {
 
-      logprogress_stream << "Materializing SFrame" << std::endl;
+      logprogress_stream << "Materializing XFrame" << std::endl;
       sf->materialize();
 
       if (sf->size() == 0) {
-        log_and_throw("Nothing to show; SFrame is empty.");
+        log_and_throw("Nothing to show; XFrame is empty.");
       }
 
       transformation_collection column_transformers;
@@ -64,7 +64,7 @@ namespace turi {
       }
 
       // now that we've collected columns, pick a batch size and add transformers
-      gl_sframe gl_sf(sf->select_columns(column_names));
+      gl_xframe gl_sf(sf->select_columns(column_names));
       size_t sf_batch_size = batch_size(gl_sf);
       for (const std::string& col : column_names) {
         std::shared_ptr<unity_sarray_base> sarr = sf->select_column(col);

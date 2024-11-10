@@ -5,7 +5,7 @@
  */
 #include <model_server/lib/variant.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <model_server/lib/api/unity_sframe_interface.hpp>
+#include <model_server/lib/api/unity_xframe_interface.hpp>
 #include <model_server/lib/api/unity_sarray_interface.hpp>
 #include <model_server/lib/api/function_closure_info.hpp>
 #include <model_server/lib/extensions/model_base.hpp>
@@ -27,7 +27,7 @@ exec(oarchive& oarc, const variant_type& v) {
      oarc << boost::get<std::shared_ptr<model_base>>(v);
      break;
    case 3:
-     oarc << boost::get<std::shared_ptr<unity_sframe_base>>(v);
+     oarc << boost::get<std::shared_ptr<unity_xframe_base>>(v);
      break;
    case 4:
      oarc << boost::get<std::shared_ptr<unity_sarray_base>>(v);
@@ -66,8 +66,8 @@ exec(iarchive& iarc, variant_type& v) {
      iarc >> boost::get<std::shared_ptr<model_base>>(v);
      break;
    case 3:
-     v = std::shared_ptr<unity_sframe_base>();
-     iarc >> boost::get<std::shared_ptr<unity_sframe_base>>(v);
+     v = std::shared_ptr<unity_xframe_base>();
+     iarc >> boost::get<std::shared_ptr<unity_xframe_base>>(v);
      break;
    case 4:
      v = std::shared_ptr<unity_sarray_base>();

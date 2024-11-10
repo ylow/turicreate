@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_MANAGER_LOGICAL_FILTER_HPP
-#define TURI_SFRAME_QUERY_MANAGER_LOGICAL_FILTER_HPP
+#ifndef TURI_XFRAME_QUERY_MANAGER_LOGICAL_FILTER_HPP
+#define TURI_XFRAME_QUERY_MANAGER_LOGICAL_FILTER_HPP
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/storage/query_engine/operators/operator.hpp>
 #include <core/storage/query_engine/execution/query_context.hpp>
@@ -15,7 +15,7 @@ namespace turi {
 namespace query_eval {
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup operators Logical Operators
  * \{
  */
@@ -29,9 +29,9 @@ template<>
 class operator_impl<planner_node_type::LOGICAL_FILTER_NODE> : public query_operator {
  public:
   DECL_CORO_STATE(execute);
-  std::shared_ptr<const sframe_rows>  rows_left, rows_right;
-  sframe_rows::const_iterator left_iter, right_iter, out_iter;
-  std::shared_ptr<sframe_rows>  output_buffer;
+  std::shared_ptr<const xframe_rows>  rows_left, rows_right;
+  xframe_rows::const_iterator left_iter, right_iter, out_iter;
+  std::shared_ptr<xframe_rows>  output_buffer;
   size_t cur_output_index = 0;
   size_t ncols = 0;
   size_t nrows = 0;
@@ -55,7 +55,7 @@ class operator_impl<planner_node_type::LOGICAL_FILTER_NODE> : public query_opera
   }
 
   // tests if the first column of col is all zeros
-  bool is_all_zero(const std::shared_ptr<const sframe_rows>& col) {
+  bool is_all_zero(const std::shared_ptr<const xframe_rows>& col) {
     // if it is all zero, we can skip the left data
     for (auto& row: *col) {
       if (!(row[0].is_zero())) return false;
@@ -169,4 +169,4 @@ typedef operator_impl<planner_node_type::LOGICAL_FILTER_NODE> op_logical_filter;
 } // query_eval
 } // turicreate
 
-#endif // TURI_SFRAME_QUERY_MANAGER_LOGICAL_FILTER_HPP
+#endif // TURI_XFRAME_QUERY_MANAGER_LOGICAL_FILTER_HPP

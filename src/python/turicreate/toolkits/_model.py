@@ -14,7 +14,7 @@ Defines a basic interface for a model object.
 
 import turicreate as _tc
 import turicreate._connect.main as glconnect
-from turicreate.data_structures.sframe import SFrame as _SFrame
+from turicreate.data_structures.xframe import XFrame as _XFrame
 import turicreate.extensions as _extensions
 from turicreate.extensions import _wrap_function_return
 from turicreate.toolkits._internal_utils import _toolkit_serialize_summary_struct
@@ -142,7 +142,7 @@ def _get_default_options_wrapper(
                                                        'svm', 'SVMClassifier')
     """
 
-    def get_default_options_for_model(output_type="sframe"):
+    def get_default_options_for_model(output_type="xframe"):
         """
         Get the default options for the toolkit
         :class:`~turicreate.{module_name}.{python_class_name}`.
@@ -153,10 +153,10 @@ def _get_default_options_wrapper(
 
             The output can be of the following types.
 
-            - `sframe`: A table description each option used in the model.
+            - `xframe`: A table description each option used in the model.
             - `json`: A list of option dictionaries suitable for JSON serialization.
 
-            | Each dictionary/row in the dictionary/SFrame object describes the
+            | Each dictionary/row in the dictionary/XFrame object describes the
               following parameters of the given model.
 
             +------------------+-------------------------------------------------------+
@@ -179,7 +179,7 @@ def _get_default_options_wrapper(
 
         Returns
         -------
-        out : dict/SFrame
+        out : dict/XFrame
 
         See Also
         --------
@@ -191,8 +191,8 @@ def _get_default_options_wrapper(
 
           >>> import turicreate
 
-          # SFrame formatted output.
-          >>> out_sframe = turicreate.{module_name}.get_default_options()
+          # XFrame formatted output.
+          >>> out_xframe = turicreate.{module_name}.get_default_options()
 
           # dict formatted output suitable for JSON serialization.
           >>> out_json = turicreate.{module_name}.get_default_options('json')
@@ -211,7 +211,7 @@ def _get_default_options_wrapper(
         else:
             json_list = [{"name": k, "": v} for k, v in list(response.items())]
             return (
-                _SFrame(json_list)
+                _XFrame(json_list)
                 .unpack("X1", column_name_prefix="")
                 .unpack("X1", column_name_prefix="")
             )

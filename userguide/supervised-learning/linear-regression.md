@@ -8,7 +8,7 @@ Turi toolkits. First a model is created using **training data**. Once
 the model is created, it can then be used to make predictions on new
 examples that were not seen in training (the  **test data**). Model
 creation, prediction, and evaluation work will data that is contained in
-an SFrame. The following figure illustrates how linear regression works.
+an XFrame. The following figure illustrates how linear regression works.
 Notice that the functional form learned here is a linear function
 (unlike the previous figure where the predicted function was
 non-linear).
@@ -62,7 +62,7 @@ regression model that can predict the **star rating** for each review using:
 import turicreate as tc
 
 # Load the data
-data =  tc.SFrame('ratings-data.csv')
+data =  tc.XFrame('ratings-data.csv')
 
 # Make a train-test split
 train_data, test_data = data.random_split(0.8)
@@ -74,7 +74,7 @@ model = tc.linear_regression.create(train_data, target='stars',
                                                 'user_review_count',
                                                 'business_review_count'])
 
-# Save predictions to an SFrame (class and corresponding class-probabilities)
+# Save predictions to an XFrame (class and corresponding class-probabilities)
 predictions = model.predict(test_data)
 
 # Evaluate the model and save the results into a dictionary
@@ -132,7 +132,7 @@ print(coefs)
 ```
 
 Note that the **index** column in the coefficients is only applicable for
-categorical features, lists, and dictionaries. In the SFrame above, there is an
+categorical features, lists, and dictionaries. In the XFrame above, there is an
 extra column for `standard errors` on the estimated coefficients (see section
 below for a more detailed explanation).
 
@@ -180,7 +180,7 @@ scheme.
 
 Now let us look at a simple example of using **city** as a variable in the
 linear regression model. Notice that there is no need to do any special
-pre-processing. All SFrame columns of type **str** are automatically
+pre-processing. All XFrame columns of type **str** are automatically
 transformed into categorical variables. Notice that the **number of
 coefficients** and the **number of features** aren't the same.
 
@@ -232,7 +232,7 @@ Number of coefficients      : 64
 +-----------------------+------------+-------------------+
 [64 rows x 3 columns]
 
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 
 ```
@@ -320,7 +320,7 @@ Number of coefficients      : 512
 |          ...          |        ...         |        ...         |
 +-----------------------+--------------------+--------------------+
 [512 rows x 3 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 
@@ -533,9 +533,9 @@ model = tc.linear_regression.create(train_data, target='stars',
                                                 'city',
                                                 'categories_dict'])
 
-# An SFrame with a single row with missing values in the 'user_avg_stars'
+# An XFrame with a single row with missing values in the 'user_avg_stars'
 # predict() will impute the entire feature to the mean value observed during training
-new_data = tc.SFrame({'user_avg_stars': [None],
+new_data = tc.XFrame({'user_avg_stars': [None],
                       'business_avg_stars': [30.0],
                       'user_review_count': [10],
                       'business_review_count': [20],
@@ -545,9 +545,9 @@ new_data = tc.SFrame({'user_avg_stars': [None],
 prediction = model.predict(new_data)
 print(prediction)
 
-# An SFrame without the 'user_avg_stars' feature. predict() will impute the
+# An XFrame without the 'user_avg_stars' feature. predict() will impute the
 # entire feature to the mean value observed during training.
-new_data = tc.SFrame({'business_avg_stars': [30.0],
+new_data = tc.XFrame({'business_avg_stars': [30.0],
                       'user_review_count': [10],
                       'business_review_count': [20],
                        'city': ['Tuscon'],

@@ -12,7 +12,7 @@ Efficiently compute the approximate statistics over an SArray.
 from .._cython.cy_sketch import UnitySketchProxy
 from .._cython.context import debug_trace as cython_context
 from .sarray import SArray
-from .sframe import SFrame
+from .xframe import XFrame
 
 import operator
 from math import sqrt
@@ -23,7 +23,7 @@ __all__ = ["Sketch"]
 class Sketch(object):
     """
     The Sketch object contains a sketch of a single SArray (a column of an
-    SFrame). Using a sketch representation of an SArray, many approximate and
+    XFrame). Using a sketch representation of an SArray, many approximate and
     exact statistics can be computed very quickly.
 
     To construct a Sketch object, the following methods are equivalent:
@@ -32,11 +32,11 @@ class Sketch(object):
     >>> sketch = turicreate.Sketch(my_sarray)
     >>> sketch = my_sarray.summary()
 
-    Typically, the SArray is a column of an SFrame:
+    Typically, the SArray is a column of an XFrame:
 
-    >>> my_sframe =  turicreate.SFrame({'column1': [1,2,3]})
-    >>> sketch = turicreate.Sketch(my_sframe['column1'])
-    >>> sketch = my_sframe['column1'].summary()
+    >>> my_xframe =  turicreate.XFrame({'column1': [1,2,3]})
+    >>> sketch = turicreate.Sketch(my_xframe['column1'])
+    >>> sketch = my_xframe['column1'].summary()
 
     The sketch computation is fast, with complexity approximately linear in the
     length of the SArray. After the Sketch is computed, all queryable functions
@@ -218,7 +218,7 @@ class Sketch(object):
             s += " -- All elements appear with less than 0.01% frequency -- \n"
         else:
             sorted_freq = sorted_freq[:10]
-            sf = SFrame()
+            sf = XFrame()
             sf["value"] = [elem[0] for elem in sorted_freq]
             sf["count"] = [elem[1] for elem in sorted_freq]
             s += sf.__str__(footer=False) + "\n"
@@ -228,7 +228,7 @@ class Sketch(object):
             # print quantiles
             self.quantile(0)  # XXX: is this necessary?
             s += "Quantiles: \n"
-            sf = SFrame()
+            sf = XFrame()
             for q in [0.0, 0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99, 1.00]:
                 sf.add_column(
                     SArray([self.quantile(q)]), str(int(q * 100)) + "%", inplace=True

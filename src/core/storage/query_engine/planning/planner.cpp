@@ -13,20 +13,20 @@
 #include <core/storage/query_engine/planning/optimization_engine.hpp>
 #include <core/storage/query_engine/query_engine_lock.hpp>
 #include <core/globals/globals.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
 
 namespace turi { namespace query_eval {
 
-size_t SFRAME_MAX_LAZY_NODE_SIZE = 10000;
+size_t XFRAME_MAX_LAZY_NODE_SIZE = 10000;
 
-REGISTER_GLOBAL(int64_t, SFRAME_MAX_LAZY_NODE_SIZE, true);
+REGISTER_GLOBAL(int64_t, XFRAME_MAX_LAZY_NODE_SIZE, true);
 
 
 /**
  * Directly executes a linear query plan potentially parallelizing it if possible.
  * No fast path optimizations. You should use execute_node.
  */
-static sframe execute_node_impl(pnode_ptr input_n, const materialize_options& exec_params) {
+static xframe execute_node_impl(pnode_ptr input_n, const materialize_options& exec_params) {
   // Either run directly, or split it up into a parallel section
   if(is_parallel_slicable(input_n) && (exec_params.num_segments != 0)) {
     size_t num_segments = exec_params.num_segments;
@@ -49,12 +49,12 @@ static sframe execute_node_impl(pnode_ptr input_n, const materialize_options& ex
  * Executes a query plan, potentially parallelizing it if possible.
  * Also implements fast paths in the event the input node is a source node.
  */
-static sframe execute_node(pnode_ptr input_n, const materialize_options& exec_params) {
-  // fast path for SFRAME_SOURCE. If I am not streaming into
+static xframe execute_node(pnode_ptr input_n, const materialize_options& exec_params) {
+  // fast path for XFRAME_SOURCE. If I am not streaming into
   // a callback, I can just call save
   if (exec_params.write_callback == nullptr &&
-      input_n->operator_type == planner_node_type::SFRAME_SOURCE_NODE) {
-    auto sf = input_n->any_operator_parameters.at("sframe").as<sframe>();
+      input_n->operator_type == planner_node_type::XFRAME_SOURCE_NODE) {
+    auto sf = input_n->any_operator_parameters.at("xframe").as<xframe>();
     if (input_n->operator_parameters.at("begin_index") == 0 &&
         input_n->operator_parameters.at("end_index") == sf.num_rows()) {
       if (!exec_params.output_index_file.empty()) {
@@ -75,7 +75,7 @@ static sframe execute_node(pnode_ptr input_n, const materialize_options& exec_pa
     const auto& sa = input_n->any_operator_parameters.at("sarray").as<std::shared_ptr<sarray<flexible_type>>>();
     if (input_n->operator_parameters.at("begin_index") == 0 &&
         input_n->operator_parameters.at("end_index") == sa->size()) {
-      sframe sf({sa},{"X1"});
+      xframe sf({sa},{"X1"});
       if (!exec_params.output_index_file.empty()) {
         if (!exec_params.output_column_names.empty()) {
           ASSERT_EQ(1, exec_params.output_column_names.size());
@@ -104,16 +104,16 @@ static sframe execute_node(pnode_ptr input_n, const materialize_options& exec_pa
         // the indices the columns to materialize. we will project this out
         // and materialize them
         std::vector<size_t> columns_to_materialize;
-        // The final set of sframe columns;
+        // The final set of xframe columns;
         // we fill in what we know first from existing_columns
-        std::vector<std::shared_ptr<sarray<flexible_type>>> resulting_sframe_columns(ncolumns);
+        std::vector<std::shared_ptr<sarray<flexible_type>>> resulting_xframe_columns(ncolumns);
         for (size_t i = 0;i < ncolumns; ++i) {
           auto iter = existing_columns.find(i);
           if (iter == existing_columns.end()) {
-            // leave a gap in resulting_sframe_columns we will fill these in later
+            // leave a gap in resulting_xframe_columns we will fill these in later
             columns_to_materialize.push_back(i);
           } else {
-            resulting_sframe_columns[i] = iter->second;
+            resulting_xframe_columns[i] = iter->second;
           }
         }
         if (!columns_to_materialize.empty()) {
@@ -125,15 +125,15 @@ static sframe execute_node(pnode_ptr input_n, const materialize_options& exec_pa
           input_n = optimization_engine::optimize_planner_graph(input_n, new_exec_params);
           logstream(LOG_INFO) << "Materializing only column subset: " << input_n << std::endl;
 
-          sframe new_columns = execute_node_impl(input_n, new_exec_params);
-          // rebuild an sframe
-          // fill in the gaps in resulting_sframe_columns
+          xframe new_columns = execute_node_impl(input_n, new_exec_params);
+          // rebuild an xframe
+          // fill in the gaps in resulting_xframe_columns
           // these are the columns we just materialized
           for (size_t i = 0; i < columns_to_materialize.size(); ++i) {
-            resulting_sframe_columns[columns_to_materialize[i]] = new_columns.select_column(i);
+            resulting_xframe_columns[columns_to_materialize[i]] = new_columns.select_column(i);
           }
         }
-        return sframe(resulting_sframe_columns,
+        return xframe(resulting_xframe_columns,
                       exec_params.output_column_names);
       }
     }
@@ -189,7 +189,7 @@ static pnode_ptr partial_materialize_impl(pnode_ptr n,
     for(auto& i: n->inputs) {
       // logprogress_stream << "Partial Materializing: " << i << std::endl;
       auto optimized_i = optimization_engine::optimize_planner_graph(i, exec_params);
-      (*i) = (*op_sframe_source::make_planner_node(execute_node(optimized_i, exec_params)));
+      (*i) = (*op_xframe_source::make_planner_node(execute_node(optimized_i, exec_params)));
     }
     // logprogress_stream << "Reduced Plan: " << n << std::endl;
   }
@@ -202,7 +202,7 @@ static pnode_ptr partial_materialize_impl(pnode_ptr n,
   // logprogress_stream << "Partial Materializing: " << n << std::endl;
   // Otherwise, instantiate this node.
   auto optimized_n = optimization_engine::optimize_planner_graph(n, exec_params);
-  (*n) = (*op_sframe_source::make_planner_node(execute_node(optimized_n, exec_params)));
+  (*n) = (*op_xframe_source::make_planner_node(execute_node(optimized_n, exec_params)));
   memo[n] = n;
   return memo[n];
 }
@@ -221,8 +221,8 @@ pnode_ptr naive_partial_materialize(pnode_ptr n, const materialize_options& exec
       // For now, ignore other possible downstream nodes attached to
       // this input.
       pnode_ptr p = naive_partial_materialize(n->inputs[i], exec_params);
-      sframe sf = execute_node(p, exec_params);
-      n->inputs[i] = op_sframe_source::make_planner_node(sf);
+      xframe sf = execute_node(p, exec_params);
+      n->inputs[i] = op_xframe_source::make_planner_node(sf);
     }
   }
   return n;
@@ -239,7 +239,7 @@ static pnode_ptr partial_materialize(pnode_ptr ptip,
   }
 }
 
-sframe planner::materialize(pnode_ptr ptip,
+xframe planner::materialize(pnode_ptr ptip,
                             materialize_options exec_params) {
   std::lock_guard<recursive_mutex> GLOBAL_LOCK(global_query_lock);
   if (exec_params.num_segments == 0) {
@@ -277,7 +277,7 @@ sframe planner::materialize(pnode_ptr ptip,
     // no write callback
     // Rewrite the query node to be materialized source node
     auto ret_sf = execute_node(final_node, exec_params);
-    (*original_ptip) = (*(op_sframe_source::make_planner_node(ret_sf)));
+    (*original_ptip) = (*(op_xframe_source::make_planner_node(ret_sf)));
     return ret_sf;
   } else {
     // there is a callback. push it through to execute parameters.
@@ -295,12 +295,12 @@ void planner::materialize(std::shared_ptr<planner_node> tip,
 };
 
   /** If this returns true, it is recommended to go ahead and
-   *  materialize the sframe operations on the fly to prevent memory
+   *  materialize the xframe operations on the fly to prevent memory
    *  issues.
    */
 bool planner::online_materialization_recommended(std::shared_ptr<planner_node> tip) {
   size_t lazy_node_size = infer_planner_node_num_dependency_nodes(tip);
-  return lazy_node_size >= SFRAME_MAX_LAZY_NODE_SIZE;
+  return lazy_node_size >= XFRAME_MAX_LAZY_NODE_SIZE;
 }
 
 /**
@@ -309,8 +309,8 @@ bool planner::online_materialization_recommended(std::shared_ptr<planner_node> t
 std::shared_ptr<planner_node>  planner::materialize_as_planner_node(
     std::shared_ptr<planner_node> tip, materialize_options exec_params) {
 
-  sframe res = materialize(tip, exec_params);
-  return op_sframe_source::make_planner_node(res);
+  xframe res = materialize(tip, exec_params);
+  return op_xframe_source::make_planner_node(res);
 }
 
 /**

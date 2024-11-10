@@ -111,7 +111,7 @@ class Plot(object):
 
     Notes
     -----
-    - A plot object is returned via the SFrame's or SArray's .plot() method
+    - A plot object is returned via the XFrame's or SArray's .plot() method
 
     Examples
     --------
@@ -475,12 +475,12 @@ def display_table_in_notebook(sf, title=None):
             '<html lang="en">                           \
                           <head>                                   \
                             <style>                                \
-                              .sframe {                            \
+                              .xframe {                            \
                                 font-size: 12px;                   \
                                 font-family: HelveticaNeue;        \
                                 border: 1px solid silver;          \
                               }                                    \
-                              .sframe thead th {                   \
+                              .xframe thead th {                   \
                                 background: #F7F7F7;               \
                                 font-family: HelveticaNeue-Medium; \
                                 font-size: 14px;                   \
@@ -497,13 +497,13 @@ def display_table_in_notebook(sf, title=None):
                                 text-align:center;                 \
                                 font-weight:normal;                \
                               }                                    \
-                              .sframe tbody th {                   \
+                              .xframe tbody th {                   \
                                 background: #FFFFFF;               \
                                 text-align:left;                   \
                                 font-weight:normal;                \
                                 border-right: 1px solid #E9E9E9;   \
                               }                                    \
-                              .sframe td {                         \
+                              .xframe td {                         \
                                 background: #FFFFFF;               \
                                 padding-left: 10px;                \
                                 padding-right: 38px;               \
@@ -518,7 +518,7 @@ def display_table_in_notebook(sf, title=None):
                                 line-height: 16.8px;               \
                                 background: #FFFFFF;               \
                               }                                    \
-                              .sframe tr {                         \
+                              .xframe tr {                         \
                                 padding-left: 10px;                \
                                 padding-right: 38px;               \
                                 padding-top: 14px;                 \
@@ -532,7 +532,7 @@ def display_table_in_notebook(sf, title=None):
                                 line-height: 16.8px;               \
                                 background: #FFFFFF;               \
                               }                                    \
-                              .sframe tr:hover {                   \
+                              .xframe tr:hover {                   \
                                 background: silver;                \
                               },                                   \
                             </style>                               \
@@ -543,7 +543,7 @@ def display_table_in_notebook(sf, title=None):
             + " </h1>                 \
                             "
             + df.to_html(
-                formatters={}, escape=False, classes="sframe"
+                formatters={}, escape=False, classes="xframe"
             )
             + "\
                           </body>                                  \

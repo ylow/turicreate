@@ -3,11 +3,11 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_MANAGER_REDUCE_HPP
-#define TURI_SFRAME_QUERY_MANAGER_REDUCE_HPP
+#ifndef TURI_XFRAME_QUERY_MANAGER_REDUCE_HPP
+#define TURI_XFRAME_QUERY_MANAGER_REDUCE_HPP
 
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/group_aggregate_value.hpp>
+#include <core/storage/xframe_data/group_aggregate_value.hpp>
 #include <core/storage/query_engine/operators/operator.hpp>
 #include <core/storage/query_engine/execution/query_context.hpp>
 #include <core/storage/query_engine/operators/operator_properties.hpp>
@@ -18,7 +18,7 @@ namespace turi {
 namespace query_eval {
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup operators Logical Operators
  * \{
  */
@@ -64,7 +64,7 @@ struct operator_impl<planner_node_type::REDUCE_NODE> : public query_operator {
       if (rows == nullptr)
         break;
       for (const auto& row : *rows) {
-        // TODO make add_element take a sframe_row::row_reference instead
+        // TODO make add_element take a xframe_row::row_reference instead
         if (row.size() == 1) m_aggregator->add_element_simple(row[0]);
         else m_aggregator->add_element(std::vector<flexible_type>(row));
       }
@@ -136,4 +136,4 @@ typedef operator_impl<planner_node_type::REDUCE_NODE> op_reduce;
 } // query_eval
 } // turicreate
 
-#endif // TURI_SFRAME_QUERY_MANAGER_TRANSFORM_HPP
+#endif // TURI_XFRAME_QUERY_MANAGER_TRANSFORM_HPP

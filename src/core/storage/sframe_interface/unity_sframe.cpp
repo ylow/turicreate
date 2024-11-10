@@ -8,23 +8,23 @@
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
-#include <core/storage/sframe_interface/unity_sframe.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sframe_saving.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/xframe_saving.hpp>
+#include <core/storage/xframe_data/xframe_config.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
 #include <core/storage/fileio/temp_files.hpp>
 #include <core/storage/fileio/sanitize_url.hpp>
 #include <model_server/lib/unity_global.hpp>
 #include <model_server/lib/unity_global_singleton.hpp>
-#include <core/storage/sframe_data/groupby_aggregate.hpp>
-#include <core/storage/sframe_data/groupby_aggregate_operators.hpp>
-#include <core/storage/sframe_data/csv_line_tokenizer.hpp>
-#include <core/storage/sframe_data/csv_writer.hpp>
+#include <core/storage/xframe_data/groupby_aggregate.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_operators.hpp>
+#include <core/storage/xframe_data/csv_line_tokenizer.hpp>
+#include <core/storage/xframe_data/csv_writer.hpp>
 #include <core/data/flexible_type/flexible_type_spirit_parser.hpp>
-#include <core/storage/sframe_data/join.hpp>
+#include <core/storage/xframe_data/join.hpp>
 #include <model_server/lib/auto_close_sarray.hpp>
 #include <core/storage/query_engine/planning/planner.hpp>
 #include <core/storage/query_engine/planning/optimization_engine.hpp>
@@ -62,42 +62,42 @@ namespace turi {
 
 using namespace turi::query_eval;
 
-static std::shared_ptr<sframe> get_empty_sframe() {
-  // make empty sframe and keep it around, reusing it whenever
-  // I need an empty sframe. We are intentionally leaking this object.
+static std::shared_ptr<xframe> get_empty_xframe() {
+  // make empty xframe and keep it around, reusing it whenever
+  // I need an empty xframe. We are intentionally leaking this object.
   // Otherwise the termination of this will race against the cleanup of the
   // cache files.
-  static std::shared_ptr<sframe>* sf = nullptr;
+  static std::shared_ptr<xframe>* sf = nullptr;
   static turi::mutex static_sf_lock;
   std::lock_guard<turi::mutex> guard(static_sf_lock);
   if (sf == nullptr) {
-    sf = new std::shared_ptr<sframe>();
-    (*sf) = std::make_shared<sframe>();
+    sf = new std::shared_ptr<xframe>();
+    (*sf) = std::make_shared<xframe>();
     (*sf)->open_for_write({}, {}, "", 1);
     (*sf)->close();
   }
   return *sf;
 }
-unity_sframe::unity_sframe() {
-  this->set_sframe(get_empty_sframe());
+unity_xframe::unity_xframe() {
+  this->set_xframe(get_empty_xframe());
 }
 
-unity_sframe::~unity_sframe() { clear(); }
+unity_xframe::~unity_xframe() { clear(); }
 
-void unity_sframe::construct_from_dataframe(const dataframe_t& df) {
+void unity_xframe::construct_from_dataframe(const dataframe_t& df) {
   log_func_entry();
   clear();
-  this->set_sframe(std::make_shared<sframe>(df));
+  this->set_xframe(std::make_shared<xframe>(df));
 }
 
-void unity_sframe::construct_from_sframe(const sframe& sf) {
+void unity_xframe::construct_from_xframe(const xframe& sf) {
   log_func_entry();
   clear();
-  this->set_sframe(std::make_shared<sframe>(sf));
+  this->set_xframe(std::make_shared<xframe>(sf));
 }
 
-void unity_sframe::construct_from_sframe_index(std::string location) {
-  logstream(LOG_INFO) << "Construct sframe from location: " << sanitize_url(location) << std::endl;
+void unity_xframe::construct_from_xframe_index(std::string location) {
+  logstream(LOG_INFO) << "Construct xframe from location: " << sanitize_url(location) << std::endl;
   clear();
 
   auto status = fileio::get_file_status(location);
@@ -121,8 +121,8 @@ void unity_sframe::construct_from_sframe_index(std::string location) {
                              " not found. ErrMsg: " + status.second);
   } if (status.first == fileio::file_status::REGULAR_FILE) {
     // its a regular file, load it normally
-    auto sframe_ptr = std::make_shared<sframe>(location);
-    this->set_sframe(sframe_ptr);
+    auto xframe_ptr = std::make_shared<xframe>(location);
+    this->set_xframe(xframe_ptr);
   } else if (status.first == fileio::file_status::DIRECTORY) {
     // its a directory, open the directory and verify that it contains an
     // sarray and then load it if it does
@@ -130,12 +130,12 @@ void unity_sframe::construct_from_sframe_index(std::string location) {
     dirarc.open_directory_for_read(location);
     std::string content_value;
     if (dirarc.get_metadata("contents", content_value) == false ||
-        content_value != "sframe") {
-      log_and_throw_io_failure("Archive does not contain an SFrame");
+        content_value != "xframe") {
+      log_and_throw_io_failure("Archive does not contain an XFrame");
     }
     std::string prefix = dirarc.get_next_read_prefix();
-    auto sframe_ptr = std::make_shared<sframe>(prefix + ".frame_idx");
-    this->set_sframe(sframe_ptr);
+    auto xframe_ptr = std::make_shared<xframe>(prefix + ".frame_idx");
+    this->set_xframe(xframe_ptr);
     dirarc.close();
   } else if(status.first == fileio::file_status::FS_UNAVAILABLE) {
     log_and_throw_io_failure(
@@ -144,12 +144,12 @@ void unity_sframe::construct_from_sframe_index(std::string location) {
   }
 }
 
-std::map<std::string, std::shared_ptr<unity_sarray_base>> unity_sframe::construct_from_csvs(
+std::map<std::string, std::shared_ptr<unity_sarray_base>> unity_xframe::construct_from_csvs(
     std::string url,
     std::map<std::string, flexible_type> csv_parsing_config,
     std::map<std::string, flex_type_enum> column_type_hints) {
 
-  logstream(LOG_INFO) << "Construct sframe from csvs at "
+  logstream(LOG_INFO) << "Construct xframe from csvs at "
                       << sanitize_url(url) << std::endl;
   std::stringstream ss;
   ss << "Parsing config:\n";
@@ -273,9 +273,9 @@ std::map<std::string, std::shared_ptr<unity_sarray_base>> unity_sframe::construc
   }
   tokenizer.init();
 
-  auto sframe_ptr = std::make_shared<sframe>();
+  auto xframe_ptr = std::make_shared<xframe>();
 
-  auto errors = sframe_ptr->init_from_csvs(url,
+  auto errors = xframe_ptr->init_from_csvs(url,
                                            tokenizer,
                                            use_header,
                                            continue_on_failure,
@@ -285,7 +285,7 @@ std::map<std::string, std::shared_ptr<unity_sarray_base>> unity_sframe::construc
                                            row_limit,
                                            skip_rows);
 
-  this->set_sframe(sframe_ptr);
+  this->set_xframe(xframe_ptr);
 
   std::map<std::string, std::shared_ptr<unity_sarray_base>> errors_unity;
   for (auto& kv : errors) {
@@ -298,7 +298,7 @@ std::map<std::string, std::shared_ptr<unity_sarray_base>> unity_sframe::construc
 }
 
 
-void unity_sframe::construct_from_planner_node(std::shared_ptr<planner_node> node,
+void unity_xframe::construct_from_planner_node(std::shared_ptr<planner_node> node,
                                                const std::vector<std::string>& column_names) {
   clear();
 
@@ -308,18 +308,18 @@ void unity_sframe::construct_from_planner_node(std::shared_ptr<planner_node> nod
 
   // Do we need to materialize it for safety's sake?
   if(planner().online_materialization_recommended(m_planner_node)) {
-    logstream(LOG_INFO) << "Forced materialization of SFrame due to size of lazy graph: " << std::endl;
+    logstream(LOG_INFO) << "Forced materialization of XFrame due to size of lazy graph: " << std::endl;
     m_planner_node = planner().materialize_as_planner_node(m_planner_node);
   }
 
   m_column_names = column_names;
 }
 
-void unity_sframe::save_frame(std::string target_directory) {
+void unity_xframe::save_frame(std::string target_directory) {
   try {
     dir_archive dirarc;
     dirarc.open_directory_for_write(target_directory);
-    dirarc.set_metadata("contents", "sframe");
+    dirarc.set_metadata("contents", "xframe");
     std::string prefix = dirarc.get_next_write_prefix();
     save_frame_by_index_file(prefix + ".frame_idx");
     dirarc.close();
@@ -329,61 +329,61 @@ void unity_sframe::save_frame(std::string target_directory) {
 }
 
 
-void unity_sframe::save_frame_reference(std::string target_directory) {
+void unity_xframe::save_frame_reference(std::string target_directory) {
   try {
     dir_archive dirarc;
     dirarc.open_directory_for_write(target_directory);
-    dirarc.set_metadata("contents", "sframe");
+    dirarc.set_metadata("contents", "xframe");
     std::string prefix = dirarc.get_next_write_prefix();
-    sframe_save_weak_reference(*get_underlying_sframe(), prefix + ".frame_idx");
+    xframe_save_weak_reference(*get_underlying_xframe(), prefix + ".frame_idx");
     dirarc.close();
   } catch(...) {
     throw;
   }
 }
 
-void unity_sframe::save_frame_by_index_file(std::string index_file) {
+void unity_xframe::save_frame_by_index_file(std::string index_file) {
   log_func_entry();
-  auto sf = get_underlying_sframe();
+  auto sf = get_underlying_xframe();
   sf->save(index_file);
 }
 
-void unity_sframe::save(oarchive& oarc) const {
+void unity_xframe::save(oarchive& oarc) const {
   oarc << true;
   std::string prefix = oarc.get_prefix();
-  const_cast<unity_sframe*>(this)->save_frame_by_index_file(prefix + ".frame_idx");
+  const_cast<unity_xframe*>(this)->save_frame_by_index_file(prefix + ".frame_idx");
 }
 
-void unity_sframe::load(iarchive& iarc) {
+void unity_xframe::load(iarchive& iarc) {
   clear();
-  bool has_sframe;
-  iarc >> has_sframe;
-  if (has_sframe) {
-    sframe sf;
+  bool has_xframe;
+  iarc >> has_xframe;
+  if (has_xframe) {
+    xframe sf;
     iarc >> sf;
-    construct_from_sframe(sf);
+    construct_from_xframe(sf);
   }
 }
 
-void unity_sframe::clear() {
+void unity_xframe::clear() {
   m_planner_node.reset();
   m_column_names.clear();
-  m_cached_sframe.reset();
+  m_cached_xframe.reset();
 }
 
-size_t unity_sframe::size() {
+size_t unity_xframe::size() {
   size_t ret = infer_planner_node_length(get_planner_node());
   if (ret == (size_t)(-1)) {
-    return get_underlying_sframe()->size();
+    return get_underlying_xframe()->size();
   }
   return ret;
 }
 
-size_t unity_sframe::num_columns() {
+size_t unity_xframe::num_columns() {
   return m_column_names.size();
 }
 
-size_t unity_sframe::column_index(const std::string &name) {
+size_t unity_xframe::column_index(const std::string &name) {
   Dlog_func_entry();
 
   auto it = std::find(m_column_names.begin(), m_column_names.end(), name);
@@ -393,21 +393,21 @@ size_t unity_sframe::column_index(const std::string &name) {
   return std::distance(m_column_names.begin(), it);
 }
 
-const std::string& unity_sframe::column_name(size_t index) {
+const std::string& unity_xframe::column_name(size_t index) {
   Dlog_func_entry();
 
   return m_column_names.at(index);
 }
 
 
-bool unity_sframe::contains_column(const std::string& name) {
+bool unity_xframe::contains_column(const std::string& name) {
   Dlog_func_entry();
 
-  const auto& sf = this->get_underlying_sframe();
+  const auto& sf = this->get_underlying_xframe();
   return sf->contains_column(name);
 }
 
-std::shared_ptr<unity_sarray_base> unity_sframe::select_column(const std::string& name) {
+std::shared_ptr<unity_sarray_base> unity_xframe::select_column(const std::string& name) {
   Dlog_func_entry();
 
   // Error checking
@@ -427,7 +427,7 @@ std::shared_ptr<unity_sarray_base> unity_sframe::select_column(const std::string
   return ret;
 }
 
-std::shared_ptr<unity_sarray_base> unity_sframe::select_column(size_t column_index) {
+std::shared_ptr<unity_sarray_base> unity_xframe::select_column(size_t column_index) {
   Dlog_func_entry();
 
   auto new_planner_node = op_project::make_planner_node(this->get_planner_node(), {column_index});
@@ -438,7 +438,7 @@ std::shared_ptr<unity_sarray_base> unity_sframe::select_column(size_t column_ind
   return ret;
 }
 
-std::shared_ptr<unity_sframe_base> unity_sframe::select_columns(
+std::shared_ptr<unity_xframe_base> unity_xframe::select_columns(
     const std::vector<std::string>& names) {
   Dlog_func_entry();
 
@@ -446,7 +446,7 @@ std::shared_ptr<unity_sframe_base> unity_sframe::select_columns(
 
 #ifndef NDEBUG
   {
-    std::shared_ptr<unity_sframe> X = std::static_pointer_cast<unity_sframe>(ret);
+    std::shared_ptr<unity_xframe> X = std::static_pointer_cast<unity_xframe>(ret);
 
     DASSERT_EQ(X->num_columns(), names.size());
 
@@ -460,12 +460,12 @@ std::shared_ptr<unity_sframe_base> unity_sframe::select_columns(
   return ret;
 }
 
-std::shared_ptr<unity_sframe_base> unity_sframe::select_columns(
+std::shared_ptr<unity_xframe_base> unity_xframe::select_columns(
     const std::vector<size_t>& indices) {
   Dlog_func_entry();
 
   if(indices.empty()) {
-    return std::make_shared<unity_sframe>();
+    return std::make_shared<unity_xframe>();
   }
 
   std::vector<std::string> new_column_names(indices.size());
@@ -485,20 +485,20 @@ std::shared_ptr<unity_sframe_base> unity_sframe::select_columns(
   // Construct the project operator with the column index
   auto new_planner_node = op_project::make_planner_node(this->get_planner_node(), {indices});
 
-  std::shared_ptr<unity_sframe> ret(new unity_sframe());
+  std::shared_ptr<unity_xframe> ret(new unity_xframe());
   ret->construct_from_planner_node(new_planner_node,
                                    new_column_names);
   return ret;
 }
 
-std::shared_ptr<unity_sframe_base> unity_sframe::copy(){
-  auto ret = std::make_shared<unity_sframe>();
+std::shared_ptr<unity_xframe_base> unity_xframe::copy(){
+  auto ret = std::make_shared<unity_xframe>();
   auto new_planner_node = std::make_shared<planner_node>(*(this->get_planner_node()));
   ret->construct_from_planner_node(new_planner_node, this->column_names());
   return ret;
 }
 
-void unity_sframe::add_column(std::shared_ptr<unity_sarray_base> data,
+void unity_xframe::add_column(std::shared_ptr<unity_sarray_base> data,
                               const std::string& column_name) {
   Dlog_func_entry();
 
@@ -517,7 +517,7 @@ void unity_sframe::add_column(std::shared_ptr<unity_sarray_base> data,
   }
 
   // Base case:
-  // If current sframe is empty, we construct a sarray source node
+  // If current xframe is empty, we construct a sarray source node
   std::shared_ptr<unity_sarray> new_column = std::static_pointer_cast<unity_sarray>(data);
   if (num_columns() == 0) {
     this->construct_from_planner_node(
@@ -543,11 +543,11 @@ void unity_sframe::add_column(std::shared_ptr<unity_sarray_base> data,
       new_column_names);
 }
 
-void unity_sframe::add_columns(
+void unity_xframe::add_columns(
     std::list<std::shared_ptr<unity_sarray_base>> data_list,
     std::vector<std::string> name_vec) {
   Dlog_func_entry();
-  std::vector<std::shared_ptr<unity_sframe_base>> ret_vec;
+  std::vector<std::shared_ptr<unity_xframe_base>> ret_vec;
   std::vector<std::shared_ptr<unity_sarray_base>> data_vec(data_list.begin(), data_list.end());
 
   const std::string empty_str = std::string("");
@@ -567,10 +567,10 @@ void unity_sframe::add_columns(
       throw;
     }
   }
-  m_cached_sframe.reset();
+  m_cached_xframe.reset();
 }
 
-void unity_sframe::set_column_name(size_t i, std::string name) {
+void unity_xframe::set_column_name(size_t i, std::string name) {
   Dlog_func_entry();
   logstream(LOG_DEBUG) << "Args: " << i << "," << name << std::endl;
   if (i >= num_columns()) {
@@ -583,10 +583,10 @@ void unity_sframe::set_column_name(size_t i, std::string name) {
     }
   }
   m_column_names[i] = name;
-  m_cached_sframe.reset();
+  m_cached_xframe.reset();
 }
 
-void unity_sframe::remove_column(size_t i) {
+void unity_xframe::remove_column(size_t i) {
   Dlog_func_entry();
   logstream(LOG_INFO) << "Args: " << i << std::endl;
   if(i >= num_columns()) {
@@ -600,11 +600,11 @@ void unity_sframe::remove_column(size_t i) {
   }
 
   if (project_column_indices.empty()) {
-    // make empty sframe
-    auto sf = std::make_shared<sframe>();
+    // make empty xframe
+    auto sf = std::make_shared<xframe>();
     sf->open_for_write({}, {}, "", 1);
     sf->close();
-    this->set_sframe(sf);
+    this->set_xframe(sf);
   } else {
     auto new_planner_node = op_project::make_planner_node(
         this->get_planner_node(), project_column_indices);
@@ -618,7 +618,7 @@ void unity_sframe::remove_column(size_t i) {
   }
 }
 
-void unity_sframe::swap_columns(size_t i, size_t j) {
+void unity_xframe::swap_columns(size_t i, size_t j) {
   Dlog_func_entry();
   logstream(LOG_DEBUG) << "Args: " << i << ", " << j << std::endl;
   if(i >= num_columns()) {
@@ -642,34 +642,34 @@ void unity_sframe::swap_columns(size_t i, size_t j) {
   this->construct_from_planner_node(new_planner_node, new_column_names);
 }
 
-std::shared_ptr<sframe> unity_sframe::get_underlying_sframe() {
+std::shared_ptr<xframe> unity_xframe::get_underlying_xframe() {
   Dlog_func_entry();
 
-  if (!m_cached_sframe) {
+  if (!m_cached_xframe) {
     if (!is_materialized()) {
       materialize();
     }
-    m_cached_sframe = std::make_shared<sframe>(
+    m_cached_xframe = std::make_shared<xframe>(
         planner().materialize(this->get_planner_node()));
 
-    // make sure the physical sframe has consistant column names
+    // make sure the physical xframe has consistant column names
     for (size_t i = 0; i < num_columns(); ++i) {
-      m_cached_sframe->set_column_name(i, m_column_names[i]);
+      m_cached_xframe->set_column_name(i, m_column_names[i]);
     }
   }
 
-  return m_cached_sframe;
+  return m_cached_xframe;
 }
 
-void unity_sframe::set_sframe(const std::shared_ptr<sframe>& sf_ptr) {
+void unity_xframe::set_xframe(const std::shared_ptr<xframe>& sf_ptr) {
   Dlog_func_entry();
-  m_planner_node = op_sframe_source::make_planner_node(*sf_ptr);
+  m_planner_node = op_xframe_source::make_planner_node(*sf_ptr);
   m_column_names = sf_ptr->column_names();
-  m_cached_sframe = sf_ptr;
+  m_cached_xframe = sf_ptr;
 }
 
 
-std::shared_ptr<unity_sarray_base> unity_sframe::transform(const std::string& lambda,
+std::shared_ptr<unity_sarray_base> unity_xframe::transform(const std::string& lambda,
                                            flex_type_enum type,
                                            bool skip_undefined, // unused
                                            uint64_t random_seed) {
@@ -688,7 +688,7 @@ std::shared_ptr<unity_sarray_base> unity_sframe::transform(const std::string& la
 #endif
 }
 
-std::shared_ptr<unity_sarray_base> unity_sframe::transform_native(const function_closure_info& toolkit_fn_name,
+std::shared_ptr<unity_sarray_base> unity_xframe::transform_native(const function_closure_info& toolkit_fn_name,
                                            flex_type_enum type,
                                            bool skip_undefined, // unused
                                            uint64_t seed) {
@@ -703,7 +703,7 @@ std::shared_ptr<unity_sarray_base> unity_sframe::transform_native(const function
 
   auto lambda =
       [native_execute_function, colnames](
-          const sframe_rows::row& row)->flexible_type {
+          const xframe_rows::row& row)->flexible_type {
         std::vector<std::pair<flexible_type, flexible_type> > input(colnames.size());
         ASSERT_EQ(row.size(), colnames.size());
         for (size_t i = 0;i < colnames.size(); ++i) {
@@ -715,8 +715,8 @@ std::shared_ptr<unity_sarray_base> unity_sframe::transform_native(const function
   return this->transform_lambda(lambda, type, seed);
 }
 
-std::shared_ptr<unity_sarray_base> unity_sframe::transform_lambda(
-      std::function<flexible_type(const sframe_rows::row&)> lambda,
+std::shared_ptr<unity_sarray_base> unity_xframe::transform_lambda(
+      std::function<flexible_type(const xframe_rows::row&)> lambda,
       flex_type_enum type,
       uint64_t random_seed) {
   log_func_entry();
@@ -730,7 +730,7 @@ std::shared_ptr<unity_sarray_base> unity_sframe::transform_lambda(
   return ret;
 }
 
-std::shared_ptr<unity_sframe_base> unity_sframe::flat_map(
+std::shared_ptr<unity_xframe_base> unity_xframe::flat_map(
     const std::string& lambda,
     std::vector<std::string> column_names,
     std::vector<flex_type_enum> column_types,
@@ -742,15 +742,15 @@ std::shared_ptr<unity_sframe_base> unity_sframe::flat_map(
   DASSERT_TRUE(!column_names.empty());
   DASSERT_TRUE(!column_types.empty());
 
-  sframe out_sf;
-  out_sf.open_for_write(column_names, column_types, "", SFRAME_DEFAULT_NUM_SEGMENTS);
+  xframe out_sf;
+  out_sf.open_for_write(column_names, column_types, "", XFRAME_DEFAULT_NUM_SEGMENTS);
 
   lambda::pylambda_function pylambda_fn(lambda);
   pylambda_fn.set_skip_undefined(skip_undefined);
   pylambda_fn.set_random_seed(seed);
   auto this_column_names = this->column_names();
 
-  auto transform_callback = [&](size_t segment_id, const std::shared_ptr<sframe_rows>& data) {
+  auto transform_callback = [&](size_t segment_id, const std::shared_ptr<xframe_rows>& data) {
     auto output_iter = out_sf.get_output_iterator(segment_id);
     std::vector<flexible_type> lambda_output_rows;
     pylambda_fn.eval(this_column_names, *data, lambda_output_rows);
@@ -779,10 +779,10 @@ std::shared_ptr<unity_sframe_base> unity_sframe::flat_map(
     }
     return false;
   };
-  query_eval::planner().materialize(this->get_planner_node(), transform_callback, SFRAME_DEFAULT_NUM_SEGMENTS);
+  query_eval::planner().materialize(this->get_planner_node(), transform_callback, XFRAME_DEFAULT_NUM_SEGMENTS);
   out_sf.close();
-  auto ret = std::make_shared<unity_sframe>();
-  ret->construct_from_sframe(out_sf);
+  auto ret = std::make_shared<unity_xframe>();
+  ret->construct_from_xframe(out_sf);
   return ret;
 #else
   log_and_throw("Python lambda functions not supported");
@@ -790,19 +790,19 @@ std::shared_ptr<unity_sframe_base> unity_sframe::flat_map(
 }
 
 
-std::vector<flex_type_enum> unity_sframe::dtype() {
+std::vector<flex_type_enum> unity_xframe::dtype() {
   Dlog_func_entry();
   return infer_planner_node_type(this->get_planner_node());
 }
 
-flex_type_enum unity_sframe::dtype(size_t column_index) {
+flex_type_enum unity_xframe::dtype(size_t column_index) {
   Dlog_func_entry();
 
   return std::static_pointer_cast<unity_sarray>(select_column(column_index))->dtype();
 }
 
 
-flex_type_enum unity_sframe::dtype(const std::string& column_name) {
+flex_type_enum unity_xframe::dtype(const std::string& column_name) {
   Dlog_func_entry();
 
   return dtype(column_index(column_name));
@@ -810,25 +810,25 @@ flex_type_enum unity_sframe::dtype(const std::string& column_name) {
 }
 
 
-std::vector<std::string> unity_sframe::column_names() {
+std::vector<std::string> unity_xframe::column_names() {
   Dlog_func_entry();
   return m_column_names;
 }
 
 
 
-std::shared_ptr<unity_sframe_base> unity_sframe::head(size_t nrows) {
+std::shared_ptr<unity_xframe_base> unity_xframe::head(size_t nrows) {
   log_func_entry();
 
-  // prepare for writing to the new sframe
-  sframe sf_head;
+  // prepare for writing to the new xframe
+  xframe sf_head;
   sf_head.open_for_write(column_names(), dtype(), "", 1);
   auto out = sf_head.get_output_iterator(0);
 
   size_t row_counter = 0;
   if (nrows > 0)  {
     auto callback = [&out, &row_counter, nrows](size_t segment_id,
-                                                const std::shared_ptr<sframe_rows>& data) {
+                                                const std::shared_ptr<xframe_rows>& data) {
       for (const auto& row : (*data)) {
         *out = row;
         ++out;
@@ -843,25 +843,25 @@ std::shared_ptr<unity_sframe_base> unity_sframe::head(size_t nrows) {
                                       1 /* process in as 1 segment */);
   }
   sf_head.close();
-  std::shared_ptr<unity_sframe> ret(new unity_sframe());
-  ret->construct_from_sframe(sf_head);
+  std::shared_ptr<unity_xframe> ret(new unity_xframe());
+  ret->construct_from_xframe(sf_head);
   return ret;
 }
 
 
-dataframe_t unity_sframe::_head(size_t nrows) {
+dataframe_t unity_xframe::_head(size_t nrows) {
   auto result = head(nrows);
   dataframe_t ret = result->to_dataframe();
   return ret;
 };
 
-dataframe_t unity_sframe::_tail(size_t nrows) {
+dataframe_t unity_xframe::_tail(size_t nrows) {
   auto result = tail(nrows);
   dataframe_t ret = result->to_dataframe();
   return ret;
 };
 
-std::shared_ptr<unity_sframe_base> unity_sframe::tail(size_t nrows) {
+std::shared_ptr<unity_xframe_base> unity_xframe::tail(size_t nrows) {
   log_func_entry();
   logstream(LOG_INFO) << "Args: " << nrows << std::endl;
   size_t end = size();
@@ -870,13 +870,13 @@ std::shared_ptr<unity_sframe_base> unity_sframe::tail(size_t nrows) {
   return copy_range(start, 1, end);
 }
 
-std::list<std::shared_ptr<unity_sframe_base>> unity_sframe::logical_filter_split(
+std::list<std::shared_ptr<unity_xframe_base>> unity_xframe::logical_filter_split(
   std::shared_ptr<unity_sarray_base> logical_filter_array) {
   return {logical_filter(logical_filter_array),
           logical_filter(logical_filter_array->right_scalar_operator(1, "-"))};
 }
 
-std::shared_ptr<unity_sframe_base> unity_sframe::logical_filter(
+std::shared_ptr<unity_xframe_base> unity_xframe::logical_filter(
     std::shared_ptr<unity_sarray_base> index) {
   log_func_entry();
 
@@ -903,35 +903,35 @@ std::shared_ptr<unity_sframe_base> unity_sframe::logical_filter(
   auto new_planner_node = op_logical_filter::make_planner_node(this->get_planner_node(),
                                                                other_array_binarized->get_planner_node());
 
-  std::shared_ptr<unity_sframe> ret_unity_sframe(new unity_sframe());
-  ret_unity_sframe->construct_from_planner_node(new_planner_node,
+  std::shared_ptr<unity_xframe> ret_unity_xframe(new unity_xframe());
+  ret_unity_xframe->construct_from_planner_node(new_planner_node,
                                                 this->column_names());
-  return ret_unity_sframe;
+  return ret_unity_xframe;
 }
 
-std::shared_ptr<unity_sframe_base> unity_sframe::append(
-    std::shared_ptr<unity_sframe_base> other) {
+std::shared_ptr<unity_xframe_base> unity_xframe::append(
+    std::shared_ptr<unity_xframe_base> other) {
   log_func_entry();
 
   DASSERT_TRUE(other != nullptr);
-  std::shared_ptr<unity_sframe> other_sframe = std::static_pointer_cast<unity_sframe>(other);
+  std::shared_ptr<unity_xframe> other_xframe = std::static_pointer_cast<unity_xframe>(other);
 
   // zero columns
   if (this->num_columns() == 0) {
     return other;
-  } else if (other_sframe->num_columns() == 0) {
+  } else if (other_xframe->num_columns() == 0) {
     return copy();
   }
 
-  // Error checking and reorder other sframe if necessary
+  // Error checking and reorder other xframe if necessary
   {
     bool needs_reorder = false;
 
-    if (this->num_columns() != other_sframe->num_columns()) {
-      log_and_throw("Two SFrames have different number of columns");
+    if (this->num_columns() != other_xframe->num_columns()) {
+      log_and_throw("Two XFrames have different number of columns");
     }
     std::vector<std::string> column_names = this->column_names();
-    std::vector<std::string> other_column_names = other_sframe->column_names();
+    std::vector<std::string> other_column_names = other_xframe->column_names();
 
     size_t num_columns = column_names.size();
 
@@ -951,27 +951,27 @@ std::shared_ptr<unity_sframe_base> unity_sframe::append(
 
         std::ostringstream ss;
         ss << "Error: Columns [" << in_this
-           << "] not found in appending SFrame.";
+           << "] not found in appending XFrame.";
 
         log_and_throw(ss.str().c_str());
       }
 
       if (needs_reorder) {
-        other_sframe = std::static_pointer_cast<unity_sframe>(
-            other_sframe->select_columns(this->column_names()));
+        other_xframe = std::static_pointer_cast<unity_xframe>(
+            other_xframe->select_columns(this->column_names()));
       }
     }
 
 
     auto column_types = this->dtype();
-    auto other_column_types = other_sframe->dtype();
+    auto other_column_types = other_xframe->dtype();
 
     for(size_t i = 0; i < num_columns; i++) {
 
       // check column type matches
       if (column_types[i] != other_column_types[i]) {
         std::ostringstream ss;
-        ss << "Column types are not the same in two SFrames (Column "
+        ss << "Column types are not the same in two XFrames (Column "
            << column_names[i] << ", attempting to append column of type "
            << flex_type_enum_to_name(other_column_types[i])
            << " to column of type " << flex_type_enum_to_name(column_types[i])
@@ -983,32 +983,32 @@ std::shared_ptr<unity_sframe_base> unity_sframe::append(
   }
 
   auto new_planner_node = op_append::make_planner_node(this->get_planner_node(),
-                                                       other_sframe->get_planner_node());
-  std::shared_ptr<unity_sframe> ret_unity_sframe(new unity_sframe());
-  ret_unity_sframe->construct_from_planner_node(new_planner_node,
+                                                       other_xframe->get_planner_node());
+  std::shared_ptr<unity_xframe> ret_unity_xframe(new unity_xframe());
+  ret_unity_xframe->construct_from_planner_node(new_planner_node,
                                                 this->column_names());
-  return ret_unity_sframe;
+  return ret_unity_xframe;
 }
 
-void unity_sframe::begin_iterator() {
+void unity_xframe::begin_iterator() {
   log_func_entry();
 
-  // Empty sframe just return
+  // Empty xframe just return
   if (this->size() == 0)
     return;
 
-  auto sframe_ptr = get_underlying_sframe();
-  iterator_sframe_ptr = sframe_ptr->get_reader();
+  auto xframe_ptr = get_underlying_xframe();
+  iterator_xframe_ptr = xframe_ptr->get_reader();
   // init the iterators
-  iterator_current_segment_iter.reset(new sframe_iterator(iterator_sframe_ptr->begin(0)));
-  iterator_current_segment_enditer.reset(new sframe_iterator(iterator_sframe_ptr->end(0)));
+  iterator_current_segment_iter.reset(new xframe_iterator(iterator_xframe_ptr->begin(0)));
+  iterator_current_segment_enditer.reset(new xframe_iterator(iterator_xframe_ptr->end(0)));
   iterator_next_segment_id = 1;
 }
 
-std::vector< std::vector<flexible_type> > unity_sframe::iterator_get_next(size_t len) {
+std::vector< std::vector<flexible_type> > unity_xframe::iterator_get_next(size_t len) {
   std::vector< std::vector<flexible_type> > ret;
 
-  // Empty sframe just return
+  // Empty xframe just return
   if (this->size() == 0)
     return ret;
 
@@ -1025,17 +1025,17 @@ std::vector< std::vector<flexible_type> > unity_sframe::iterator_get_next(size_t
     if (ret.size() >= len) break;
     // if we run out of data in the current segment, advance to the next segment
     // if we run out of segments, quit.
-    if (iterator_next_segment_id >= iterator_sframe_ptr->num_segments()) break;
-    iterator_current_segment_iter.reset(new sframe_iterator(
-        iterator_sframe_ptr->begin(iterator_next_segment_id)));
-    iterator_current_segment_enditer.reset(new sframe_iterator(
-        iterator_sframe_ptr->end(iterator_next_segment_id)));
+    if (iterator_next_segment_id >= iterator_xframe_ptr->num_segments()) break;
+    iterator_current_segment_iter.reset(new xframe_iterator(
+        iterator_xframe_ptr->begin(iterator_next_segment_id)));
+    iterator_current_segment_enditer.reset(new xframe_iterator(
+        iterator_xframe_ptr->end(iterator_next_segment_id)));
     ++iterator_next_segment_id;
   }
   return ret;
 }
 
-void unity_sframe::save_as_csv(const std::string& url,
+void unity_xframe::save_as_csv(const std::string& url,
                                std::map<std::string, flexible_type> writing_config) {
   log_func_entry();
   logstream(LOG_INFO) << "Args: " << sanitize_url(url) << std::endl;
@@ -1128,7 +1128,7 @@ void unity_sframe::save_as_csv(const std::string& url,
   bool first_value = true;
   auto write_callback = [&writer, &fout, &line_prefix,
        &no_prefix_on_first_value, &first_value]
-      (size_t segment_id, const std::shared_ptr<sframe_rows>& data) {
+      (size_t segment_id, const std::shared_ptr<xframe_rows>& data) {
     for (const auto& row : *(data)) {
       if (!line_prefix.empty()) {
         if ((!first_value) || // not the first value. write the line prefix
@@ -1153,7 +1153,7 @@ void unity_sframe::save_as_csv(const std::string& url,
   fout.close();
 }
 
-std::shared_ptr<unity_sframe_base> unity_sframe::sample(float percent,
+std::shared_ptr<unity_xframe_base> unity_xframe::sample(float percent,
                                                         uint64_t random_seed,
                                                         bool exact) {
   logstream(LOG_INFO) << "Args: " << percent << ", " << random_seed << std::endl;
@@ -1166,12 +1166,12 @@ std::shared_ptr<unity_sframe_base> unity_sframe::sample(float percent,
   return logical_filter(logical_filter_array);
 }
 
-void unity_sframe::materialize() {
+void unity_xframe::materialize() {
   query_eval::planner().materialize(m_planner_node);
 }
 
 
-bool unity_sframe::is_materialized() {
+bool unity_xframe::is_materialized() {
   auto optimized_node = optimization_engine::optimize_planner_graph(get_planner_node(),
                                                                     materialize_options());
   if (is_source_node(optimized_node)) {
@@ -1181,18 +1181,18 @@ bool unity_sframe::is_materialized() {
   return false;
 }
 
-bool unity_sframe::has_size() {
+bool unity_xframe::has_size() {
   return infer_planner_node_length(m_planner_node) != -1;
 }
 
-std::string unity_sframe::query_plan_string() {
+std::string unity_xframe::query_plan_string() {
   std::stringstream ss;
   ss << get_planner_node() << std::endl;
   return ss.str();
 }
 
-std::list<std::shared_ptr<unity_sframe_base>>
-unity_sframe::random_split(float percent, uint64_t random_seed, bool exact) {
+std::list<std::shared_ptr<unity_xframe_base>>
+unity_xframe::random_split(float percent, uint64_t random_seed, bool exact) {
   log_func_entry();
   logstream(LOG_INFO) << "Args: " << percent << ", " << random_seed << std::endl;
 
@@ -1201,17 +1201,17 @@ unity_sframe::random_split(float percent, uint64_t random_seed, bool exact) {
   return logical_filter_split(logical_filter_array);
 }
 
-std::shared_ptr<unity_sframe_base> unity_sframe::shuffle() {
+std::shared_ptr<unity_xframe_base> unity_xframe::shuffle() {
   log_func_entry();
 
   std::vector<std::string> column_names = this->column_names();
-  const size_t num_buckets = (this->size() / SFRAME_SHUFFLE_BUCKET_SIZE) + 1;
+  const size_t num_buckets = (this->size() / XFRAME_SHUFFLE_BUCKET_SIZE) + 1;
 
   // Create a column of random ints between 0 and (num_buckets - 1).
   auto temp_groupby_column = std::static_pointer_cast<unity_sarray>(
     unity_sarray::make_uniform_int_array(this->size(), num_buckets));
   const std::string rand_int_column_name("Random Ints");
-  std::shared_ptr<unity_sframe> temp(new unity_sframe());
+  std::shared_ptr<unity_xframe> temp(new unity_xframe());
   temp->add_column(temp_groupby_column, rand_int_column_name);
 
   // Pack columns so we can group by concatenate
@@ -1224,11 +1224,11 @@ std::shared_ptr<unity_sframe_base> unity_sframe::shuffle() {
 
   // Group by concatenate on the random int column. This randomly bucketizes.
   const std::string buckets_column_name("Buckets");
-  std::shared_ptr<unity_sframe_base> bucketized_sframe = temp->groupby_aggregate({rand_int_column_name},
+  std::shared_ptr<unity_xframe_base> bucketized_xframe = temp->groupby_aggregate({rand_int_column_name},
                                                                                  {{packed_data_column_name}},
                                                                                  {buckets_column_name},
                                                                                  {"__builtin__concat__list__"});
-  std::shared_ptr<unity_sarray_base> bucketized_sarray = bucketized_sframe->select_column(buckets_column_name);
+  std::shared_ptr<unity_sarray_base> bucketized_sarray = bucketized_xframe->select_column(buckets_column_name);
 
   // Shuffle each bucket
   size_t num_threads = thread::cpu_count();
@@ -1260,7 +1260,7 @@ std::shared_ptr<unity_sframe_base> unity_sframe::shuffle() {
   gl_sarray packed_randomized = writer.close();
 
   std::string unpacked_column_prefix = "X";
-  gl_sframe ret = packed_randomized.unpack(unpacked_column_prefix, this->dtype());
+  gl_xframe ret = packed_randomized.unpack(unpacked_column_prefix, this->dtype());
   DASSERT_EQ(this->num_columns(), ret.num_columns());
   DASSERT_EQ(this->size(), ret.size());
 
@@ -1275,7 +1275,7 @@ std::shared_ptr<unity_sframe_base> unity_sframe::shuffle() {
   return ret.get_proxy();
 }
 
-std::shared_ptr<unity_sframe_base> unity_sframe::groupby_aggregate(
+std::shared_ptr<unity_xframe_base> unity_xframe::groupby_aggregate(
     const std::vector<std::string>& key_columns,
     const std::vector<std::vector<std::string>>& group_columns,
     const std::vector<std::string>& group_output_columns,
@@ -1286,7 +1286,7 @@ std::shared_ptr<unity_sframe_base> unity_sframe::groupby_aggregate(
   return groupby_aggregate(key_columns, group_columns, group_output_columns, operators);
 }
 
-std::shared_ptr<unity_sframe_base> unity_sframe::groupby_aggregate(
+std::shared_ptr<unity_xframe_base> unity_xframe::groupby_aggregate(
     const std::vector<std::string>& key_columns,
     const std::vector<std::vector<std::string>>& group_columns,
     const std::vector<std::string>& group_output_columns,
@@ -1329,40 +1329,40 @@ std::shared_ptr<unity_sframe_base> unity_sframe::groupby_aggregate(
                                                   group_output_columns,
                                                   operators);
 
-  std::shared_ptr<unity_sframe> ret(new unity_sframe());
-  ret->construct_from_sframe(*grouped_sf);
+  std::shared_ptr<unity_xframe> ret(new unity_xframe());
+  ret->construct_from_xframe(*grouped_sf);
   return ret;
 }
 
 
-std::shared_ptr<unity_sframe_base> unity_sframe::join_with_custom_name(
-    std::shared_ptr<unity_sframe_base> right,
+std::shared_ptr<unity_xframe_base> unity_xframe::join_with_custom_name(
+    std::shared_ptr<unity_xframe_base> right,
     const std::string join_type,
     const std::map<std::string,std::string>& join_keys,
     const std::map<std::string,std::string>& alternative_names) {
   log_func_entry();
-  std::shared_ptr<unity_sframe> ret(new unity_sframe());
-  std::shared_ptr<unity_sframe> us_right = std::static_pointer_cast<unity_sframe>(right);
+  std::shared_ptr<unity_xframe> ret(new unity_xframe());
+  std::shared_ptr<unity_xframe> us_right = std::static_pointer_cast<unity_xframe>(right);
 
-  auto sframe_ptr = get_underlying_sframe();
-  auto right_sframe_ptr = us_right->get_underlying_sframe();
-  sframe joined_sf = turi::join(*sframe_ptr, *right_sframe_ptr, join_type,
+  auto xframe_ptr = get_underlying_xframe();
+  auto right_xframe_ptr = us_right->get_underlying_xframe();
+  xframe joined_sf = turi::join(*xframe_ptr, *right_xframe_ptr, join_type,
                                 join_keys, alternative_names);
-  ret->construct_from_sframe(joined_sf);
+  ret->construct_from_xframe(joined_sf);
   return ret;
 }
 
-std::shared_ptr<unity_sframe_base>
-unity_sframe::sort(const std::vector<std::string>& sort_keys,
+std::shared_ptr<unity_xframe_base>
+unity_xframe::sort(const std::vector<std::string>& sort_keys,
                    const std::vector<int>& sort_ascending) {
   log_func_entry();
 
   if (sort_keys.size() != sort_ascending.size()) {
-    log_and_throw("sframe::sort key vector and ascending vector size mismatch");
+    log_and_throw("xframe::sort key vector and ascending vector size mismatch");
   }
 
   if (sort_keys.size() == 0) {
-    log_and_throw("sframe::sort, nothing to sort");
+    log_and_throw("xframe::sort, nothing to sort");
   }
 
   std::vector<size_t> sort_indices;
@@ -1383,12 +1383,12 @@ unity_sframe::sort(const std::vector<std::string>& sort_keys,
                                      this->column_names(),
                                      sort_indices,
                                      b_sort_ascending);
-  std::shared_ptr<unity_sframe> ret(new unity_sframe());
-  ret->construct_from_sframe(*sorted_sf);
+  std::shared_ptr<unity_xframe> ret(new unity_xframe());
+  ret->construct_from_xframe(*sorted_sf);
   return ret;
 }
 
-std::shared_ptr<unity_sarray_base> unity_sframe::pack_columns(
+std::shared_ptr<unity_sarray_base> unity_xframe::pack_columns(
     const std::vector<std::string>& pack_column_names,
     const std::vector<std::string>& key_names,
     flex_type_enum dtype,
@@ -1408,9 +1408,9 @@ std::shared_ptr<unity_sarray_base> unity_sframe::pack_columns(
   }
 
   // select packing columns
-  auto projected_sf = std::static_pointer_cast<unity_sframe>(this->select_columns(pack_column_names));
+  auto projected_sf = std::static_pointer_cast<unity_xframe>(this->select_columns(pack_column_names));
 
-  auto dict_transform_callback = [=](const sframe_rows::row& row)->flexible_type{
+  auto dict_transform_callback = [=](const xframe_rows::row& row)->flexible_type{
     flex_dict out_val;
     out_val.reserve(row.size());
     for (size_t col = 0; col < row.size(); col++) {
@@ -1425,7 +1425,7 @@ std::shared_ptr<unity_sarray_base> unity_sframe::pack_columns(
     return out_val;
   };
 
-  auto list_transform_callback = [=](const sframe_rows::row& row)->flexible_type {
+  auto list_transform_callback = [=](const xframe_rows::row& row)->flexible_type {
     flex_list out_val(row.size());
     for (size_t col = 0; col < row.size(); col++) {
       if (row[col] != FLEX_UNDEFINED) {
@@ -1437,7 +1437,7 @@ std::shared_ptr<unity_sarray_base> unity_sframe::pack_columns(
     return out_val;
   };
 
-  auto vector_transform_callback = [=](const sframe_rows::row& row)->flexible_type {
+  auto vector_transform_callback = [=](const xframe_rows::row& row)->flexible_type {
     flex_vec out_val(row.size());
     for (size_t col = 0; col < row.size(); col++) {
       if (!row[col].is_na()) {
@@ -1473,7 +1473,7 @@ std::shared_ptr<unity_sarray_base> unity_sframe::pack_columns(
   return ret;
 }
 
-std::shared_ptr<unity_sframe_base> unity_sframe::stack(
+std::shared_ptr<unity_xframe_base> unity_xframe::stack(
     const std::string& stack_column_name,
     const std::vector<std::string>& new_column_names,
     const std::vector<flex_type_enum>& new_column_types,
@@ -1488,7 +1488,7 @@ std::shared_ptr<unity_sframe_base> unity_sframe::stack(
   bool stack_column_exists = false;
   for(auto name : new_column_names) {
     if (my_columns.count(name) && name != stack_column_name) {
-      throw "Column name '" + name + "' is already used by current SFrame, pick a new column name";
+      throw "Column name '" + name + "' is already used by current XFrame, pick a new column name";
     }
     if (my_columns.count(stack_column_name) > 0) {
       stack_column_exists = true;
@@ -1524,7 +1524,7 @@ std::shared_ptr<unity_sframe_base> unity_sframe::stack(
       throw "There is duplicate column names in new_column_names parameter";
   }
 
-  // create return SFrame
+  // create return XFrame
   size_t num_columns = this->num_columns();
   std::vector<std::string> ret_column_names;
   std::vector<flex_type_enum> ret_column_types;
@@ -1541,15 +1541,15 @@ std::shared_ptr<unity_sframe_base> unity_sframe::stack(
   ret_column_names.insert(ret_column_names.end(),new_column_names.begin(), new_column_names.end());
   ret_column_types.insert(ret_column_types.end(),new_column_types.begin(), new_column_types.end());
 
-  auto sframe_ptr = std::make_shared<sframe>();
-  sframe_ptr->open_for_write(ret_column_names, ret_column_types,
-                             "", SFRAME_DEFAULT_NUM_SEGMENTS);
+  auto xframe_ptr = std::make_shared<xframe>();
+  xframe_ptr->open_for_write(ret_column_names, ret_column_types,
+                             "", XFRAME_DEFAULT_NUM_SEGMENTS);
   size_t stack_col_idx = column_index(stack_column_name);
 
   auto transform_callback = [&](size_t segment_id,
-                                const std::shared_ptr<sframe_rows>& data) {
+                                const std::shared_ptr<xframe_rows>& data) {
 
-    auto output_iter = sframe_ptr->get_output_iterator(segment_id);
+    auto output_iter = xframe_ptr->get_output_iterator(segment_id);
     std::vector<flexible_type> out_row_buffer(num_columns + new_column_count - 1);
 
     for (const auto& row: (*data)) {
@@ -1568,7 +1568,7 @@ std::shared_ptr<unity_sframe_base> unity_sframe::stack(
               out_row_buffer[j++] = row[i];
             }
           }
-          // write to out sframe
+          // write to out xframe
           *output_iter++ = out_row_buffer;
         }
       } else {
@@ -1588,7 +1588,7 @@ std::shared_ptr<unity_sframe_base> unity_sframe::stack(
               out_row_buffer[j++] = row[i];
             }
           }
-          // write to out sframe
+          // write to out xframe
           *output_iter++ = out_row_buffer;
         }
       }
@@ -1596,24 +1596,24 @@ std::shared_ptr<unity_sframe_base> unity_sframe::stack(
     return false;
   };
 
-  // turi::multi_transform(m_lazy_sframe, *sframe_ptr, transform_fn);
+  // turi::multi_transform(m_lazy_xframe, *xframe_ptr, transform_fn);
   query_eval::planner().materialize(this->get_planner_node(),
-                                    transform_callback, SFRAME_DEFAULT_NUM_SEGMENTS);
-  sframe_ptr->close();
+                                    transform_callback, XFRAME_DEFAULT_NUM_SEGMENTS);
+  xframe_ptr->close();
 
-  auto ret = std::make_shared<unity_sframe>();
-  ret->construct_from_sframe(*sframe_ptr);
+  auto ret = std::make_shared<unity_xframe>();
+  ret->construct_from_xframe(*xframe_ptr);
   return ret;
 }
 
-std::shared_ptr<unity_sframe_base>
-unity_sframe::copy_range(size_t start, size_t step, size_t end) {
+std::shared_ptr<unity_xframe_base>
+unity_xframe::copy_range(size_t start, size_t step, size_t end) {
   log_func_entry();
   if (step == 0) log_and_throw("Range step size must be at least 1");
   // end cannot be past the end
   end = std::min(end, size());
 
-  std::shared_ptr<unity_sframe> ret(new unity_sframe());
+  std::shared_ptr<unity_xframe> ret(new unity_xframe());
 
   // Fast path: range slice with step 1, we can slice the input using the query planner.
   if ((start < end) && (step == 1)) {
@@ -1625,26 +1625,26 @@ unity_sframe::copy_range(size_t start, size_t step, size_t end) {
     return ret;
   }
 
-  sframe writer;
+  xframe writer;
   writer.open_for_write(column_names(),
                         dtype(),
                         std::string(""), 1);
   if (start < end) {
     // If the range begins from the start, we do a lazy read.
-    // Otherwise, we will materialize the sframe.
+    // Otherwise, we will materialize the xframe.
     //
     // This is quite an annoying heuristic.
     // We should also be able to do the lazy callback way
     // which carefully slices the inputs to get the right values.
     // This avoids the annoying sequential read. Ponder.
     if (is_materialized() || start > 0) {
-      auto sframe_ptr = this->get_underlying_sframe();
-      turi::copy_range(*sframe_ptr, writer, start, step, end);
+      auto xframe_ptr = this->get_underlying_xframe();
+      turi::copy_range(*xframe_ptr, writer, start, step, end);
     } else {
       size_t current_row = 0;
       auto out = writer.get_output_iterator(0);
       auto callback = [&current_row, &out, start, step, end](size_t segment_id,
-                                                             const std::shared_ptr<sframe_rows>& data) {
+                                                             const std::shared_ptr<xframe_rows>& data) {
         for (auto& row: (*data)) {
           if (current_row >= end) return true;
           if (current_row < start || (current_row - start) % step != 0) {
@@ -1658,14 +1658,14 @@ unity_sframe::copy_range(size_t start, size_t step, size_t end) {
       };
       query_eval::planner().materialize(this->get_planner_node(), callback, 1);
     }
-  } // else we return an empty sframe.
+  } // else we return an empty xframe.
   writer.close();
-  ret->construct_from_sframe(writer);
+  ret->construct_from_xframe(writer);
   return ret;
 }
 
 
-std::list<std::shared_ptr<unity_sframe_base>> unity_sframe::drop_missing_values(
+std::list<std::shared_ptr<unity_xframe_base>> unity_xframe::drop_missing_values(
     const std::vector<std::string>& column_names, bool all, bool split, bool recursive) {
   log_func_entry();
 
@@ -1715,13 +1715,13 @@ std::list<std::shared_ptr<unity_sframe_base>> unity_sframe::drop_missing_values(
       n_recursive = column_indices.end() - part_it;
     }
 
-    // Now, make a dedicated SFrame with the right columns.
-    auto src_sframe = std::static_pointer_cast<unity_sframe>(select_columns(column_indices));
-    std::function<flexible_type(const sframe_rows::row&)> filter_fn;
+    // Now, make a dedicated XFrame with the right columns.
+    auto src_xframe = std::static_pointer_cast<unity_xframe>(select_columns(column_indices));
+    std::function<flexible_type(const xframe_rows::row&)> filter_fn;
 
     if(n_recursive == 0) {
       if(all) {
-        filter_fn = [](const sframe_rows::row& row) -> flexible_type {
+        filter_fn = [](const xframe_rows::row& row) -> flexible_type {
           for(const flexible_type& v : row) {
             if(!v.is_na()) {
               return true;
@@ -1730,7 +1730,7 @@ std::list<std::shared_ptr<unity_sframe_base>> unity_sframe::drop_missing_values(
           return false;
         };
       } else {
-        filter_fn = [](const sframe_rows::row& row) -> flexible_type {
+        filter_fn = [](const xframe_rows::row& row) -> flexible_type {
           for(const flexible_type& v : row) {
             if(v.is_na()) {
               return false;
@@ -1741,7 +1741,7 @@ std::list<std::shared_ptr<unity_sframe_base>> unity_sframe::drop_missing_values(
       }
     } else {
       if(all) {
-        filter_fn = [=](const sframe_rows::row& row) -> flexible_type {
+        filter_fn = [=](const xframe_rows::row& row) -> flexible_type {
 
           for (size_t i = 0; i < n_simple; ++i) {
             if(!row[i].is_na()) {
@@ -1756,7 +1756,7 @@ std::list<std::shared_ptr<unity_sframe_base>> unity_sframe::drop_missing_values(
           return false;
         };
       } else {
-        filter_fn = [=](const sframe_rows::row& row) -> flexible_type {
+        filter_fn = [=](const xframe_rows::row& row) -> flexible_type {
 
           for (size_t i = 0; i < n_simple; ++i) {
             if(row[i].is_na()) {
@@ -1774,17 +1774,17 @@ std::list<std::shared_ptr<unity_sframe_base>> unity_sframe::drop_missing_values(
     }
 
     filter_sarray = std::static_pointer_cast<unity_sarray>(
-       src_sframe->transform_lambda(filter_fn, flex_type_enum::INTEGER, 0));
+       src_xframe->transform_lambda(filter_fn, flex_type_enum::INTEGER, 0));
   }
 
   if (split) {
     return logical_filter_split(filter_sarray);
   } else {
-    return {logical_filter(filter_sarray), std::make_shared<unity_sframe>()};
+    return {logical_filter(filter_sarray), std::make_shared<unity_xframe>()};
   }
 }
 
-dataframe_t unity_sframe::to_dataframe() {
+dataframe_t unity_xframe::to_dataframe() {
   dataframe_t ret;
   for (size_t i = 0; i < num_columns(); ++i) {
     auto name = column_names()[i];
@@ -1803,7 +1803,7 @@ dataframe_t unity_sframe::to_dataframe() {
  *
  * Throw if column_names has duplication, or some column name does not exist.
  */
-std::vector<size_t> unity_sframe::_convert_column_names_to_indices(
+std::vector<size_t> unity_xframe::_convert_column_names_to_indices(
     const std::vector<std::string>& column_names) {
 
   std::set<size_t> dedup_set;
@@ -1848,15 +1848,15 @@ std::vector<size_t> unity_sframe::_convert_column_names_to_indices(
   return column_indices;
 }
 
-void unity_sframe::delete_on_close() {
+void unity_xframe::delete_on_close() {
   if (is_materialized()) {
-    get_underlying_sframe()->delete_files_on_destruction();
+    get_underlying_xframe()->delete_files_on_destruction();
   }
 }
 
-std::shared_ptr<planner_node> unity_sframe::get_planner_node() {
+std::shared_ptr<planner_node> unity_xframe::get_planner_node() {
   ASSERT_MSG(m_planner_node != nullptr,
-             "Unintialized SFrame planner node cannot be used for read");
+             "Unintialized XFrame planner node cannot be used for read");
   return m_planner_node;
 }
 
@@ -1864,7 +1864,7 @@ std::shared_ptr<planner_node> unity_sframe::get_planner_node() {
  * Generate a new column name given existing column names.
  * New column name is in the form of X.1
  */
-std::string unity_sframe::generate_next_column_name() {
+std::string unity_xframe::generate_next_column_name() {
   const auto& current_column_names = this->column_names();
   std::string name = std::string("X") + std::to_string(current_column_names.size() + 1);
   std::unordered_set<std::string> current_name_set(current_column_names.begin(),
@@ -1884,7 +1884,7 @@ std::string unity_sframe::generate_next_column_name() {
   return name;
 }
 
-void unity_sframe::show(const std::string& path_to_client) {
+void unity_xframe::show(const std::string& path_to_client) {
   using namespace turi;
   using namespace turi::visualization;
 
@@ -1895,26 +1895,26 @@ void unity_sframe::show(const std::string& path_to_client) {
   }
 }
 
-std::shared_ptr<model_base> unity_sframe::plot(){
+std::shared_ptr<model_base> unity_xframe::plot(){
   using namespace turi;
   using namespace turi::visualization;
 
-  std::shared_ptr<unity_sframe_base> self = this->select_columns(this->column_names());
+  std::shared_ptr<unity_xframe_base> self = this->select_columns(this->column_names());
 
   return plot_columnwise_summary(self);
 }
 
-void unity_sframe::explore(const std::string& path_to_client, const std::string& title) {
+void unity_xframe::explore(const std::string& path_to_client, const std::string& title) {
   using namespace turi;
   using namespace turi::visualization;
 
-  std::shared_ptr<unity_sframe> self = std::static_pointer_cast<unity_sframe>(this->select_columns(this->column_names()));
+  std::shared_ptr<unity_xframe> self = std::static_pointer_cast<unity_xframe>(this->select_columns(this->column_names()));
 
-  logprogress_stream << "Materializing SFrame" << std::endl;
+  logprogress_stream << "Materializing XFrame" << std::endl;
   this->materialize();
 
   if(self->size() == 0){
-    log_and_throw("Nothing to explore; SFrame is empty.");
+    log_and_throw("Nothing to explore; XFrame is empty.");
   }
 
   ::turi::visualization::run_thread([path_to_client, self, title]() {
@@ -1925,10 +1925,10 @@ void unity_sframe::explore(const std::string& path_to_client, const std::string&
     ew << table_spec.str();
 
     // This materializes if not already
-    std::shared_ptr<sframe> underlying_sframe = self->get_underlying_sframe();
+    std::shared_ptr<xframe> underlying_xframe = self->get_underlying_xframe();
 
     // Get a reader just once.
-    std::shared_ptr<sframe_reader> reader = underlying_sframe->get_reader();
+    std::shared_ptr<xframe_reader> reader = underlying_xframe->get_reader();
 
     ew << visualization::table_data(self, reader.get(), 0, 100);
 

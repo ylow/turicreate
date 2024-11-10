@@ -3,24 +3,24 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_SAVING_IMPL_HPP
-#define TURI_SFRAME_SAVING_IMPL_HPP
-#include <core/storage/sframe_data/sarray_v2_block_types.hpp>
+#ifndef TURI_XFRAME_SAVING_IMPL_HPP
+#define TURI_XFRAME_SAVING_IMPL_HPP
+#include <core/storage/xframe_data/sarray_v2_block_types.hpp>
 namespace turi {
 
 
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  * \{
  */
 
 /**
- * SFrame Saving Implementation Detail
+ * XFrame Saving Implementation Detail
  */
-namespace sframe_saving_impl {
+namespace xframe_saving_impl {
 /**
  *  Represents the writing state of a single column; which
  *  segment, and which block within the segment it is at.
@@ -54,6 +54,6 @@ struct column_blocks {
 void advance_column_blocks_to_next_block(
     v2_block_impl::block_manager& block_manager,
     column_blocks& block);
-} // sframe_saving_impl
+} // xframe_saving_impl
 } // turicreate
 #endif

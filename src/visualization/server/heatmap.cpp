@@ -50,7 +50,7 @@ std::shared_ptr<Plot> turi::visualization::plot_heatmap(
 
   heatmap hm;
 
-  gl_sframe temp_sf;
+  gl_xframe temp_sf;
 
   temp_sf[x_name] = x;
   temp_sf[y_name] = y;
@@ -71,7 +71,7 @@ void heatmap_result::init(double xMin, double xMax, double yMin, double yMax) {
   extrema.y.update(yMax);
 }
 
-void heatmap::init(const gl_sframe& source, size_t batch_size) {
+void heatmap::init(const gl_xframe& source, size_t batch_size) {
   // initialize parent class
   groupby<heatmap_result>::init(source, batch_size);
 

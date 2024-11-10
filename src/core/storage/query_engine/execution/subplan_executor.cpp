@@ -31,15 +31,15 @@ static std::shared_ptr<execution_node> get_executor(
   return memo[p];
 }
 
-// Returns an output sframe which can hold the generated output of the
-// planner node. The output sframe has been opened for write and must be
+// Returns an output xframe which can hold the generated output of the
+// planner node. The output xframe has been opened for write and must be
 // written to and closed before it can be read.
-static sframe get_output_sframe_schema(
+static xframe get_output_xframe_schema(
     const std::shared_ptr<planner_node>& pnode,
     size_t nsegments = 1,
     std::string target_index_file_location = "",
     std::vector<std::string> column_names = std::vector<std::string>()) {
-  sframe out;
+  xframe out;
   // get schema
   auto column_types = infer_planner_node_type(pnode);
   if (column_names.size() == 0) {
@@ -115,44 +115,44 @@ void subplan_executor::generate_to_callback_function(
   }
 }
 
-void subplan_executor::generate_to_sframe_segment(const std::shared_ptr<planner_node>& plan,
-                                          sframe& out,
+void subplan_executor::generate_to_xframe_segment(const std::shared_ptr<planner_node>& plan,
+                                          xframe& out,
                                           size_t output_segment_id) {
 
   auto outiter = out.get_output_iterator(output_segment_id);
 
   generate_to_callback_function(
       plan, output_segment_id,
-      [&](size_t segment_idx, const std::shared_ptr<sframe_rows>& rows) {
+      [&](size_t segment_idx, const std::shared_ptr<xframe_rows>& rows) {
         (*outiter) = *rows;
         return false;
       });
 }
 
 
-sframe subplan_executor::run(const std::shared_ptr<planner_node>& pnode,
+xframe subplan_executor::run(const std::shared_ptr<planner_node>& pnode,
                              const materialize_options& exec_params) {
 
   if(exec_params.write_callback != nullptr) {
     generate_to_callback_function(pnode, 0, exec_params.write_callback);
 
-    sframe ret;
+    xframe ret;
     return ret;
   } else {
-    sframe out = get_output_sframe_schema(pnode,
+    xframe out = get_output_xframe_schema(pnode,
                                           1, // just 1 segment will do
                                           exec_params.output_index_file);
-    generate_to_sframe_segment(pnode, out, 0);
+    generate_to_xframe_segment(pnode, out, 0);
     out.close();
     return out;
   }
 }
 
-std::vector<sframe> subplan_executor::run(
+std::vector<xframe> subplan_executor::run(
     const std::vector<std::shared_ptr<planner_node>>& stuff_to_run_in_parallel,
     const materialize_options& exec_params) {
 
-  std::vector<sframe> ret(stuff_to_run_in_parallel.size());
+  std::vector<xframe> ret(stuff_to_run_in_parallel.size());
 
   parallel_for(0, stuff_to_run_in_parallel.size(), [&](const size_t i) {
       ret[i] = run(stuff_to_run_in_parallel[i], exec_params);
@@ -161,13 +161,13 @@ std::vector<sframe> subplan_executor::run(
   return ret;
 }
 
-sframe subplan_executor::run_concat(
+xframe subplan_executor::run_concat(
     const std::vector<std::shared_ptr<planner_node> >& stuff_to_run_in_parallel,
     const materialize_options& exec_params) {
 
   if (stuff_to_run_in_parallel.empty()) {
-    // make an empty sframe and return
-    sframe ret;
+    // make an empty xframe and return
+    xframe ret;
     return ret;
   }
 
@@ -178,18 +178,18 @@ sframe subplan_executor::run_concat(
         generate_to_callback_function(stuff_to_run_in_parallel[i], i, exec_f);
       });
 
-    // make an empty sframe and return
-    sframe ret;
+    // make an empty xframe and return
+    xframe ret;
     return ret;
   } else {
 
-    sframe ret = get_output_sframe_schema(stuff_to_run_in_parallel[0],
+    xframe ret = get_output_xframe_schema(stuff_to_run_in_parallel[0],
                                           stuff_to_run_in_parallel.size(),
                                           exec_params.output_index_file,
                                           exec_params.output_column_names);
 
     parallel_for(0, stuff_to_run_in_parallel.size(), [&](size_t i) {
-        generate_to_sframe_segment(stuff_to_run_in_parallel[i], ret, i);
+        generate_to_xframe_segment(stuff_to_run_in_parallel[i], ret, i);
       });
 
     ret.close();

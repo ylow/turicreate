@@ -3,29 +3,29 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_COMPACT_HPP
-#define TURI_SFRAME_COMPACT_HPP
+#ifndef TURI_XFRAME_COMPACT_HPP
+#define TURI_XFRAME_COMPACT_HPP
 #include <vector>
 #include <memory>
 namespace turi {
-class sframe;
+class xframe;
 
 template <typename T>
 class sarray;
 /**
- * sframe_fast_compact looks for runs of small segments
+ * xframe_fast_compact looks for runs of small segments
  * (comprising of less than FAST_COMPACT_BLOCKS_IN_SMALL_SEGMENT block), and
  * rebuilds them into bigger segments.
  * Returns true if any compaction was performed.
  */
-bool sframe_fast_compact(const sframe& sf);
+bool xframe_fast_compact(const xframe& sf);
 
 /**
- * Inplace compacts an SFrame. Fast compact is tried first and if
+ * Inplace compacts an XFrame. Fast compact is tried first and if
  * the number of segments do not fall below the target, a slow compaction
  * is performed.
  */
-void sframe_compact(sframe& sf, size_t segment_threshold);
+void xframe_compact(xframe& sf, size_t segment_threshold);
 
 /**
  * sarray_fast_compact looks for runs of small segments

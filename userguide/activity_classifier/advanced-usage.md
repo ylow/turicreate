@@ -14,7 +14,7 @@ Commonly, an application using an activity classifier would provide the user wit
 
 Each set of consecutive samples produced from a single recording of a subject is called a **session**. A session can contain demonstrations of multiple activities. However, sessions aren't required to contain all activities or be of the same length. The input data to the activity classifier must contain a column to uniquely assign each sample to a session. **The activity classifier in Turi Create expects the samples associated with each session id to be in an ascending order by time**. More sessions from more subjects allow the activity classifier to generalize better to new sessions it has not seen before.
 
-Below is an example of an input SFrame expected by the activity classifier, taken from the HAPT dataset. The example contains 2 sessions, distinguished by the ```exp_id``` column. In this example, the first session contains samples for walking only, while the second session contains samples for standing and sitting.
+Below is an example of an input XFrame expected by the activity classifier, taken from the HAPT dataset. The example contains 2 sessions, distinguished by the ```exp_id``` column. In this example, the first session contains samples for walking only, while the second session contains samples for standing and sitting.
 
 ```no-highlight
 +--------+----------+----------+-----------+----------+-----------+-----------+-----------+

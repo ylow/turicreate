@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_MANAGER_LAMBDA_TRANSFORM_HPP
-#define TURI_SFRAME_QUERY_MANAGER_LAMBDA_TRANSFORM_HPP
+#ifndef TURI_XFRAME_QUERY_MANAGER_LAMBDA_TRANSFORM_HPP
+#define TURI_XFRAME_QUERY_MANAGER_LAMBDA_TRANSFORM_HPP
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/storage/query_engine/operators/operator.hpp>
 #include <core/storage/query_engine/execution/query_context.hpp>
@@ -16,7 +16,7 @@ namespace turi {
 namespace query_eval {
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup operators Logical Operators
  * \{
  */
@@ -72,7 +72,7 @@ class operator_impl<planner_node_type::LAMBDA_TRANSFORM_NODE> : public query_ope
         // evalute on sarray
         m_lambda->eval(*rows, out);
       } else {
-        // need column names to evalute on sframe
+        // need column names to evalute on xframe
         m_lambda->eval(m_column_names, *rows, out);
       }
 
@@ -204,4 +204,4 @@ typedef operator_impl<planner_node_type::LAMBDA_TRANSFORM_NODE> op_lambda_transf
 } // query_eval
 } // turicreate
 
-#endif // TURI_SFRAME_QUERY_MANAGER_LAMBDA_TRANSFORM_HPP
+#endif // TURI_XFRAME_QUERY_MANAGER_LAMBDA_TRANSFORM_HPP

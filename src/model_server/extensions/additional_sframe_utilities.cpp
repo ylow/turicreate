@@ -7,14 +7,14 @@
 #include <vector>
 #include <core/parallel/lambda_omp.hpp>
 #include <core/parallel/pthread_tools.hpp>
-#include <core/data/sframe/gl_sframe.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
 #include <model_server/lib/toolkit_function_macros.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
-#include "additional_sframe_utilities.hpp"
+#include <core/storage/xframe_data/xframe_config.hpp>
+#include "additional_xframe_utilities.hpp"
 
 using namespace turi;
 
-void copy_to_memory(const sframe_rows::row& data,
+void copy_to_memory(const xframe_rows::row& data,
                     float* outptr,
                     const std::vector<size_t>& outstrides,
                     const std::vector<size_t>& outshape) {
@@ -85,7 +85,7 @@ void copy_to_memory(const sframe_rows::row& data,
   return;
 }
 
-void sframe_load_to_numpy(turi::gl_sframe input, size_t outptr_addr,
+void xframe_load_to_numpy(turi::gl_xframe input, size_t outptr_addr,
 			  std::vector<size_t> outstrides,
 			  std::vector<size_t> outshape,
 			  size_t begin, size_t end) {
@@ -93,7 +93,7 @@ void sframe_load_to_numpy(turi::gl_sframe input, size_t outptr_addr,
     input.materialize();
   }
 
-  ASSERT_MSG(input.num_columns() > 0, "SFrame has no column");
+  ASSERT_MSG(input.num_columns() > 0, "XFrame has no column");
   float* outptr = reinterpret_cast<float*>(outptr_addr);
 
   ASSERT_EQ(outstrides.size(), outshape.size());
@@ -123,5 +123,5 @@ void sframe_load_to_numpy(turi::gl_sframe input, size_t outptr_addr,
 
 
 BEGIN_FUNCTION_REGISTRATION
-REGISTER_FUNCTION(sframe_load_to_numpy, "input", "outptr_addr", "outstrides", "outshape", "begin", "end");
+REGISTER_FUNCTION(xframe_load_to_numpy, "input", "outptr_addr", "outstrides", "outshape", "begin", "end");
 END_FUNCTION_REGISTRATION

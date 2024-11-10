@@ -37,7 +37,7 @@ Let's assume we're starting with the model from the introductory example in the 
 To make predictions from this model in Python, you could run:
 ```python
 import turicreate as tc
-data =  tc.SFrame.read_csv('turicreate/lfs/datasets/xgboost/mushroom.csv')
+data =  tc.XFrame.read_csv('turicreate/lfs/datasets/xgboost/mushroom.csv')
 model = tc.load_model('mushroom.tcmodel')
 data[0]
 ```
@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
   rows.push_back(row);
 
   // make prediction
-  turi::gl_sframe result = model->fast_predict_topk(
+  turi::gl_xframe result = model->fast_predict_topk(
       // input data - 1 row per prediction
       rows,
 

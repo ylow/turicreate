@@ -2,7 +2,7 @@
 
 It isn't often that your dataset is "clean" enough to run one of our
 toolkits on it in a meaningful way right after import.  Such is
-life...data is messy.  SFrames enable you to complete data cleaning
+life...data is messy.  XFrames enable you to complete data cleaning
 tasks in a scalable way, even on datasets that are much larger than your
 computer's memory.
 
@@ -15,7 +15,7 @@ that they do not skew a summary statistic over the column (e.g. `mean`
 or `min`). If we knew about this before parsing, or are willing to parse
 the file again, we could add 0 to the `na_values` option of `read_csv`.
 Alternatively, we can apply an arbitrary function to one or multiple
-columns of an SFrame.  Here's how to replace those zeroes with missing
+columns of an XFrame.  Here's how to replace those zeroes with missing
 values with a Python lambda function:
 
 ```python
@@ -44,11 +44,11 @@ songs.head(5)
 [5 rows x 5 columns]
 ```
 
-Notice we had to reassign the resulting column back to our SFrame.  This
-is because the content of the SFrame's columns (a separate data
+Notice we had to reassign the resulting column back to our XFrame.  This
+is because the content of the XFrame's columns (a separate data
 structure called an
 [SArray](https://apple.github.io/turicreate/docs/api/generated/turicreate.SArray.html)) 
-is immutable.  SFrames can add and subtract columns liberally though, as
+is immutable.  XFrames can add and subtract columns liberally though, as
 it essentially is just a carrier of references to SArrays.
 
 We used a lambda function here because it is the simplest way to
@@ -93,7 +93,7 @@ songs.topk('love_count', k=5)
 A few things to note here.  We first select a subset of columns
 using a list within square brackets.  This is useful in general, but it helps us
 with performance in this case, as fewer values are scanned.  Also, when apply is
-called on an SFrame instead of an SArray as shown here, the input of the lambda
+called on an XFrame instead of an SArray as shown here, the input of the lambda
 function is a dictionary where the keys are the column names, and the values
 correspond to that row's values.
 
@@ -193,7 +193,7 @@ defined bounds on how wrong the answer will be, which are listed in our
 Using the most frequent items and quantiles described here, you can probably
 almost picture the distribution of years, where the tallest part is squarely
 within the 2000s.  Fortunately, we don't have to just picture it in our heads.
-Turi Create provides visualizations of SFrames, as well as other data
+Turi Create provides visualizations of XFrames, as well as other data
 structures.  Turi Create visualization is covered in depth in the
 [Visualization](../vis/README.md) section. To view a histogram of the
 SArray, we run:
@@ -202,11 +202,11 @@ SArray, we run:
 songs['year'].show()
 ```
 
-![songs['year'].show()](images/sframe_user_guide_1_histogram.png)
+![songs['year'].show()](images/xframe_user_guide_1_histogram.png)
 
 We have done some exploration, transformation, and feature generation.  Let's
 spend some time filtering values we won't care about later.  For example,
-perhaps we'll need an SFrame with **only** dated songs.  This basic filter operation
+perhaps we'll need an XFrame with **only** dated songs.  This basic filter operation
 looks like this:
 
 ```python
@@ -244,16 +244,16 @@ dated_songs
 |           Cover Girl           |   Shawn Colvin   | 1994 |     0      |
 +--------------------------------+------------------+------+------------+
 [? rows x 6 columns]
-Note: Only the head of the SFrame is printed. This SFrame is lazily evaluated.
+Note: Only the head of the XFrame is printed. This XFrame is lazily evaluated.
 You can use len(sf) to force materialization.
 ```
 
-The output does a good job at explaining what is happening here.  SFrames will
+The output does a good job at explaining what is happening here.  XFrames will
 not do any work if it isn't required right away.  This way, if you decide this
 filter operation isn't for you after looking at the first few rows, Turi
 Create won't waste computation time doing it anyways.  However, it
 is important to verify that the missing values were indeed removed, and that we
-indeed removed 484424 rows, so we'll force materialization of the new SFrame.
+indeed removed 484424 rows, so we'll force materialization of the new XFrame.
 
 ```python
 len(dated_songs)
@@ -306,16 +306,16 @@ which you can read about in the [API Reference](https://apple.github.io/turicrea
 
 Another important way to filter a dataset is to get rid of duplicate
 data.  A nice way to search for duplicate data is to visualize the
-SFrame.
+XFrame.
 
 ```
 songs.show()
 ```
 
-![songs.show()](images/sframe_user_guide_2_summary.png)
+![songs.show()](images/xframe_user_guide_2_summary.png)
 
 It appears our `song_id` is not completely unique.  This would make merging the
-`songs` and `usage_data` SFrames error-prone if all we want to do is add song
+`songs` and `usage_data` XFrames error-prone if all we want to do is add song
 title information to the existing usage data.  In this particular dataset, these
 repeat songs are included because they may have been released on several
 different albums (movie soundtracks, radio singles, etc.).  If we do not care
@@ -447,7 +447,7 @@ Data:
 |              ...               |        ...         |     ...      |  ...   |
 +--------------------------------+--------------------+--------------+--------+
 [2000000 rows x 4 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 ```
 
 
@@ -456,7 +456,7 @@ Note: Only the head of the SFrame is printed.
 SArrays are strongly-typed and some operations only work on certain types. Two
 types deserve some special consideration in this user guide: `list` and `dict`.
 These types can hold values of any type supported by SArrays, including
-themselves. So you can have an SFrame with a column of dictionaries that each
+themselves. So you can have an XFrame with a column of dictionaries that each
 have values that are lists of lists of dicts with mixed strings and
 integers... anyway, you get the idea!
 
@@ -504,7 +504,7 @@ albums
 |              ...               |              ...               |
 +--------------------------------+--------------------------------+
 [230558 rows x 4 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 ```
 
 
@@ -601,7 +601,7 @@ albums['num_years'] = albums['track_dict'].item_length()
 albums['num_years'].show()
 ```
 
-![albums['num_years'].show()](images/sframe_user_guide_3_categorical.png)
+![albums['num_years'].show()](images/xframe_user_guide_3_categorical.png)
 
 We can still recover the full track listing with some dict operations, so
 suppose we want both a `list` and a `dict` representation of the tracks.
@@ -644,7 +644,7 @@ albums
 |              ...               |    ...    |              ...               |
 +--------------------------------+-----------+--------------------------------+
 [230558 rows x 5 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 ```
 
 
@@ -691,7 +691,7 @@ albums
 |              ...               |    ...    |              ...               |
 +--------------------------------+-----------+--------------------------------+
 [230558 rows x 5 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 ```
 
 
@@ -739,7 +739,7 @@ albums
 |              ...               |    ...    |              ...               |
 +--------------------------------+-----------+--------------------------------+
 [230558 rows x 5 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 ```
 
 
@@ -784,7 +784,7 @@ albums[albums['track_dict'].dict_has_any_keys(1965)]
 | {1969: ['Music Is The Heal ... |     4     | ['Spirits', 'Spirits Rejoi ... |
 +--------------------------------+-----------+--------------------------------+
 [? rows x 5 columns]
-Note: Only the head of the SFrame is printed. This SFrame is lazily evaluated.
+Note: Only the head of the XFrame is printed. This XFrame is lazily evaluated.
 You can use len(sf) to force materialization.
 ```
 
@@ -816,7 +816,7 @@ big_list
 |              ...               |
 +--------------------------------+
 [230558 rows x 1 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 ```
 
 The `unpack` function accomplishes the reverse task.  These examples may
@@ -825,4 +825,4 @@ with unstructured data like text, as you will be able to see in the
 [Text Analysis](../text/analysis.md) chapter of this guide.
 
 To find out more, check out the [API Reference for
-SFrames](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.html).
+XFrames](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.html).

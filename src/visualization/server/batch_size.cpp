@@ -17,7 +17,7 @@ size_t batch_size(const gl_sarray& x, const gl_sarray& y) {
   return 2500000;
 }
 
-size_t batch_size(const gl_sframe& sf) {
+size_t batch_size(const gl_xframe& sf) {
   size_t num_columns = sf.column_names().size();
   if (num_columns == 0) {
     // avoid divide-by-zero below

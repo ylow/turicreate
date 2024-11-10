@@ -9,14 +9,14 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <core/logging/logger.hpp>
-#include <core/storage/sframe_data/sframe_index_file.hpp>
+#include <core/storage/xframe_data/xframe_index_file.hpp>
 #include <core/storage/fileio/general_fstream.hpp>
 #include <core/storage/fileio/fs_utils.hpp>
 #include <core/util/boost_property_tree_utils.hpp>
 
 namespace turi {
-sframe_index_file_information read_sframe_index_file(std::string index_file) {
-  sframe_index_file_information ret;
+xframe_index_file_information read_xframe_index_file(std::string index_file) {
+  xframe_index_file_information ret;
 
   // try to open the file
   general_ifstream fin(index_file);
@@ -32,12 +32,12 @@ sframe_index_file_information read_sframe_index_file(std::string index_file) {
     log_and_throw(std::string("Unable to parse frame index file ") + index_file);
   }
 
-  //read the sframe properties.
+  //read the xframe properties.
   try {
-    ret.version = std::atoi(data.get<std::string>("sframe.version").c_str());
+    ret.version = std::atoi(data.get<std::string>("xframe.version").c_str());
     ret.nsegments = (size_t)(-1);
-    ret.ncolumns = std::atol(data.get<std::string>("sframe.num_columns").c_str());
-    ret.nrows = std::atol(data.get<std::string>("sframe.nrows").c_str());
+    ret.ncolumns = std::atol(data.get<std::string>("xframe.num_columns").c_str());
+    ret.nrows = std::atol(data.get<std::string>("xframe.nrows").c_str());
 
     ret.column_names =
         ini::read_sequence_section<std::string>(data, "column_names", ret.ncolumns);
@@ -47,7 +47,7 @@ sframe_index_file_information read_sframe_index_file(std::string index_file) {
   } catch(std::string e) {
     log_and_throw(e);
   } catch(...) {
-    log_and_throw(std::string("Unable to parse sframe index file ") + index_file);
+    log_and_throw(std::string("Unable to parse xframe index file ") + index_file);
   }
 
 
@@ -75,8 +75,8 @@ sframe_index_file_information read_sframe_index_file(std::string index_file) {
 }
 
 
-void write_sframe_index_file(std::string index_file,
-                             const sframe_index_file_information& info) {
+void write_xframe_index_file(std::string index_file,
+                             const xframe_index_file_information& info) {
   using boost::filesystem::path;
   using boost::algorithm::starts_with;
 
@@ -90,10 +90,10 @@ void write_sframe_index_file(std::string index_file,
   }
   // commit the index file
   boost::property_tree::ptree data;
-  data.put("sframe.version", info.version);
-  data.put("sframe.num_segments", info.nsegments);
-  data.put("sframe.num_columns", info.ncolumns);
-  data.put("sframe.nrows", info.nrows);
+  data.put("xframe.version", info.version);
+  data.put("xframe.num_segments", info.nsegments);
+  data.put("xframe.num_columns", info.ncolumns);
+  data.put("xframe.nrows", info.nrows);
   ini::write_dictionary_section(data, "metadata", info.metadata);
   ini::write_sequence_section(data, "column_names", info.column_names);
 

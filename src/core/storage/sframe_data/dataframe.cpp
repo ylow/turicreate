@@ -5,7 +5,7 @@
  */
 #include <vector>
 #include <map>
-#include <core/storage/sframe_data/dataframe.hpp>
+#include <core/storage/xframe_data/dataframe.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/parallel/lambda_omp.hpp>
 #include <boost/config/warning_disable.hpp>

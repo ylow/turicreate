@@ -8,26 +8,26 @@
 #include <vector>
 #include <algorithm>
 #include <core/util/cityhash_tc.hpp>
-#include <core/storage/sframe_data/testing_utils.hpp>
-#include <core/storage/sframe_data/sframe_iterators.hpp>
+#include <core/storage/xframe_data/testing_utils.hpp>
+#include <core/storage/xframe_data/xframe_iterators.hpp>
 #include <core/parallel/atomic.hpp>
 #include <core/parallel/lambda_omp.hpp>
 #include <iterator>
 
 using namespace turi;
 
-struct parallel_sframe_iterator_test  {
+struct parallel_xframe_iterator_test  {
  public:
 
   void test_simple_explicit_1_iter() {
-    sframe sf = make_testing_sframe({"A", "B"}, {flex_type_enum::INTEGER, flex_type_enum::INTEGER},
+    xframe sf = make_testing_xframe({"A", "B"}, {flex_type_enum::INTEGER, flex_type_enum::INTEGER},
                                     { {1, 2}, {2, 3}, {4, 5}, {6, 7}, {8, 9} });
 
     DASSERT_EQ(sf.size(), 5);
 
     std::vector<int> hit_row(5,false);
 
-    for(parallel_sframe_iterator it(sf); !it.done(); ++it) {
+    for(parallel_xframe_iterator it(sf); !it.done(); ++it) {
       DASSERT_FALSE(hit_row[it.row_index()]);
       hit_row[it.row_index()] = true;
     }
@@ -38,16 +38,16 @@ struct parallel_sframe_iterator_test  {
   }
 
   void test_simple_explicit_4_iter() {
-    sframe sf = make_testing_sframe({"A", "B"}, {flex_type_enum::INTEGER, flex_type_enum::INTEGER},
+    xframe sf = make_testing_xframe({"A", "B"}, {flex_type_enum::INTEGER, flex_type_enum::INTEGER},
                                     { {1, 2}, {2, 3}, {4, 5}, {6, 7}, {8, 9} });
 
     DASSERT_EQ(sf.size(), 5);
 
     std::vector<int> hit_row(5,false);
 
-    parallel_sframe_iterator_initializer it_init(sf);
+    parallel_xframe_iterator_initializer it_init(sf);
     for(size_t i = 0; i < 4; ++i) {
-      for(parallel_sframe_iterator it(it_init, i, 4); !it.done(); ++it) {
+      for(parallel_xframe_iterator it(it_init, i, 4); !it.done(); ++it) {
         DASSERT_FALSE(hit_row[it.row_index()]);
         hit_row[it.row_index()] = true;
       }
@@ -59,7 +59,7 @@ struct parallel_sframe_iterator_test  {
   }
 
   void test_simple_explicit_4_iter_no_initializer() {
-    sframe sf = make_testing_sframe({"A", "B"}, {flex_type_enum::INTEGER, flex_type_enum::INTEGER},
+    xframe sf = make_testing_xframe({"A", "B"}, {flex_type_enum::INTEGER, flex_type_enum::INTEGER},
                                     { {1, 2}, {2, 3}, {4, 5}, {6, 7}, {8, 9} });
 
     DASSERT_EQ(sf.size(), 5);
@@ -67,7 +67,7 @@ struct parallel_sframe_iterator_test  {
     std::vector<int> hit_row(5,false);
 
     for(size_t i = 0; i < 4; ++i) {
-      for(parallel_sframe_iterator it(sf, i, 4); !it.done(); ++it) {
+      for(parallel_xframe_iterator it(sf, i, 4); !it.done(); ++it) {
         DASSERT_FALSE(hit_row[it.row_index()]);
         hit_row[it.row_index()] = true;
       }
@@ -79,7 +79,7 @@ struct parallel_sframe_iterator_test  {
   }
 
   void test_simple_explicit_parallel() {
-    sframe sf = make_testing_sframe({"A", "B"}, {flex_type_enum::INTEGER, flex_type_enum::INTEGER},
+    xframe sf = make_testing_xframe({"A", "B"}, {flex_type_enum::INTEGER, flex_type_enum::INTEGER},
                                     { {1, 2}, {2, 3}, {4, 5}, {6, 7}, {8, 9} });
 
     DASSERT_EQ(sf.size(), 5);
@@ -87,7 +87,7 @@ struct parallel_sframe_iterator_test  {
     std::vector<int> hit_row(5, false);
 
     parallel_for(size_t(0), 4, [&](size_t i) {
-        for(parallel_sframe_iterator it(sf, i, 4); !it.done(); ++it) {
+        for(parallel_xframe_iterator it(sf, i, 4); !it.done(); ++it) {
           DASSERT_FALSE(hit_row[it.row_index()]);
           hit_row[it.row_index()] = true;
         }
@@ -99,19 +99,19 @@ struct parallel_sframe_iterator_test  {
   }
 
 
-  void _test_correct(const std::vector<size_t>& num_columns_by_sframe, size_t num_elements,
+  void _test_correct(const std::vector<size_t>& num_columns_by_xframe, size_t num_elements,
                      const std::vector<size_t>& num_threads_to_check) {
 
-    std::vector<sframe> sfv;
+    std::vector<xframe> sfv;
     
     size_t num_segments = 16;
 
     size_t cur_value = 0; 
     
-    for(size_t i = 0; i < num_columns_by_sframe.size(); ++i) {
-      size_t num_columns = num_columns_by_sframe[i];
+    for(size_t i = 0; i < num_columns_by_xframe.size(); ++i) {
+      size_t num_columns = num_columns_by_xframe[i];
 
-      // Set up the sframe
+      // Set up the xframe
       std::vector<std::string> names;
       std::vector<flex_type_enum> types;
 
@@ -120,7 +120,7 @@ struct parallel_sframe_iterator_test  {
         types.push_back(flex_type_enum::INTEGER); 
       }
       
-      sframe out;
+      xframe out;
 
       out.open_for_write(names, types, "", num_segments);
 
@@ -152,21 +152,21 @@ struct parallel_sframe_iterator_test  {
     std::vector<std::vector<std::vector<flexible_type> > > reference(sfv.size()); 
     
     for(size_t i = 0; i < sfv.size(); ++i)
-      reference[i] = testing_extract_sframe_data(sfv[i]);
+      reference[i] = testing_extract_xframe_data(sfv[i]);
 
     // Now run the checks
-    parallel_sframe_iterator_initializer it_iter(sfv);
+    parallel_xframe_iterator_initializer it_iter(sfv);
 
     mutex write_lock;
     atomic<size_t> hit_count = 0;
     
-    // Per SFrame check
-    auto check_sframe = [&](size_t sf_idx,
+    // Per XFrame check
+    auto check_xframe = [&](size_t sf_idx,
                             size_t thread_idx, size_t nt,
                             std::vector<std::vector<flexible_type> >& check_x) {
 
 
-      for(parallel_sframe_iterator it(it_iter, thread_idx, nt); !it.done(); ++it) {
+      for(parallel_xframe_iterator it(it_iter, thread_idx, nt); !it.done(); ++it) {
 
         auto& x = check_x[it.row_index()];
         
@@ -191,7 +191,7 @@ struct parallel_sframe_iterator_test  {
         total_num_columns += sf.num_columns();
       
       std::vector<flexible_type> x; 
-      for(parallel_sframe_iterator it(it_iter, thread_idx, num_threads); !it.done(); ++it) {
+      for(parallel_xframe_iterator it(it_iter, thread_idx, num_threads); !it.done(); ++it) {
         
         it.fill(x);
             
@@ -214,7 +214,7 @@ struct parallel_sframe_iterator_test  {
     // Check block reading.
     size_t mbStart = 1;
     size_t mbEnd = 3;
-    parallel_sframe_iterator_initializer it_iter_block(sfv); 
+    parallel_xframe_iterator_initializer it_iter_block(sfv); 
     it_iter_block.set_global_block(mbStart, mbEnd);
     auto check_all_block = [&](
         size_t thread_idx, size_t num_threads) {
@@ -224,7 +224,7 @@ struct parallel_sframe_iterator_test  {
         total_num_columns += sf.num_columns();
       
       std::vector<flexible_type> x; 
-      for(parallel_sframe_iterator it(it_iter_block, thread_idx, num_threads);
+      for(parallel_xframe_iterator it(it_iter_block, thread_idx, num_threads);
           !it.done(); ++it) {
         
         it.fill(x);
@@ -251,7 +251,7 @@ struct parallel_sframe_iterator_test  {
 
         hit_count = 0;
         for(size_t thread_idx = 0; thread_idx < nt; ++thread_idx)
-          check_sframe(sf_idx, thread_idx, nt, check_x);
+          check_xframe(sf_idx, thread_idx, nt, check_x);
 
         TS_ASSERT(check_x == reference[sf_idx]); 
 
@@ -264,7 +264,7 @@ struct parallel_sframe_iterator_test  {
 
         hit_count = 0;
         // Now do the same, but in parallel 
-        in_parallel([&](size_t thread_idx, size_t nt) { check_sframe(sf_idx, thread_idx, nt, check_x); } );
+        in_parallel([&](size_t thread_idx, size_t nt) { check_xframe(sf_idx, thread_idx, nt, check_x); } );
 
         TS_ASSERT_EQUALS(sfv[0].size(), size_t(hit_count));
         
@@ -314,7 +314,7 @@ struct parallel_sframe_iterator_test  {
       }
     }
 
-    sframe sf = make_testing_sframe({"A", "B", "C"},
+    xframe sf = make_testing_xframe({"A", "B", "C"},
                                     {flex_type_enum::INTEGER, flex_type_enum::INTEGER, flex_type_enum::INTEGER},
                                     data);
 
@@ -328,7 +328,7 @@ struct parallel_sframe_iterator_test  {
     out->open_for_write(num_segments);
     out->set_type(flex_type_enum::INTEGER);
 
-    parallel_sframe_iterator_initializer it_init(sf);
+    parallel_xframe_iterator_initializer it_init(sf);
 
     atomic<size_t> n_writes = 0;
   
@@ -338,7 +338,7 @@ struct parallel_sframe_iterator_test  {
 
         std::vector<flexible_type> x;
 
-        for(parallel_sframe_iterator it(it_init, thread_idx, n_threads); !it.done(); ++it, ++it_out) {
+        for(parallel_xframe_iterator it(it_init, thread_idx, n_threads); !it.done(); ++it, ++it_out) {
           it.fill(x);
 
           size_t out_value = 0;
@@ -381,56 +381,56 @@ struct parallel_sframe_iterator_test  {
 
 };
 
-BOOST_FIXTURE_TEST_SUITE(_parallel_sframe_iterator_test, parallel_sframe_iterator_test)
+BOOST_FIXTURE_TEST_SUITE(_parallel_xframe_iterator_test, parallel_xframe_iterator_test)
 BOOST_AUTO_TEST_CASE(test_simple_explicit_1_iter) {
-  parallel_sframe_iterator_test::test_simple_explicit_1_iter();
+  parallel_xframe_iterator_test::test_simple_explicit_1_iter();
 }
 BOOST_AUTO_TEST_CASE(test_simple_explicit_4_iter) {
-  parallel_sframe_iterator_test::test_simple_explicit_4_iter();
+  parallel_xframe_iterator_test::test_simple_explicit_4_iter();
 }
 BOOST_AUTO_TEST_CASE(test_simple_explicit_4_iter_no_initializer) {
-  parallel_sframe_iterator_test::test_simple_explicit_4_iter_no_initializer();
+  parallel_xframe_iterator_test::test_simple_explicit_4_iter_no_initializer();
 }
 BOOST_AUTO_TEST_CASE(test_simple_explicit_parallel) {
-  parallel_sframe_iterator_test::test_simple_explicit_parallel();
+  parallel_xframe_iterator_test::test_simple_explicit_parallel();
 }
 BOOST_AUTO_TEST_CASE(test_tiny_1) {
-  parallel_sframe_iterator_test::test_tiny_1();
+  parallel_xframe_iterator_test::test_tiny_1();
 }
 BOOST_AUTO_TEST_CASE(test_tiny_2) {
-  parallel_sframe_iterator_test::test_tiny_2();
+  parallel_xframe_iterator_test::test_tiny_2();
 }
 BOOST_AUTO_TEST_CASE(test_tiny_3) {
-  parallel_sframe_iterator_test::test_tiny_3();
+  parallel_xframe_iterator_test::test_tiny_3();
 }
 BOOST_AUTO_TEST_CASE(test_tiny_4) {
-  parallel_sframe_iterator_test::test_tiny_4();
+  parallel_xframe_iterator_test::test_tiny_4();
 }
 BOOST_AUTO_TEST_CASE(test_tiny_5) {
-  parallel_sframe_iterator_test::test_tiny_5();
+  parallel_xframe_iterator_test::test_tiny_5();
 }
 BOOST_AUTO_TEST_CASE(test_tiny_6) {
-  parallel_sframe_iterator_test::test_tiny_6();
+  parallel_xframe_iterator_test::test_tiny_6();
 }
 BOOST_AUTO_TEST_CASE(test_medium) {
-  parallel_sframe_iterator_test::test_medium();
+  parallel_xframe_iterator_test::test_medium();
 }
 BOOST_AUTO_TEST_CASE(test_many_parallel) {
-  parallel_sframe_iterator_test::test_many_parallel();
+  parallel_xframe_iterator_test::test_many_parallel();
 }
 BOOST_AUTO_TEST_CASE(test_large) {
-  parallel_sframe_iterator_test::test_large();
+  parallel_xframe_iterator_test::test_large();
 }
 BOOST_AUTO_TEST_CASE(test_simultaneous_write_small_1) {
-  parallel_sframe_iterator_test::test_simultaneous_write_small_1();
+  parallel_xframe_iterator_test::test_simultaneous_write_small_1();
 }
 BOOST_AUTO_TEST_CASE(test_simultaneous_write_small_2) {
-  parallel_sframe_iterator_test::test_simultaneous_write_small_2();
+  parallel_xframe_iterator_test::test_simultaneous_write_small_2();
 }
 BOOST_AUTO_TEST_CASE(test_simultaneous_write_small_10) {
-  parallel_sframe_iterator_test::test_simultaneous_write_small_10();
+  parallel_xframe_iterator_test::test_simultaneous_write_small_10();
 }
 BOOST_AUTO_TEST_CASE(test_simultaneous_write_small_100) {
-  parallel_sframe_iterator_test::test_simultaneous_write_small_100();
+  parallel_xframe_iterator_test::test_simultaneous_write_small_100();
 }
 BOOST_AUTO_TEST_SUITE_END()

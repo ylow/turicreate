@@ -6,15 +6,15 @@
 #ifndef TURI_UNITY_SWRITER_BASE_HPP
 #define TURI_UNITY_SWRITER_BASE_HPP
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/siterable.hpp>
+#include <core/storage/xframe_data/siterable.hpp>
 namespace turi {
 
 
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  * \{
  */
 

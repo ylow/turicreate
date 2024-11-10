@@ -3,14 +3,14 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include <core/storage/sframe_data/sframe_compact.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sframe_index_file.hpp>
-#include <core/storage/sframe_data/sarray_index_file.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_manager.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_writer.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_types.hpp>
-#include <core/storage/sframe_data/sframe_saving_impl.hpp>
+#include <core/storage/xframe_data/xframe_compact.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/xframe_index_file.hpp>
+#include <core/storage/xframe_data/sarray_index_file.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_manager.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_writer.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_types.hpp>
+#include <core/storage/xframe_data/xframe_saving_impl.hpp>
 #include <core/storage/fileio/fs_utils.hpp>
 #include <core/logging/assertions.hpp>
 #include <boost/lexical_cast.hpp>
@@ -18,9 +18,9 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 namespace turi {
-using namespace sframe_saving_impl;
+using namespace xframe_saving_impl;
 /**
- * There are many strategies for saving an SFrame, and the objective here
+ * There are many strategies for saving an XFrame, and the objective here
  * is to pick the right strategy for the right occassion, falling back to
  * the naive strategies when we run out of options.
  */
@@ -29,7 +29,7 @@ using namespace sframe_saving_impl;
  * This is the most naive of all saving strategies.
  *
  */
-void sframe_save_naive(const sframe& sf_source,
+void xframe_save_naive(const xframe& sf_source,
                        std::string index_file) {
   std::vector<std::string> my_names;
   std::vector<flex_type_enum> my_types;
@@ -38,13 +38,13 @@ void sframe_save_naive(const sframe& sf_source,
     my_types.push_back(sf_source.column_type(i));
   }
 
-  // target sframe.
-  sframe new_sf;
-  size_t num_write_segments = SFRAME_DEFAULT_NUM_SEGMENTS;
+  // target xframe.
+  xframe new_sf;
+  size_t num_write_segments = XFRAME_DEFAULT_NUM_SEGMENTS;
   if (sf_source.num_segments() == 0) num_write_segments = 0;
 
   new_sf.open_for_write(my_names, my_types,
-                        index_file, SFRAME_DEFAULT_NUM_SEGMENTS);
+                        index_file, XFRAME_DEFAULT_NUM_SEGMENTS);
   if (sf_source.num_segments() == 0) {
     new_sf.close();
     return;
@@ -57,11 +57,11 @@ void sframe_save_naive(const sframe& sf_source,
     size_t start = i * step;
     size_t end = (i + 1) * step;
     if (i == num_write_segments - 1) end = sf_source.num_rows();
-    sframe_rows rows;
+    xframe_rows rows;
     while(start < end) {
       size_t limit = end - start;
-      if (limit > sframe_config::SFRAME_READ_BATCH_SIZE) {
-        limit = sframe_config::SFRAME_READ_BATCH_SIZE;
+      if (limit > xframe_config::XFRAME_READ_BATCH_SIZE) {
+        limit = xframe_config::XFRAME_READ_BATCH_SIZE;
       }
       reader->read_rows(start, start + limit, rows);
       (*out) = rows;
@@ -75,14 +75,14 @@ void sframe_save_naive(const sframe& sf_source,
 
 
 
-void sframe_save_blockwise(const sframe& sf_source,
+void xframe_save_blockwise(const xframe& sf_source,
                            std::string index_file) {
-  // this will hit the sframe at a lower level
+  // this will hit the xframe at a lower level
   // This is slightly complicated and slightly annoying.
   //
-  // SFrame:
-  // An SFrame is an arbitrary collection of columns listed in a
-  // sframe_index_file_information datastructure.
+  // XFrame:
+  // An XFrame is an arbitrary collection of columns listed in a
+  // xframe_index_file_information datastructure.
   // Each column is denoted by a column file (it may not be a real file)
   //
   // Column file: This may not be a real file. Each column is made up of
@@ -190,7 +190,7 @@ void sframe_save_blockwise(const sframe& sf_source,
     for (auto col : output_index.columns) {
       frame_index.column_files.push_back(col.index_file);
     }
-    write_sframe_index_file(index_file, frame_index);
+    write_xframe_index_file(index_file, frame_index);
   } catch (...) {
     // cleanup. close any open columns
     for(auto& col: cols) {
@@ -202,32 +202,32 @@ void sframe_save_blockwise(const sframe& sf_source,
   }
 }
 
-void sframe_save(const sframe& sf_source,
+void xframe_save(const xframe& sf_source,
                  std::string index_file) {
   // if there are any columns on sarray v1 format, we use the naive form
-  bool has_legacy_sframe = false;
+  bool has_legacy_xframe = false;
   for (size_t i = 0;i < sf_source.num_columns(); ++i) {
     auto cur_column = sf_source.select_column(i);
-    if (cur_column->get_index_info().version < 2) has_legacy_sframe = true;
+    if (cur_column->get_index_info().version < 2) has_legacy_xframe = true;
   }
 
-  if (has_legacy_sframe) {
-    sframe_save_naive(sf_source, index_file);
+  if (has_legacy_xframe) {
+    xframe_save_naive(sf_source, index_file);
   } else {
-    sframe_fast_compact(sf_source);
-    sframe_save_blockwise(sf_source, index_file);
+    xframe_fast_compact(sf_source);
+    xframe_save_blockwise(sf_source, index_file);
   }
 }
 
 
-void sframe_save_weak_reference(const sframe& sf_source,
+void xframe_save_weak_reference(const xframe& sf_source,
                                 std::string index_file) {
   /*
    * The algorithm is not very complicated, but is annoying because
-   * once again we have to touch the sframe at a lower level than I would like.
+   * once again we have to touch the xframe at a lower level than I would like.
    *
    * What are are going to do is to build a list of all the segment files
-   * that make up the sframe, and:
+   * that make up the xframe, and:
    *  - If they are on the same target protocol, (like hdfs:// s3://)
    *    Action: keep and do nothing.
    *  - if they are on a different target protocol
@@ -235,22 +235,22 @@ void sframe_save_weak_reference(const sframe& sf_source,
    *    This is a little annoying.
    *
    * The difficulty with relocating segments is that
-   * the many-to-many relationship between columns in an SFrame,
+   * the many-to-many relationship between columns in an XFrame,
    * and columns in a segment makes things slightly annoying.
    *  - There may be a lot more columns in the segment than we need.
-   *  - A column in an SFrame are subcolumns of many segments. Some of which
+   *  - A column in an XFrame are subcolumns of many segments. Some of which
    *  may be already on the right protocol, some may not.
    *
    * So, we are not going to to this. We are going to do something simpler
    * Instead, we are going to implement a slightly simpler version.
    *
-   * We look at the sframe one entire column at a time.
+   * We look at the xframe one entire column at a time.
    *  - If the entire column is already on the right protocol, Do nothing.
    *  - Else If only part or none of the column is on the right protocol,
-   *  we add the column to a temporary SFrame.
+   *  we add the column to a temporary XFrame.
    *
    * Finally,
-   * If the temporary SFrame is non-empty, we use the full sframe_save to
+   * If the temporary XFrame is non-empty, we use the full xframe_save to
    * save it to the target in temp directory provided.
    * Now, everything we need should be on the target protocol, and we rebuild
    * the index files.
@@ -265,7 +265,7 @@ void sframe_save_weak_reference(const sframe& sf_source,
 
   std::string output_protocol = fileio::get_protocol(index_file);
 
-  // column_segment_to_be_relocated[column_number of sframe][segment_number]
+  // column_segment_to_be_relocated[column_number of xframe][segment_number]
   // is true if the segment is to be relocated
   std::vector<std::vector<bool> > column_segment_to_be_relocated;
   // column_was_relocated[i] is true if column i was relocated
@@ -295,7 +295,7 @@ void sframe_save_weak_reference(const sframe& sf_source,
   }
   // done!
   // now to perform all relocations
-  sframe temp_sf;
+  xframe temp_sf;
   for (size_t i = 0;i < num_columns; ++i) {
     bool to_relocate = std::any_of(column_segment_to_be_relocated[i].begin(),
                                    column_segment_to_be_relocated[i].end(),
@@ -335,9 +335,9 @@ void sframe_save_weak_reference(const sframe& sf_source,
   if (temp_sf.num_columns() > 0) {
     auto suffix = boost::lexical_cast<std::string>(uuid_generator());
     std::string temp_sf_output_index = base_name + "-" +  suffix + ".frame_idx";
-    sframe_save(temp_sf, temp_sf_output_index);
+    xframe_save(temp_sf, temp_sf_output_index);
     // reload it. so we get the new segment information.
-    temp_sf = sframe(temp_sf_output_index);
+    temp_sf = xframe(temp_sf_output_index);
   }
 
   // ok. so temp_sf contains all the columns that were relocated.
@@ -361,7 +361,7 @@ void sframe_save_weak_reference(const sframe& sf_source,
   // The convenience of handling it column by column is that we have all the
   // array "sidx" files in place. We just need to build a frame index that
   // references them.
-  // we get the root sframe's frame index rewrite it and save it
+  // we get the root xframe's frame index rewrite it and save it
 
   // for every sidx we move to the target protocol, we keep a map just in case
   // it is reused. (remember! there is no 1-1 mapping between columns and
@@ -395,7 +395,7 @@ void sframe_save_weak_reference(const sframe& sf_source,
   for (size_t i = 0;i < column_index_files.size(); ++i) {
     new_frame_index_info.column_files[i] = column_index_files[i];
   }
-  write_sframe_index_file(index_file, new_frame_index_info);
+  write_xframe_index_file(index_file, new_frame_index_info);
 
 }
 

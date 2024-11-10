@@ -71,14 +71,14 @@ std::set<std::string> get_keys(const std::map<std::string, T>& map) {
   return keys;
 }
 
-void enumerate_rows(const std::shared_ptr<unity_sframe>& sf,
+void enumerate_rows(const std::shared_ptr<unity_xframe>& sf,
                     const image_row_handler& row_handler) {
 
   // Determine layout of each row.
   const size_t path_column_index = sf->column_index("path");
   const size_t image_column_index = sf->column_index("image");
 
-  // Iterate through the SFrame.
+  // Iterate through the XFrame.
   sf->begin_iterator();
   const std::vector<std::vector<flexible_type>> rows =
       sf->iterator_get_next(sf->size());
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(test_load_images) {
                         /* recursive */ true, /* ignore_failure */ false,
                         /* random_order */ false);
 
-  // Iterate through the resulting SFrame...
+  // Iterate through the resulting XFrame...
   std::set<std::string> loaded_paths;
   enumerate_rows(sf, [&](const image_type& img, const std::string& path) {
     // Keep track of which paths were actually loaded.
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE(test_load_images_with_unsupported_file) {
     ds_store_stream << "Not an image.\n";
   }
 
-  // Loading with ignore_failure = true returns an empty SFrame.
+  // Loading with ignore_failure = true returns an empty XFrame.
   auto sf = load_images(
       path, /* format */ "auto", /* with_path */ true, /* recursive */ true,
       /* ignore_failure */ true, /* random_order */ false);
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE(test_load_images_with_specified_format) {
                         /* recursive */ true, /* ignore_failure */ false,
                         /* random_order */ false);
 
-  // Iterate through the resulting SFrame...
+  // Iterate through the resulting XFrame...
   std::set<std::string> loaded_paths;
   enumerate_rows(sf, [&](const image_type& img, const std::string& path) {
     // Keep track of which paths were actually loaded.
@@ -391,7 +391,7 @@ BOOST_AUTO_TEST_CASE(test_load_images_nonrecursive) {
                         /* recursive */ false, /* ignore_failure */ false,
                         /* random_order */ false);
 
-  // Iterate through the resulting SFrame...
+  // Iterate through the resulting XFrame...
   std::set<std::string> loaded_paths;
   enumerate_rows(sf, [&](const image_type& img, const std::string& path) {
     // Keep track of which paths were actually loaded.

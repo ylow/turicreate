@@ -7,10 +7,10 @@ by *edges*.
 
 To facilitate graph-oriented data analysis, Turi Create offers a
 [SGraph](https://apple.github.io/turicreate/docs/api/generated/turicreate.SGraph.html)
-object, a scalable graph data structure backed by SFrames.  In this
+object, a scalable graph data structure backed by XFrames.  In this
 chapter, we show that SGraphs allow arbitrary dictionary attributes on
 vertices and edges, flexible vertex and edge query functions, and
-seamless transformation to and from SFrames.
+seamless transformation to and from XFrames.
 
 #### Creating an SGraph
 
@@ -42,15 +42,15 @@ g = SGraph().add_vertices([Vertex(i) for i in range(10)]).add_edges(
     [Edge(i, i+1) for i in range(9)])
 ```
 
-SGraphs can also be created from an edge list stored in an SFrame. Vertices are
+SGraphs can also be created from an edge list stored in an XFrame. Vertices are
 added to the graph automatically based on the edge list, and columns of the
-SFrame not used as source or destination vertex IDs are assumed to be edge
+XFrame not used as source or destination vertex IDs are assumed to be edge
 attributes. Suppose we import a dataset of James Bond characters to
-an SFrame, then build the graph.
+an XFrame, then build the graph.
 
 ```python
-from turicreate import SFrame
-edge_data = SFrame.read_csv('bond_edges.csv')
+from turicreate import XFrame
+edge_data = XFrame.read_csv('bond_edges.csv')
 
 g = SGraph()
 g = g.add_edges(edge_data, src_field='src', dst_field='dst')
@@ -60,11 +60,11 @@ print(g)
 SGraph({'num_edges': 20, 'num_vertices': 10})
 ```
 
-The SGraph constructor also accepts vertex and edge SFrames directly. We can
+The SGraph constructor also accepts vertex and edge XFrames directly. We can
 construct the same James Bond graph with the following two lines:
 
 ```python
-vertex_data = SFrame.read_csv('bond_vertices.csv')
+vertex_data = XFrame.read_csv('bond_vertices.csv')
 
 g = SGraph(vertices=vertex_data, edges=edge_data, vid_field='name',
            src_field='src', dst_field='dst')
@@ -97,7 +97,7 @@ print(g.summary())
 ```
 
 To retrieve the contents of an SGraph, the `get_vertices` and `get_edges`
-methods return SFrames. These functions can filter edges and vertices based on
+methods return XFrames. These functions can filter edges and vertices based on
 vertex IDs or attributes. Omitting IDs and attributes returns all vertices or
 edges.
 
@@ -154,9 +154,9 @@ SGraph({'num_edges': 15, 'num_vertices': 8})
 
 SGraphs are *structurally immutable*, but the data stored on vertices and edges
 can be mutated using two special SGraph properties. `SGraph.vertices` and
-`SGraph.edges` are SFrames containing the vertex and edge data, respectively.
+`SGraph.edges` are XFrames containing the vertex and edge data, respectively.
 The following examples show the difference between the special graph-related
-SFrames and normal SFrames. First, note that the following lines both produce
+XFrames and normal XFrames. First, note that the following lines both produce
 the same effect.
 
 ```python
@@ -176,9 +176,9 @@ g.get_edges().print_rows(5)
 [5 rows x 3 columns]
 ```
 
-The difference is that the return value of `g.get_edges()` is a normal SFrame
+The difference is that the return value of `g.get_edges()` is a normal XFrame
 independent from `g`, whereas `g.edges` is bound to `g`. We can modify the edge
-data using this special edge SFrame. The next snippet mutates the relation
+data using this special edge XFrame. The next snippet mutates the relation
 attribute on the edges of `g`. In particular, it extracts the first letter and
 converts it to upper case.
 
@@ -205,7 +205,7 @@ the edges of `g`. If it had a permanent effect, the relation field would be
 converted a lower case letter, but in the result it clearly remains upper case.
 
 ```python
-e = g.get_edges()  # e is a normal SFrame independent of g.
+e = g.get_edges()  # e is a normal XFrame independent of g.
 e['relation'] = e['relation'].apply(lambda x: x[0].lower())
 g.get_edges().print_rows(5)
 ```
@@ -224,7 +224,7 @@ g.get_edges().print_rows(5)
 ```
 
 Calling a method like `head()`, `tail()`, or `append()` on a special
-graph-related SFrame also results in a new instance of a regular SFrame. For
+graph-related XFrame also results in a new instance of a regular XFrame. For
 example, the following code does not mutate `g`.
 
 ```python
@@ -232,13 +232,13 @@ e = g.edges.head(5)
 e['is_friend'] = e['relation'].apply(lambda x: x[0] == 'F')
 ```
 
-Another important difference of these two special SFrames is that the `__id`,
+Another important difference of these two special XFrames is that the `__id`,
 `__src_id`, and `__dst_id` fields are not mutable because changing them would
 change the structure of the graph and SGraph is *structurally immutable*.
 
-Otherwise, `g.vertices` and `g.edges` act like normal SFrames, which makes
+Otherwise, `g.vertices` and `g.edges` act like normal XFrames, which makes
 modifying graph data very easy. For example, adding (removing) an edge
-field is the same as adding (removing) a column to (from) an SFrame:
+field is the same as adding (removing) a column to (from) an XFrame:
 
 ```python
 g.edges['weight'] = 1.0

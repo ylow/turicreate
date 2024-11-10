@@ -1,10 +1,10 @@
 /**
- * \defgroup sframe_physical SFrame : Physical
+ * \defgroup xframe_physical XFrame : Physical
  *
- * The SFrame Physical Format describes how SFrames are laid out on disk.
+ * The XFrame Physical Format describes how XFrames are laid out on disk.
  * The actual format is a bit ... complicated since it really grew organically.
  * Hence unfortunately, the documentation is the code itself.
  *
- * For a user of the SFrame, the main collection of objects that matter is
- * in \ref sframe_main.
+ * For a user of the XFrame, the main collection of objects that matter is
+ * in \ref xframe_main.
  */

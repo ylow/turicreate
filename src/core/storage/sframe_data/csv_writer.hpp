@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_CSV_WRITER_HPP
-#define TURI_SFRAME_CSV_WRITER_HPP
+#ifndef TURI_XFRAME_CSV_WRITER_HPP
+#define TURI_XFRAME_CSV_WRITER_HPP
 #include <string>
 #include <vector>
 #include <iostream>
@@ -13,7 +13,7 @@ namespace turi {
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup csv_utils CSV Parsing and Writing
  * \{
  */

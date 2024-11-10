@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 #include <core/storage/fileio/temp_files.hpp>
-#include <core/storage/sframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
 using namespace turi;
 
 struct unity_sarray_lazy_eval_test {

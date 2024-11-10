@@ -6,10 +6,10 @@
 
 
 
-from ..data_structures.sframe import SFrame
+from ..data_structures.xframe import XFrame
 from ..data_structures.sarray import SArray
-from ..util import _assert_sframe_equal, generate_random_sframe
-from .. import _launch, load_sframe, aggregate
+from ..util import _assert_xframe_equal, generate_random_xframe
+from .. import _launch, load_xframe, aggregate
 from . import util
 from sys import version_info
 
@@ -40,7 +40,7 @@ import pytest
 pytestmark = [pytest.mark.minimal]
 
 
-class SFrameTest(unittest.TestCase):
+class XFrameTest(unittest.TestCase):
     def setUp(self):
         self.int_data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         self.float_data = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
@@ -80,12 +80,12 @@ class SFrameTest(unittest.TestCase):
             self.dict_data,
             self.datetime_data * 5,
         ]
-        self.sf_all_types = SFrame(
+        self.sf_all_types = XFrame(
             {"X" + str(i[0]): i[1] for i in zip(list(range(1, 8)), self.all_type_cols)}
         )
 
         # Taken from http://en.wikipedia.org/wiki/Join_(SQL) for fun.
-        self.employees_sf = SFrame()
+        self.employees_sf = XFrame()
         self.employees_sf.add_column(
             SArray(["Rafferty", "Jones", "Heisenberg", "Robinson", "Smith", "John"]),
             "last_name",
@@ -96,7 +96,7 @@ class SFrameTest(unittest.TestCase):
         )
 
         # XXX: below are only used by one test!
-        self.departments_sf = SFrame()
+        self.departments_sf = XFrame()
         self.departments_sf.add_column(SArray([31, 33, 34, 35]), "dep_id", inplace=True)
         self.departments_sf.add_column(
             SArray(["Sales", "Engineering", "Clerical", "Marketing"]),
@@ -144,7 +144,7 @@ class SFrameTest(unittest.TestCase):
 
         sa = SArray([utc, central])
 
-        expected = SFrame()
+        expected = XFrame()
         expected["X.year"] = [2011, 2011]
         expected["X.month"] = [1, 1]
         expected["X.day"] = [21, 21]
@@ -156,7 +156,7 @@ class SFrameTest(unittest.TestCase):
         assert_frame_equal(result.to_dataframe(), expected.to_dataframe())
 
         # column names
-        expected = SFrame()
+        expected = XFrame()
         expected["ttt.year"] = [2011, 2011]
         expected["ttt.minute"] = [37, 7]
         expected["ttt.second"] = [21, 21]
@@ -169,7 +169,7 @@ class SFrameTest(unittest.TestCase):
         )
         assert_frame_equal(result.to_dataframe(), expected.to_dataframe())
 
-        sf = SFrame({"datetime": sa})
+        sf = XFrame({"datetime": sa})
         result = sf.split_datetime(
             "datetime", column_name_prefix="ttt", limit=["year", "minute", "second"]
         )
@@ -200,26 +200,26 @@ class SFrameTest(unittest.TestCase):
     # Test if the rows are all the same...row order does not matter.
     # (I do expect column order to be the same)
     def __assert_join_results_equal(self, sf, expected_sf):
-        _assert_sframe_equal(sf, expected_sf, check_row_order=False)
+        _assert_xframe_equal(sf, expected_sf, check_row_order=False)
 
     def test_creation_from_dataframe(self):
         # created from empty dataframe
-        sf_empty = SFrame(data=pd.DataFrame())
+        sf_empty = XFrame(data=pd.DataFrame())
         self.__test_equal(sf_empty, pd.DataFrame())
 
-        sf = SFrame(data=self.dataframe, format="dataframe")
+        sf = XFrame(data=self.dataframe, format="dataframe")
         self.__test_equal(sf, self.dataframe)
 
-        sf = SFrame(data=self.dataframe, format="auto")
+        sf = XFrame(data=self.dataframe, format="auto")
         self.__test_equal(sf, self.dataframe)
 
         original_p = pd.DataFrame({"a": [1.0, float("nan")]})
         effective_p = pd.DataFrame({"a": [1.0, None]})
-        sf = SFrame(data=original_p)
+        sf = XFrame(data=original_p)
         self.__test_equal(sf, effective_p)
 
         original_p = pd.DataFrame({"a": ["a", None, "b"]})
-        sf = SFrame(data=original_p)
+        sf = XFrame(data=original_p)
         self.__test_equal(sf, original_p)
 
     def test_auto_parse_csv_with_bom(self):
@@ -242,7 +242,7 @@ class SFrameTest(unittest.TestCase):
                 f.write(codecs.BOM_UTF8)
                 f.write(content)
 
-            sf = SFrame.read_csv(csvfile.name, header=True)
+            sf = XFrame.read_csv(csvfile.name, header=True)
             self.assertEqual(sf.dtype, [float, int, str])
             self.__test_equal(sf, df)
 
@@ -258,13 +258,13 @@ class SFrameTest(unittest.TestCase):
             df.to_csv(csvfile, index=False)
             csvfile.close()
 
-            sf = SFrame.read_csv(csvfile.name, header=True)
+            sf = XFrame.read_csv(csvfile.name, header=True)
 
             self.assertEqual(sf.dtype, [float, int, str])
             self.__test_equal(sf, df)
 
     def test_drop_duplicate(self):
-        sf = SFrame(
+        sf = XFrame(
             {"A": ["a", "b", "a", "C"], "B": ["b", "a", "b", "D"], "C": [1, 2, 1, 8]}
         )
         df = pd.DataFrame(
@@ -281,7 +281,7 @@ class SFrameTest(unittest.TestCase):
             csvfile.close()
 
             # list type hints
-            sf = SFrame.read_csv(csvfile.name, column_type_hints=[int, int, str])
+            sf = XFrame.read_csv(csvfile.name, column_type_hints=[int, int, str])
             self.assertEqual(sf.dtype, [int, int, str])
             sf["int_data"] = sf["int_data"].astype(int)
             sf["float_data"] = sf["float_data"].astype(float)
@@ -291,11 +291,11 @@ class SFrameTest(unittest.TestCase):
             # list type hints, incorrect number of columns
             self.assertRaises(
                 RuntimeError,
-                lambda: SFrame.read_csv(csvfile.name, column_type_hints=[int, float]),
+                lambda: XFrame.read_csv(csvfile.name, column_type_hints=[int, float]),
             )
 
             # dictionary type hints
-            sf = SFrame.read_csv(
+            sf = XFrame.read_csv(
                 csvfile.name,
                 column_type_hints={
                     "int_data": int,
@@ -306,14 +306,14 @@ class SFrameTest(unittest.TestCase):
             self.__test_equal(sf, self.dataframe)
 
             # partial dictionary type hints
-            sf = SFrame.read_csv(
+            sf = XFrame.read_csv(
                 csvfile.name,
                 column_type_hints={"float_data": float, "string_data": str},
             )
             self.__test_equal(sf, self.dataframe)
 
             # single value type hints
-            sf = SFrame.read_csv(csvfile.name, column_type_hints=str)
+            sf = XFrame.read_csv(csvfile.name, column_type_hints=str)
             self.assertEqual(sf.dtype, [str, str, str])
             all_string_column_df = self.dataframe.apply(
                 lambda x: [str(ele) for ele in x]
@@ -321,7 +321,7 @@ class SFrameTest(unittest.TestCase):
             self.__test_equal(sf, all_string_column_df)
 
             # single value type hints row limit
-            sf = SFrame.read_csv(csvfile.name, column_type_hints=str, nrows=5)
+            sf = XFrame.read_csv(csvfile.name, column_type_hints=str, nrows=5)
             self.assertEqual(sf.dtype, [str, str, str])
             all_string_column_df = self.dataframe.apply(
                 lambda x: [str(ele) for ele in x]
@@ -329,8 +329,8 @@ class SFrameTest(unittest.TestCase):
             self.assertEqual(len(sf), 5)
             self.__test_equal(sf, all_string_column_df[0 : len(sf)])
 
-            sf = SFrame.read_csv(csvfile.name)
-            sf2 = SFrame(csvfile.name, format="csv")
+            sf = XFrame.read_csv(csvfile.name)
+            sf2 = XFrame(csvfile.name, format="csv")
             self.__test_equal(sf2, sf.to_dataframe())
 
             f = open(csvfile.name, "w")
@@ -338,7 +338,7 @@ class SFrameTest(unittest.TestCase):
             f.write("NA,PIKA,CHU\n")
             f.write("1.0,2,3\n")
             f.close()
-            sf = SFrame.read_csv(
+            sf = XFrame.read_csv(
                 csvfile.name,
                 na_values=["NA", "PIKA", "CHU"],
                 column_type_hints={"a": float, "b": int, "c": str},
@@ -366,7 +366,7 @@ class SFrameTest(unittest.TestCase):
                 for l in data:
                     f.write(l["type"] + "," + l["text_string"] + "\n")
 
-            sf = SFrame.read_csv(csvfile.name, quote_char=None)
+            sf = XFrame.read_csv(csvfile.name, quote_char=None)
             self.assertEqual(len(sf), len(data))
             for i in range(len(sf)):
                 self.assertEqual(sf[i], data[i])
@@ -374,19 +374,19 @@ class SFrameTest(unittest.TestCase):
     def test_save_load_file_cleanup(self):
         # when some file is in use, file should not be deleted
         with util.TempDirectory() as f:
-            sf = SFrame()
+            sf = XFrame()
             sf["a"] = SArray(list(range(1, 1000000)))
             sf.save(f)
 
-            # many for each sarray, 1 sframe_idx, 1 object.bin, 1 ini
+            # many for each sarray, 1 xframe_idx, 1 object.bin, 1 ini
             file_count = len(os.listdir(f))
             self.assertTrue(file_count > 3)
 
             # sf1 now references the on disk file
-            sf1 = SFrame(f)
+            sf1 = XFrame(f)
 
-            # create another SFrame and save to the same location
-            sf2 = SFrame()
+            # create another XFrame and save to the same location
+            sf2 = XFrame()
             sf2["b"] = SArray([str(i) for i in range(1, 100000)])
             sf2["c"] = SArray(list(range(1, 100000)))
             sf2.save(f)
@@ -398,7 +398,7 @@ class SFrameTest(unittest.TestCase):
             self.__test_equal(sf1, sf.to_dataframe())
 
             # and sf2 is correct too
-            sf3 = SFrame(f)
+            sf3 = XFrame(f)
             self.__test_equal(sf3, sf2.to_dataframe())
 
             # when sf1 goes out of scope, the tmp files should be gone
@@ -411,35 +411,35 @@ class SFrameTest(unittest.TestCase):
 
         # Check top level load function, with no suffix
         with util.TempDirectory() as f:
-            sf = SFrame(data=self.dataframe, format="dataframe")
+            sf = XFrame(data=self.dataframe, format="dataframe")
             sf.save(f)
-            sf2 = load_sframe(f)
+            sf2 = load_xframe(f)
             self.__test_equal(sf2, self.dataframe)
 
-        # Check individual formats with the SFrame constructor
+        # Check individual formats with the XFrame constructor
         formats = [".csv"]
 
         for suffix in formats:
             f = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
-            sf = SFrame(data=self.dataframe, format="dataframe")
+            sf = XFrame(data=self.dataframe, format="dataframe")
             sf.save(f.name)
-            sf2 = SFrame(f.name)
+            sf2 = XFrame(f.name)
             sf2["int_data"] = sf2["int_data"].astype(int)
             sf2["float_data"] = sf2["float_data"].astype(float)
             sf2["string_data"] = sf2["string_data"].astype(str)
             self.__test_equal(sf2, self.dataframe)
             g = SArray([["a", "b", 3], [{"a": "b"}], [1, 2, 3]])
-            g2 = SFrame()
+            g2 = XFrame()
             g2["x"] = g
             g2.save(f.name)
-            g3 = SFrame.read_csv(f.name, column_type_hints=list)
+            g3 = XFrame.read_csv(f.name, column_type_hints=list)
             self.__test_equal(g2, g3.to_dataframe())
             f.close()
             os.unlink(f.name)
 
         # Make sure this file don't exist before testing
         self.assertRaises(
-            IOError, lambda: SFrame(data="__no_such_file__.frame_idx", format="sframe")
+            IOError, lambda: XFrame(data="__no_such_file__.frame_idx", format="xframe")
         )
 
         del sf2
@@ -448,12 +448,12 @@ class SFrameTest(unittest.TestCase):
 
         # Check top level load function, with no suffix
         with util.TempDirectory() as f:
-            sf = SFrame(data=self.dataframe, format="dataframe")
+            sf = XFrame(data=self.dataframe, format="dataframe")
             originallen = len(sf)
             sf.save(f)
             del sf
 
-            sf = SFrame(f)
+            sf = XFrame(f)
             # make a new column of "1s and save it back
             int_data2 = sf["int_data"] + 1
             int_data2.materialize()
@@ -461,7 +461,7 @@ class SFrameTest(unittest.TestCase):
             sf._save_reference(f)
             del sf
 
-            sf = SFrame(f)
+            sf = XFrame(f)
             self.assertTrue(((sf["int_data2"] - sf["int_data"]) == 1).all())
 
             # try to append and save reference
@@ -469,7 +469,7 @@ class SFrameTest(unittest.TestCase):
             sf = sf.append(sf)
             sf._save_reference(f)
 
-            sf = SFrame(f)
+            sf = XFrame(f)
             self.assertTrue(((sf["int_data2"] - sf["int_data"]) == 1).all())
             self.assertEqual(2 * originallen, len(sf))
             assert_frame_equal(sf[originallen:].to_dataframe(), expected)
@@ -477,9 +477,9 @@ class SFrameTest(unittest.TestCase):
 
     def test_save_to_csv(self):
         f = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
-        sf = SFrame(data=self.dataframe, format="dataframe")
+        sf = XFrame(data=self.dataframe, format="dataframe")
         sf.save(f.name, format="csv")
-        sf2 = SFrame.read_csv(
+        sf2 = XFrame.read_csv(
             f.name,
             column_type_hints={
                 "int_data": int,
@@ -490,7 +490,7 @@ class SFrameTest(unittest.TestCase):
         self.__test_equal(sf2, self.dataframe)
 
         sf.export_csv(f.name, delimiter=":")
-        sf2 = SFrame.read_csv(
+        sf2 = XFrame.read_csv(
             f.name,
             column_type_hints={
                 "int_data": int,
@@ -502,7 +502,7 @@ class SFrameTest(unittest.TestCase):
         self.__test_equal(sf2, self.dataframe)
 
         sf.export_csv(f.name, delimiter=":", line_terminator="\r\n")
-        sf2 = SFrame.read_csv(
+        sf2 = XFrame.read_csv(
             f.name,
             column_type_hints={
                 "int_data": int,
@@ -515,7 +515,7 @@ class SFrameTest(unittest.TestCase):
         self.__test_equal(sf2, self.dataframe)
 
         sf.export_csv(f.name, delimiter=":", line_terminator="\r\n", double_quote=False)
-        sf2 = SFrame.read_csv(
+        sf2 = XFrame.read_csv(
             f.name,
             column_type_hints={
                 "int_data": int,
@@ -535,7 +535,7 @@ class SFrameTest(unittest.TestCase):
             double_quote=False,
             quote_char="'",
         )
-        sf2 = SFrame.read_csv(
+        sf2 = XFrame.read_csv(
             f.name,
             column_type_hints={
                 "int_data": int,
@@ -559,7 +559,7 @@ class SFrameTest(unittest.TestCase):
             quote_char="'",
             quote_level=csv.QUOTE_MINIMAL,
         )
-        sf2 = SFrame.read_csv(
+        sf2 = XFrame.read_csv(
             f.name,
             column_type_hints={
                 "int_data": int,
@@ -581,7 +581,7 @@ class SFrameTest(unittest.TestCase):
             quote_char="'",
             quote_level=csv.QUOTE_ALL,
         )
-        sf2 = SFrame.read_csv(
+        sf2 = XFrame.read_csv(
             f.name,
             column_type_hints={
                 "int_data": int,
@@ -603,7 +603,7 @@ class SFrameTest(unittest.TestCase):
             quote_char="'",
             quote_level=csv.QUOTE_NONE,
         )
-        sf2 = SFrame.read_csv(
+        sf2 = XFrame.read_csv(
             f.name,
             column_type_hints={
                 "int_data": int,
@@ -626,7 +626,7 @@ class SFrameTest(unittest.TestCase):
             quotechar="'",
             quote_level=csv.QUOTE_NONE,
         )
-        sf2 = SFrame.read_csv(
+        sf2 = XFrame.read_csv(
             f.name,
             column_type_hints={
                 "int_data": int,
@@ -648,7 +648,7 @@ class SFrameTest(unittest.TestCase):
         import pickle
         from ..data_structures import serialization
 
-        X = generate_random_sframe(100, "ncc")
+        X = generate_random_xframe(100, "ncc")
 
         with util.TempDirectory() as f:
 
@@ -656,51 +656,51 @@ class SFrameTest(unittest.TestCase):
 
             self.assertRaises(expected_error, lambda: pickle.dumps(X))
 
-            serialization.enable_sframe_serialization(f)
+            serialization.enable_xframe_serialization(f)
              
             s = pickle.dumps(X)
 
             Y = pickle.loads(s)
 
-            _assert_sframe_equal(X, Y)
+            _assert_xframe_equal(X, Y)
             
-            serialization.enable_sframe_serialization(None) # Disables it
+            serialization.enable_xframe_serialization(None) # Disables it
 
 
     def test_save_to_json(self):
         f = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
-        sf = SFrame(data=self.dataframe, format="dataframe")
+        sf = XFrame(data=self.dataframe, format="dataframe")
         sf.save(f.name, format="json")
-        sf2 = SFrame.read_json(f.name)
+        sf2 = XFrame.read_json(f.name)
         # the float column will be parsed as integer
         sf2["float_data"] = sf2["float_data"].astype(float)
         self.__test_equal(sf2, self.dataframe)
 
-        sf = SFrame(data=self.dataframe, format="dataframe")
+        sf = XFrame(data=self.dataframe, format="dataframe")
         sf.export_json(f.name)
-        sf2 = SFrame.read_json(f.name)
+        sf2 = XFrame.read_json(f.name)
         sf2["float_data"] = sf2["float_data"].astype(float)
         self.__test_equal(sf2, self.dataframe)
 
         with open(f.name, "w") as out:
             out.write("[\n]")
-        sf = SFrame.read_json(f.name)
-        self.__test_equal(SFrame(), sf.to_dataframe())
+        sf = XFrame.read_json(f.name)
+        self.__test_equal(XFrame(), sf.to_dataframe())
 
         with open(f.name, "w") as out:
             out.write("")
-        sf = SFrame.read_json(f.name, orient="lines")
-        self.__test_equal(SFrame(), sf.to_dataframe())
+        sf = XFrame.read_json(f.name, orient="lines")
+        self.__test_equal(XFrame(), sf.to_dataframe())
 
-        sf = SFrame(data=self.dataframe, format="dataframe")
+        sf = XFrame(data=self.dataframe, format="dataframe")
         sf.export_json(f.name, orient="lines")
-        sf2 = SFrame.read_json(f.name, orient="lines")
+        sf2 = XFrame.read_json(f.name, orient="lines")
         sf2["float_data"] = sf2["float_data"].astype(float)
         self.__test_equal(sf2, self.dataframe)
         f.close()
         os.unlink(f.name)
 
-    def _remove_sframe_files(self, prefix):
+    def _remove_xframe_files(self, prefix):
         filelist = [f for f in os.listdir(".") if f.startswith(prefix)]
         for f in filelist:
             os.remove(f)
@@ -709,7 +709,7 @@ class SFrameTest(unittest.TestCase):
         f = tempfile.NamedTemporaryFile(suffix=".txt", delete=False)
         df = self.dataframe[["string_data"]]
         df.to_csv(f.name, index=False)
-        sf = SFrame(f.name)
+        sf = XFrame(f.name)
         self.assertEqual(sf["string_data"].dtype, int)
         sf["string_data"] = sf["string_data"].astype(str)
         self.__test_equal(sf, df)
@@ -720,7 +720,7 @@ class SFrameTest(unittest.TestCase):
         f_out.writelines(f_in)
         f_out.close()
         f_in.close()
-        sf = SFrame(fgzip.name)
+        sf = XFrame(fgzip.name)
         self.assertEqual(sf["string_data"].dtype, int)
         sf["string_data"] = sf["string_data"].astype(str)
         self.__test_equal(sf, df)
@@ -735,16 +735,16 @@ class SFrameTest(unittest.TestCase):
             os.remove("./foo.csv")
         with open("./foo.csv", "w") as f:
             url = f.name
-            basesf = SFrame(self.dataframe)
+            basesf = XFrame(self.dataframe)
             basesf.save(url, format="csv")
             f.close()
-            sf = SFrame("./foo.csv")
+            sf = XFrame("./foo.csv")
             self.assertEqual(sf["float_data"].dtype, int)
             sf["float_data"] = sf["float_data"].astype(float)
             self.assertEqual(sf["string_data"].dtype, int)
             sf["string_data"] = sf["string_data"].astype(str)
             self.__test_equal(sf, self.dataframe)
-            sf = SFrame(url)
+            sf = XFrame(url)
             self.assertEqual(sf["float_data"].dtype, int)
             sf["float_data"] = sf["float_data"].astype(float)
             self.assertEqual(sf["string_data"].dtype, int)
@@ -765,12 +765,12 @@ class SFrameTest(unittest.TestCase):
             for i in self.int_data:
                 def_writer.writerow([i])
 
-        sf = SFrame.read_csv("./windows_lines.csv", column_type_hints={"numbers": int})
+        sf = XFrame.read_csv("./windows_lines.csv", column_type_hints={"numbers": int})
         self.assertEqual(sf.column_names(), column_list)
         self.assertEqual(sf.column_types(), [int])
         self.assertEqual(list(sf["numbers"].head()), self.int_data)
 
-        sf = SFrame.read_csv(
+        sf = XFrame.read_csv(
             "./windows_lines.csv",
             column_type_hints={"numbers": list},
             error_bad_lines=False,
@@ -795,14 +795,14 @@ class SFrameTest(unittest.TestCase):
             for i in self.int_data:
                 def_writer.writerow([i])
 
-        sf = SFrame.read_csv(
+        sf = XFrame.read_csv(
             "./skip_lines.csv", skiprows=2, column_type_hints={"numbers": int}
         )
         self.assertEqual(sf.column_names(), column_list)
         self.assertEqual(sf.column_types(), [int])
         self.assertEqual(list(sf["numbers"].head()), self.int_data)
 
-        sf = SFrame.read_csv(
+        sf = XFrame.read_csv(
             "./skip_lines.csv",
             skiprows=2,
             column_type_hints={"numbers": list},
@@ -826,20 +826,20 @@ class SFrameTest(unittest.TestCase):
                 self.dataframe.to_csv(url, index=False)
                 f.close()
 
-        singleton_sf = SFrame.read_csv(os.path.join(csv_dir, "foo.0.csv"))
+        singleton_sf = XFrame.read_csv(os.path.join(csv_dir, "foo.0.csv"))
         self.assertEqual(singleton_sf.num_rows(), 10)
 
-        many_sf = SFrame.read_csv(csv_dir)
+        many_sf = XFrame.read_csv(csv_dir)
         self.assertEqual(many_sf.num_rows(), 1000)
 
-        glob_sf = SFrame.read_csv(os.path.join(csv_dir, "foo.*2.csv"))
+        glob_sf = XFrame.read_csv(os.path.join(csv_dir, "foo.*2.csv"))
         self.assertEqual(glob_sf.num_rows(), 100)
 
         with self.assertRaises(IOError):
-            SFrame.read_csv("missingdirectory")
+            XFrame.read_csv("missingdirectory")
 
         with self.assertRaises(ValueError):
-            SFrame.read_csv("")
+            XFrame.read_csv("")
 
         shutil.rmtree(csv_dir)
 
@@ -850,29 +850,29 @@ class SFrameTest(unittest.TestCase):
             "floats": self.float_data,
             "strings": self.string_data,
         }
-        sf = SFrame(the_dict)
+        sf = XFrame(the_dict)
         df = pd.DataFrame(the_dict)
         self.__test_equal(sf, df)
 
         # Test that a missing value does not change the data type
         the_dict["ints"][0] = None
-        sf = SFrame(the_dict)
+        sf = XFrame(the_dict)
         self.assertEqual(sf["ints"].dtype, int)
 
         # numpy.nan is actually a float, so it should cast the column to float
         the_dict["ints"][0] = np.nan
-        sf = SFrame(the_dict)
+        sf = XFrame(the_dict)
         self.assertEqual(sf["ints"].dtype, float)
 
         # Just a single list
-        sf = SFrame(self.int_data)
+        sf = XFrame(self.int_data)
         df = pd.DataFrame(self.int_data)
         df.columns = ["X1"]
         self.__test_equal(sf, df)
 
         # Normal list of lists
         list_of_lists = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
-        sf = SFrame(list_of_lists)
+        sf = XFrame(list_of_lists)
         cntr = 0
         for i in sf:
             self.assertEqual(list_of_lists[cntr], list(i["X1"]))
@@ -885,24 +885,24 @@ class SFrameTest(unittest.TestCase):
             "floats": self.float_data,
             "strings": self.string_data,
         }
-        sf = SFrame(the_dict)
-        sf2 = SFrame(
+        sf = XFrame(the_dict)
+        sf2 = XFrame(
             {"ints": sf["ints"], "floats": sf["floats"], "strings": sf["strings"]}
         )
         df = pd.DataFrame(the_dict)
         self.__test_equal(sf2, df)
-        sf2 = SFrame([sf["ints"], sf["floats"], sf["strings"]])
+        sf2 = XFrame([sf["ints"], sf["floats"], sf["strings"]])
         self.assertEqual(["X1", "X2", "X3"], sf2.column_names())
         sf2.rename({"X1": "ints", "X2": "floats", "X3": "strings"}, inplace=True)
         sf2 = sf2[["floats", "ints", "strings"]]
         self.__test_equal(sf2, df)
 
-        sf = SFrame({"text": ("foo", "bar", "biz")})
+        sf = XFrame({"text": ("foo", "bar", "biz")})
         df = pd.DataFrame({"text": ["foo", "bar", "biz"]})
         self.__test_equal(sf, df)
 
     def test_head_tail(self):
-        sf = SFrame(data=self.dataframe)
+        sf = XFrame(data=self.dataframe)
         assert_frame_equal(sf.head(4).to_dataframe(), self.dataframe.head(4))
         # Cannot test for equality the same way because of dataframe indices
         taildf = sf.tail(4)
@@ -916,12 +916,12 @@ class SFrameTest(unittest.TestCase):
             )
 
     def test_head_tail_edge_case(self):
-        sf = SFrame()
+        sf = XFrame()
         self.assertEqual(sf.head().num_columns(), 0)
         self.assertEqual(sf.tail().num_columns(), 0)
         self.assertEqual(sf.head().num_rows(), 0)
         self.assertEqual(sf.tail().num_rows(), 0)
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = []
         self.assertEqual(sf.head().num_columns(), 1)
         self.assertEqual(sf.tail().num_columns(), 1)
@@ -929,7 +929,7 @@ class SFrameTest(unittest.TestCase):
         self.assertEqual(sf.tail().num_rows(), 0)
 
     def test_transform(self):
-        sf = SFrame(data=self.dataframe)
+        sf = XFrame(data=self.dataframe)
         for i in range(sf.num_columns()):
             colname = sf.column_names()[i]
             sa = sf.apply(lambda x: x[colname], sf.column_types()[i])
@@ -939,14 +939,14 @@ class SFrameTest(unittest.TestCase):
         self.__assert_sarray_equal(sf["int_data"] + sf["float_data"], sa)
 
     def test_add(self):
-        sf1 = SFrame({"a": [1, 2, 3]})
-        sf2 = SFrame({"a": [6, 7]})
+        sf1 = XFrame({"a": [1, 2, 3]})
+        sf2 = XFrame({"a": [6, 7]})
         sf1 = sf1 + sf2
-        expected = SFrame({"a": [1, 2, 3, 6, 7]})
-        _assert_sframe_equal(sf1, expected)
+        expected = XFrame({"a": [1, 2, 3, 6, 7]})
+        _assert_xframe_equal(sf1, expected)
 
     def test_transform_with_recursion(self):
-        sf = SFrame(data={"a": [0, 1, 2, 3, 4], "b": ["0", "1", "2", "3", "4"]})
+        sf = XFrame(data={"a": [0, 1, 2, 3, 4], "b": ["0", "1", "2", "3", "4"]})
         # this should be the equivalent to sf.apply(lambda x:x since a is
         # equivalent to range(4)
         sa = sf.apply(lambda x: sf[x["a"]])
@@ -954,7 +954,7 @@ class SFrameTest(unittest.TestCase):
         self.__assert_sarray_equal(sa, sb)
 
     def test_transform_with_type_inference(self):
-        sf = SFrame(data=self.dataframe)
+        sf = XFrame(data=self.dataframe)
         for i in range(sf.num_columns()):
             colname = sf.column_names()[i]
             sa = sf.apply(lambda x: x[colname])
@@ -963,12 +963,12 @@ class SFrameTest(unittest.TestCase):
         sa = sf.apply(lambda x: x["int_data"] + x["float_data"])
         self.__assert_sarray_equal(sf["int_data"] + sf["float_data"], sa)
 
-        # SFrame apply returns list of vector of numeric should be vector, not list
+        # XFrame apply returns list of vector of numeric should be vector, not list
         sa = sf.apply(lambda x: [x["int_data"], x["float_data"]])
         self.assertEqual(sa.dtype, array.array)
 
     def test_transform_with_exception(self):
-        sf = SFrame(data=self.dataframe)
+        sf = XFrame(data=self.dataframe)
         self.assertRaises(
             KeyError, lambda: sf.apply(lambda x: x["some random key"])
         )  # cannot find the key
@@ -983,27 +983,27 @@ class SFrameTest(unittest.TestCase):
         )  # index out of bound error
 
     def test_empty_transform(self):
-        sf = SFrame()
+        sf = XFrame()
         b = sf.apply(lambda x: x)
         self.assertEqual(len(b.head()), 0)
 
     def test_flatmap(self):
         # Correctness of typical usage
         n = 10
-        sf = SFrame({"id": list(range(n))})
+        sf = XFrame({"id": list(range(n))})
         new_sf = sf.flat_map(["id_range"], lambda x: [[str(i)] for i in range(x["id"])])
         self.assertEqual(new_sf.column_names(), ["id_range"])
         self.assertEqual(new_sf.column_types(), [str])
         expected_col = [str(x) for i in range(n) for x in range(i)]
         self.assertListEqual(list(new_sf["id_range"]), expected_col)
 
-        # Empty SFrame, without explicit column types
-        sf = SFrame()
+        # Empty XFrame, without explicit column types
+        sf = XFrame()
         with self.assertRaises(TypeError):
             new_sf = sf.flat_map(["id_range"], lambda x: [[i] for i in range(x["id"])])
 
         # Empty rows successfully removed
-        sf = SFrame({"id": list(range(15))})
+        sf = XFrame({"id": list(range(15))})
         new_sf = sf.flat_map(["id"], lambda x: [[x["id"]]] if x["id"] > 8 else [])
         self.assertEqual(new_sf.num_rows(), 6)
 
@@ -1012,7 +1012,7 @@ class SFrameTest(unittest.TestCase):
             new_sf = sf.flat_map(["id"], lambda x: [[x["id"]]] if x["id"] > 9 else [])
 
     def test_select_column(self):
-        sf = SFrame(data=self.dataframe)
+        sf = XFrame(data=self.dataframe)
 
         sub_sf = sf.select_columns(["int_data", "string_data"])
         exp_df = pd.DataFrame(
@@ -1051,7 +1051,7 @@ class SFrameTest(unittest.TestCase):
             sf["string_data", "int_data"].column_names(), ["string_data", "int_data"]
         )
 
-        sf = SFrame()
+        sf = XFrame()
         with self.assertRaises(RuntimeError):
             sf.select_column("x")
 
@@ -1069,7 +1069,7 @@ class SFrameTest(unittest.TestCase):
             sf.select_columns(["y"])
 
     def test_topk(self):
-        sf = SFrame(data=self.dataframe)
+        sf = XFrame(data=self.dataframe)
 
         # Test that order is preserved
         df2 = sf.topk("int_data").to_dataframe()
@@ -1089,14 +1089,14 @@ class SFrameTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             sf.topk(2, 3)
 
-        sf = SFrame()
+        sf = XFrame()
         sf.add_column(SArray([1, 2, 3, 4, 5]), "a", inplace=True)
         sf.add_column(SArray([1, 2, 3, 4, 5]), "b", inplace=True)
 
         sf.topk("a", 1)  # should not fail
 
     def test_filter(self):
-        sf = SFrame(data=self.dataframe)
+        sf = XFrame(data=self.dataframe)
 
         filter_sa = SArray([1, 1, 1, 0, 0, 0, 0, 1, 1, 1])
 
@@ -1119,7 +1119,7 @@ class SFrameTest(unittest.TestCase):
             sf2 = sf[SArray([0, 1, 205])]
 
         # slightly bigger size
-        sf = SFrame()
+        sf = XFrame()
         n = 1000000
         sf["a"] = list(range(n))
         result = sf[sf["a"] == -1]
@@ -1138,7 +1138,7 @@ class SFrameTest(unittest.TestCase):
             self.assertEqual(i, l[i])
 
         # map input type
-        toy_data = SFrame({"a": list(range(100))})
+        toy_data = XFrame({"a": list(range(100))})
         map_result = [x + 1 for x in [1, 30]]
         result = toy_data.filter_by(map_result, "a")
         self.assertEqual(len(result), 2)
@@ -1146,7 +1146,7 @@ class SFrameTest(unittest.TestCase):
         self.assertEqual(result[1]["a"], 31)
 
     def test_sample_split(self):
-        sf = SFrame(data=self.__create_test_df(100))
+        sf = XFrame(data=self.__create_test_df(100))
         entry_list = set()
         for i in sf:
             entry_list.add(str(i))
@@ -1166,7 +1166,7 @@ class SFrameTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             sf.sample(3)
 
-        sample_sf = SFrame().sample(0.12, 9)
+        sample_sf = XFrame().sample(0.12, 9)
         self.assertEqual(len(sample_sf), 0)
 
         a_split = sf.random_split(0.12, 9)
@@ -1182,8 +1182,8 @@ class SFrameTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             sf.random_split(3)
 
-        self.assertEqual(len(SFrame().random_split(0.4)[0]), 0)
-        self.assertEqual(len(SFrame().random_split(0.4)[1]), 0)
+        self.assertEqual(len(XFrame().random_split(0.4)[0]), 0)
+        self.assertEqual(len(XFrame().random_split(0.4)[1]), 0)
 
         self.assertEqual(len(sf.random_split(0.5, 1, exact=True)[0]), 50)
         self.assertEqual(len(sf.random_split(0.5, 2, exact=True)[0]), 50)
@@ -1191,7 +1191,7 @@ class SFrameTest(unittest.TestCase):
     def test_shuffle(self):
         nums = [1, 2, 3, 4]
         letters = ["a", "b", "c", "d"]
-        sf = SFrame({"nums": nums, "letters": letters})
+        sf = XFrame({"nums": nums, "letters": letters})
         shuffled_sf = sf.shuffle()
 
         self.assertEqual(len(shuffled_sf), len(sf))
@@ -1207,7 +1207,7 @@ class SFrameTest(unittest.TestCase):
 
     # tests add_column, rename
     def test_edit_column_ops(self):
-        sf = SFrame()
+        sf = XFrame()
 
         # typical add column stuff
         sf.add_column(SArray(self.int_data), inplace=True)
@@ -1290,7 +1290,7 @@ class SFrameTest(unittest.TestCase):
             self.assertEqual(sf.column_names(), names)
 
     def test_duplicate_add_column_failure(self):
-        sf = SFrame()
+        sf = XFrame()
 
         # typical add column stuff
         sf.add_column(SArray(self.int_data), "hello", inplace=True)
@@ -1298,7 +1298,7 @@ class SFrameTest(unittest.TestCase):
             sf.add_column(SArray(self.float_data), "hello", inplace=True)
 
     def test_remove_column(self):
-        sf = SFrame()
+        sf = XFrame()
 
         # typical add column stuff
         sf.add_column(SArray(self.int_data), inplace=True)
@@ -1331,7 +1331,7 @@ class SFrameTest(unittest.TestCase):
         self.assertEqual(sf.column_names(), ["X4"])
 
     def test_remove_bad_column(self):
-        sf = SFrame()
+        sf = XFrame()
 
         # typical add column stuff
         sf.add_column(SArray(self.int_data), inplace=True)
@@ -1353,14 +1353,14 @@ class SFrameTest(unittest.TestCase):
 
         self.assertEqual(sf.column_names(), ["X1", "X2", "X3", "X4", "X5"])
 
-    def __generate_synthetic_sframe__(self, num_users):
+    def __generate_synthetic_xframe__(self, num_users):
         """
         synthetic collaborative data.
         generate 1000 users, user i watched movie 0, ... i-1.
         rating(i, j) = i + j
         length(i, j) = i - j
         """
-        sf = SFrame()
+        sf = XFrame()
         sparse_matrix = {}
         for i in range(1, num_users + 1):
             sparse_matrix[i] = [(j, i + j, i - j) for j in range(1, i + 1)]
@@ -1395,7 +1395,7 @@ class SFrameTest(unittest.TestCase):
                 )
                 for y in range(m)
             ]
-            sf = SFrame()
+            sf = XFrame()
             sf["key"] = [1] * m
             sf["value"] = values
             sf["vector_values"] = vector_values
@@ -1455,7 +1455,7 @@ class SFrameTest(unittest.TestCase):
         """
         Test builtin groupby aggregators
         """
-        sf = SFrame()
+        sf = XFrame()
         sf["key"] = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
         sf["value"] = [1, None, None, None, None, None, None, None, None, None]
         built_ins = [
@@ -1493,7 +1493,7 @@ class SFrameTest(unittest.TestCase):
             vector_values = [
                 [random.randint(1, 100) for num in range(10)] for y in range(m)
             ]
-            sf = SFrame()
+            sf = XFrame()
             sf["key"] = [1] * m
             sf["value"] = values
             sf["vector_values"] = vector_values
@@ -1542,7 +1542,7 @@ class SFrameTest(unittest.TestCase):
             vector_values = [
                 [random.randint(1, 100) for num in range(10)] for y in range(m)
             ]
-            sf = SFrame()
+            sf = XFrame()
             sf["key"] = [1] * m
             sf["value"] = values
             sf["vector_values"] = vector_values
@@ -1590,7 +1590,7 @@ class SFrameTest(unittest.TestCase):
         Test builtin groupby and aggregate on different column types
         """
         num_users = 500
-        sf = self.__generate_synthetic_sframe__(num_users=num_users)
+        sf = self.__generate_synthetic_xframe__(num_users=num_users)
 
         built_ins = [
             aggregate.COUNT(),
@@ -1678,7 +1678,7 @@ class SFrameTest(unittest.TestCase):
                 self.assertAlmostEqual(actual[i], expected[i])
 
     def test_quantile_groupby(self):
-        sf = self.__generate_synthetic_sframe__(num_users=500)
+        sf = self.__generate_synthetic_xframe__(num_users=500)
         # max and min rating for each user
         g = sf.groupby(
             "user_id",
@@ -1698,7 +1698,7 @@ class SFrameTest(unittest.TestCase):
             self.assertEqual(arr[1], maxrating)
 
     def test_argmax_argmin_groupby(self):
-        sf = self.__generate_synthetic_sframe__(num_users=500)
+        sf = self.__generate_synthetic_xframe__(num_users=500)
         sf_ret = sf.groupby(
             "user_id",
             {
@@ -1729,7 +1729,7 @@ class SFrameTest(unittest.TestCase):
             self.assertEqual(i["movie with min rating"], min_d[key][0])
 
     def test_multicolumn_groupby(self):
-        sf = self.__generate_synthetic_sframe__(num_users=500)
+        sf = self.__generate_synthetic_xframe__(num_users=500)
         sf_um = sf.groupby(["user_id", "movie_id"], aggregate.COUNT)
         # I can query it
         t = sf_um.to_dataframe()
@@ -1794,12 +1794,12 @@ class SFrameTest(unittest.TestCase):
                 self.assertEqual(list(c1), list(c2))
 
     def test_groupby_dict_key(self):
-        t = SFrame({"a": [{1: 2}, {3: 4}]})
+        t = XFrame({"a": [{1: 2}, {3: 4}]})
         with self.assertRaises(TypeError):
             t.groupby("a", {})
 
     def test_concat(self):
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = [1, 1, 1, 1, 2, 2, 2, 3, 4, 4, 5]
         sf["b"] = [1, 2, 1, 2, 3, 3, 1, 4, None, 2, None]
         sf["c"] = ["a", "b", "a", "b", "e", "e", None, "h", "i", "j", "k"]
@@ -1809,7 +1809,7 @@ class SFrameTest(unittest.TestCase):
         print(sf["b"].dtype)
 
         result = sf.groupby("a", aggregate.CONCAT("b"))
-        expected_result = SFrame(
+        expected_result = XFrame(
             {
                 "a": [1, 2, 3, 4, 5],
                 "List of b": [[1.0, 1.0, 2.0, 2.0], [1.0, 3.0, 3.0], [4.0], [2.0], []],
@@ -1822,7 +1822,7 @@ class SFrameTest(unittest.TestCase):
 
         result = sf.groupby("a", aggregate.CONCAT("d"))
 
-        expected_result = SFrame(
+        expected_result = XFrame(
             {"a": [1, 2, 3, 4, 5], "List of d": [[1, 1, 2, 2], [1, 3, 3], [4], [2], []]}
         )
         self.__assert_concat_result_equal(
@@ -1830,7 +1830,7 @@ class SFrameTest(unittest.TestCase):
         )
 
         result = sf.groupby("a", {"c_c": aggregate.CONCAT("c")})
-        expected_result = SFrame(
+        expected_result = XFrame(
             {
                 "a": [1, 2, 3, 4, 5],
                 "c_c": [["a", "b", "a", "b"], ["e", "e"], ["h"], ["i", "j"], ["k"]],
@@ -1842,7 +1842,7 @@ class SFrameTest(unittest.TestCase):
         )
 
         result = sf.groupby("a", aggregate.CONCAT("b", "c"))
-        expected_result = SFrame(
+        expected_result = XFrame(
             {
                 "a": [1, 2, 3, 4, 5],
                 "Dict of b_c": [
@@ -1860,7 +1860,7 @@ class SFrameTest(unittest.TestCase):
         )
 
         result = sf.groupby("a", {"c_b": aggregate.CONCAT("c", "b")})
-        expected_result = SFrame(
+        expected_result = XFrame(
             {
                 "a": [1, 2, 3, 4, 5],
                 "c_b": [
@@ -1880,7 +1880,7 @@ class SFrameTest(unittest.TestCase):
         result = sf.groupby(
             "a", {"cs": aggregate.CONCAT("c"), "bs": aggregate.CONCAT("b")}
         )
-        expected_result = SFrame(
+        expected_result = XFrame(
             {
                 "a": [1, 2, 3, 4, 5],
                 "bs": [[1, 1, 2, 2], [1, 3, 3], [4], [2], []],
@@ -1903,7 +1903,7 @@ class SFrameTest(unittest.TestCase):
             sf.groupby("a", aggregate.CONCAT("e", "a"))
 
     def test_select_one(self):
-        sf = SFrame(
+        sf = XFrame(
             {"a": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5], "b": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
         )
         res = list(sf.groupby("a", {"b": aggregate.SELECT_ONE("b")}))
@@ -1912,28 +1912,28 @@ class SFrameTest(unittest.TestCase):
             self.assertTrue(i["b"] == 2 * i["a"] or i["b"] == 2 * i["a"] - 1)
 
     def test_unique(self):
-        sf = SFrame(
+        sf = XFrame(
             {"a": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5], "b": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
         )
         self.assertEqual(len(sf.unique()), 10)
 
         vals = [1, 1, 2, 2, 3, 3, 4, 4, None, None]
-        sf = SFrame({"a": vals, "b": vals})
+        sf = XFrame({"a": vals, "b": vals})
         res = sf.unique()
         self.assertEqual(len(res), 5)
         self.assertEqual(set(res["a"]), set([1, 2, 3, 4, None]))
         self.assertEqual(set(res["b"]), set([1, 2, 3, 4, None]))
 
     def test_append_empty(self):
-        sf_with_data = SFrame(data=self.dataframe)
-        empty_sf = SFrame()
+        sf_with_data = XFrame(data=self.dataframe)
+        empty_sf = XFrame()
         self.assertFalse(sf_with_data.append(empty_sf) is sf_with_data)
         self.assertFalse(empty_sf.append(sf_with_data) is sf_with_data)
         self.assertFalse(empty_sf.append(empty_sf) is empty_sf)
 
     def test_append_all_match(self):
-        sf1 = SFrame(data=self.dataframe)
-        sf2 = SFrame(data=self.dataframe2)
+        sf1 = XFrame(data=self.dataframe)
+        sf2 = XFrame(data=self.dataframe2)
 
         new_sf = sf1.append(sf2)
         assert_frame_equal(
@@ -1942,8 +1942,8 @@ class SFrameTest(unittest.TestCase):
         )
 
     def test_append_lazy(self):
-        sf1 = SFrame(data=self.dataframe)
-        sf2 = SFrame(data=self.dataframe2)
+        sf1 = XFrame(data=self.dataframe)
+        sf2 = XFrame(data=self.dataframe2)
 
         new_sf = sf1.append(sf2)
         self.assertTrue(new_sf.__is_materialized__())
@@ -1964,7 +1964,7 @@ class SFrameTest(unittest.TestCase):
         assert_frame_equal(sf2.to_dataframe(), new_sf2.to_dataframe())
 
         row = sf1.head(1)
-        sf = SFrame()
+        sf = XFrame()
         for i in range(10):
             sf = sf.append(row)
         df = sf.to_dataframe()
@@ -1974,15 +1974,15 @@ class SFrameTest(unittest.TestCase):
             )
 
     def test_recursive_append(self):
-        sf = SFrame()
+        sf = XFrame()
         for i in range(200):
-            sf = sf.append(SFrame(data=self.dataframe))
+            sf = sf.append(XFrame(data=self.dataframe))
 
         # consume
         sf.materialize()
 
-    def test_print_sframe(self):
-        sf = SFrame()
+    def test_print_xframe(self):
+        sf = XFrame()
 
         def _test_print():
             sf.__repr__()
@@ -2009,8 +2009,8 @@ class SFrameTest(unittest.TestCase):
         sf["bad_unicode"] = ["\x9d" + uc for i in range(n)]
         _test_print()
 
-    def test_print_lazy_sframe(self):
-        sf1 = SFrame(data=self.dataframe)
+    def test_print_lazy_xframe(self):
+        sf1 = XFrame(data=self.dataframe)
         self.assertTrue(sf1.__is_materialized__())
         sf2 = sf1[sf1["int_data"] > 3]
         sf2.__repr__()
@@ -2021,8 +2021,8 @@ class SFrameTest(unittest.TestCase):
 
     def test_append_order_diff(self):
         # name match but column order not match
-        sf1 = SFrame(data=self.dataframe)
-        sf2 = SFrame(data=self.dataframe2)
+        sf1 = XFrame(data=self.dataframe)
+        sf2 = XFrame(data=self.dataframe2)
         sf2.swap_columns("int_data", "string_data", inplace=True)
 
         new_sf = sf1.append(sf2)
@@ -2031,9 +2031,9 @@ class SFrameTest(unittest.TestCase):
             new_sf.to_dataframe(),
         )
 
-    def test_append_empty_sframe(self):
-        sf = SFrame(data=self.dataframe)
-        other = SFrame()
+    def test_append_empty_xframe(self):
+        sf = XFrame(data=self.dataframe)
+        other = XFrame()
 
         # non empty append empty
         assert_frame_equal(sf.append(other).to_dataframe(), self.dataframe)
@@ -2045,15 +2045,15 @@ class SFrameTest(unittest.TestCase):
         assert_frame_equal(other.append(other).to_dataframe(), pd.DataFrame())
 
     def test_append_exception(self):
-        sf = SFrame(data=self.dataframe)
+        sf = XFrame(data=self.dataframe)
 
         # column number not match
-        other = SFrame()
+        other = XFrame()
         other.add_column(SArray(), "test", inplace=True)
         self.assertRaises(RuntimeError, lambda: sf.append(other))  # column not the same
 
         # column name not match
-        other = SFrame()
+        other = XFrame()
         names = sf.column_names()
         for name in sf.column_names():
             other.add_column(SArray(), name, inplace=True)
@@ -2061,15 +2061,15 @@ class SFrameTest(unittest.TestCase):
         self.assertRaises(RuntimeError, lambda: sf.append(other))
 
         # name match but column type order not match
-        sf1 = SFrame(data=self.dataframe)
-        sf2 = SFrame(data=self.dataframe2)
+        sf1 = XFrame(data=self.dataframe)
+        sf2 = XFrame(data=self.dataframe2)
 
         # change one column type
         sf1["int_data"] = sf2.select_column("int_data").astype(float)
         self.assertRaises(RuntimeError, lambda: sf.append(other))
 
     def test_simple_joins(self):
-        inner_expected = SFrame()
+        inner_expected = XFrame()
         inner_expected.add_column(
             SArray(["Robinson", "Jones", "Smith", "Heisenberg", "Rafferty"]),
             "last_name",
@@ -2090,7 +2090,7 @@ class SFrameTest(unittest.TestCase):
 
         self.__assert_join_results_equal(res, inner_expected)
 
-        left_join_row = SFrame()
+        left_join_row = XFrame()
         left_join_row.add_column(SArray(["John"]), "last_name", inplace=True)
         left_join_row.add_column(SArray([None], int), "dep_id", inplace=True)
         left_join_row.add_column(SArray([None], str), "dep_name", inplace=True)
@@ -2101,7 +2101,7 @@ class SFrameTest(unittest.TestCase):
         res = self.employees_sf.join(self.departments_sf, how="left", on="dep_id")
         self.__assert_join_results_equal(res, left_expected)
 
-        right_join_row = SFrame()
+        right_join_row = XFrame()
         right_join_row.add_column(SArray([None], str), "last_name", inplace=True)
         right_join_row.add_column(SArray([35]), "dep_id", inplace=True)
         right_join_row.add_column(SArray(["Marketing"]), "dep_name", inplace=True)
@@ -2127,11 +2127,11 @@ class SFrameTest(unittest.TestCase):
         self.assertEqual(res.column_names(), ["last_name", "dep_id", "dep_id.1"])
 
         # Test a join on a non-unique key
-        bad_departments = SFrame()
+        bad_departments = XFrame()
         bad_departments["dep_id"] = SArray([33, 33, 31, 31])
         bad_departments["dep_name"] = self.departments_sf["dep_name"]
 
-        no_pk_expected = SFrame()
+        no_pk_expected = XFrame()
         no_pk_expected["last_name"] = SArray(
             ["Rafferty", "Rafferty", "Heisenberg", "Jones", "Heisenberg", "Jones"]
         )
@@ -2170,7 +2170,7 @@ class SFrameTest(unittest.TestCase):
 
         # nothing should happen
         # Tests the "natural join" case
-        inner_expected = SFrame()
+        inner_expected = XFrame()
         inner_expected.add_column(
             SArray(["Robinson", "Jones", "Smith", "Heisenberg", "Rafferty"]),
             "last_name",
@@ -2214,13 +2214,13 @@ class SFrameTest(unittest.TestCase):
         self.__assert_join_results_equal(res, inner_expected_tmp)
 
         ###### A simple and navive test start ######
-        employees_ = SFrame()
+        employees_ = XFrame()
         employees_.add_column(SArray(["A", "B", "C", "D"]), "last_name", inplace=True)
         employees_.add_column(SArray([31, 32, 33, None]), "dep_id", inplace=True)
         employees_.add_column(SArray([1, 2, 3, 4]), "org_id", inplace=True)
         employees_.add_column(SArray([1, 2, 3, 4]), "bed_id", inplace=True)
 
-        departments_ = SFrame()
+        departments_ = XFrame()
         departments_.add_column(SArray([31, 33, 34]), "dep_id", inplace=True)
         departments_.add_column(SArray(["A", "C", "F"]), "last_name", inplace=True)
         departments_.add_column(
@@ -2233,7 +2233,7 @@ class SFrameTest(unittest.TestCase):
         join_keys_ = ["dep_id", "last_name"]
 
         ## left
-        expected_ = SFrame()
+        expected_ = XFrame()
         expected_.add_column(SArray(["A", "B", "C", "D"]), "last_name", inplace=True)
         expected_.add_column(SArray([31, 32, 33, None]), "dep_id", inplace=True)
         expected_.add_column(SArray([1, 2, 3, 4]), "org_id", inplace=True)
@@ -2247,7 +2247,7 @@ class SFrameTest(unittest.TestCase):
         res = employees_.join(departments_, on=join_keys_, how="left")
         self.__assert_join_results_equal(res, expected_)
 
-        expected_ = SFrame()
+        expected_ = XFrame()
         expected_.add_column(SArray(["A", "B", "C", "D"]), "last_name", inplace=True)
         expected_.add_column(SArray([31, 32, 33, None]), "dep_id", inplace=True)
         expected_.add_column(SArray([1, 2, 3, 4]), "org_id", inplace=True)
@@ -2267,7 +2267,7 @@ class SFrameTest(unittest.TestCase):
         self.__assert_join_results_equal(res, expected_)
 
         ## left size is smaller than right
-        expected_ = SFrame()
+        expected_ = XFrame()
         expected_.add_column(SArray([31, 33, 34]), "dep_id", inplace=True)
         expected_.add_column(SArray(["A", "C", "F"]), "last_name", inplace=True)
         expected_.add_column(
@@ -2284,7 +2284,7 @@ class SFrameTest(unittest.TestCase):
         self.__assert_join_results_equal(res, expected_)
 
         ## right
-        expected_ = SFrame()
+        expected_ = XFrame()
         expected_.add_column(SArray(["A", "C", "F"]), "last_name", inplace=True)
         expected_.add_column(SArray([31, 33, 34]), "dep_id", inplace=True)
         expected_.add_column(SArray([1, 3, None]), "org_id", inplace=True)
@@ -2304,7 +2304,7 @@ class SFrameTest(unittest.TestCase):
         self.__assert_join_results_equal(res, expected_)
 
         ## outer
-        expected_ = SFrame()
+        expected_ = XFrame()
         expected_.add_column(
             SArray(["A", "B", "C", "D", "F"]), "last_name", inplace=True
         )
@@ -2369,7 +2369,7 @@ class SFrameTest(unittest.TestCase):
             )
 
     def test_big_composite_join(self):
-        # Create a semi large SFrame with composite primary key (letter, number)
+        # Create a semi large XFrame with composite primary key (letter, number)
         letter_keys = []
         number_keys = []
         data = []
@@ -2384,7 +2384,7 @@ class SFrameTest(unittest.TestCase):
                     data.append(string.digits)
                 elif which == 2:
                     data.append(string.hexdigits)
-        pk_gibberish = SFrame()
+        pk_gibberish = XFrame()
         pk_gibberish["letter"] = SArray(letter_keys, str)
         pk_gibberish["number"] = SArray(number_keys, int)
         pk_gibberish["data"] = SArray(data, str)
@@ -2410,13 +2410,13 @@ class SFrameTest(unittest.TestCase):
             more_letter_keys.append("Z")
             more_number_keys.append(400)
 
-        join_with_gibberish = SFrame()
+        join_with_gibberish = XFrame()
         join_with_gibberish["data"] = SArray(more_data, str)
         join_with_gibberish["moredata"] = SArray(more_data, str)
         join_with_gibberish["a_number"] = SArray(more_number_keys, int)
         join_with_gibberish["a_letter"] = SArray(more_letter_keys, str)
 
-        expected_answer = SFrame()
+        expected_answer = XFrame()
         exp_letter = []
         exp_number = []
         exp_data = []
@@ -2442,16 +2442,16 @@ class SFrameTest(unittest.TestCase):
         self.__assert_join_results_equal(res, expected_answer)
 
     def test_convert_dataframe_empty(self):
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = SArray([], int)
         df = sf.to_dataframe()
         self.assertEqual(df["a"].dtype, int)
-        sf1 = SFrame(df)
+        sf1 = XFrame(df)
         self.assertEqual(sf1["a"].dtype, int)
         self.assertEqual(sf1.num_rows(), 0)
 
     def test_replace_one_column(self):
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = [1, 2, 3]
         self.assertEqual(list(sf["a"]), [1, 2, 3])
 
@@ -2459,22 +2459,22 @@ class SFrameTest(unittest.TestCase):
         sf["a"] = [1, 2]
         self.assertEqual(list(sf["a"]), [1, 2])
 
-        # failed to add new column should revert original sframe
+        # failed to add new column should revert original xframe
         with self.assertRaises(TypeError):
             sf["a"] = [1, 2, "a"]
 
         self.assertEqual(list(sf["a"]), [1, 2])
 
         # add a column with different length should fail if there are more than one column
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = [1, 2, 3]
         sf["b"] = ["a", "b", "c"]
         with self.assertRaises(RuntimeError):
             sf["a"] = [1, 2]
 
     def test_filter_by(self):
-        # Set up SFrame to filter by
-        sf = SFrame()
+        # Set up XFrame to filter by
+        sf = XFrame()
         sf.add_column(SArray(self.int_data), "ints", inplace=True)
         sf.add_column(SArray(self.float_data), "floats", inplace=True)
         sf.add_column(SArray(self.string_data), "strings", inplace=True)
@@ -2499,7 +2499,7 @@ class SFrameTest(unittest.TestCase):
             data_lst.append(None)
             return data_lst
 
-        sf_none = SFrame()
+        sf_none = XFrame()
         sf_none.add_column(
             SArray(__build_data_list_with_none(self.int_data[:])), "ints", inplace=True
         )
@@ -2562,12 +2562,12 @@ class SFrameTest(unittest.TestCase):
         self.assertEqual(list(res), [])
 
         res = sf.filter_by([5, 6], "ints")
-        exp = SFrame()
+        exp = XFrame()
         exp.add_column(SArray(self.int_data[4:6]), "ints", inplace=True)
         exp.add_column(SArray(self.float_data[4:6]), "floats", inplace=True)
         exp.add_column(SArray(self.string_data[4:6]), "strings", inplace=True)
         self.__assert_join_results_equal(res, exp)
-        exp_opposite = SFrame()
+        exp_opposite = XFrame()
         exp_opposite.add_column(
             SArray(self.int_data[:4] + self.int_data[6:]), "ints", inplace=True
         )
@@ -2580,11 +2580,11 @@ class SFrameTest(unittest.TestCase):
         res = sf.filter_by([5, 6], "ints", exclude=True)
         self.__assert_join_results_equal(res, exp_opposite)
 
-        exp_one = SFrame()
+        exp_one = XFrame()
         exp_one.add_column(SArray(self.int_data[4:5]), "ints", inplace=True)
         exp_one.add_column(SArray(self.float_data[4:5]), "floats", inplace=True)
         exp_one.add_column(SArray(self.string_data[4:5]), "strings", inplace=True)
-        exp_all_but_one = SFrame()
+        exp_all_but_one = XFrame()
         exp_all_but_one.add_column(
             SArray(self.int_data[:4] + self.int_data[5:]), "ints", inplace=True
         )
@@ -2607,7 +2607,7 @@ class SFrameTest(unittest.TestCase):
 
         # Only missing values
         res = sf.filter_by([77, 77, 88, 88], "ints")
-        # Test against empty SFrame with correct columns/types
+        # Test against empty XFrame with correct columns/types
         self.__assert_join_results_equal(res, exp_one[exp_one["ints"] == 9000])
         res = sf.filter_by([77, 77, 88, 88], "ints", exclude=True)
         self.__assert_join_results_equal(res, sf)
@@ -2654,14 +2654,14 @@ class SFrameTest(unittest.TestCase):
 
     # XXXXXX: should be inner function
     def __test_to_from_dataframe(self, data, type):
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = data
         df = sf.to_dataframe()
-        sf1 = SFrame(df)
+        sf1 = XFrame(df)
         self.assertTrue(sf1.dtype[0] == type)
 
         df = pd.DataFrame({"val": data})
-        sf1 = SFrame(df)
+        sf1 = XFrame(df)
         self.assertTrue(sf1.dtype[0] == type)
 
     def test_to_from_dataframe(self):
@@ -2673,7 +2673,7 @@ class SFrameTest(unittest.TestCase):
         self.__test_to_from_dataframe([[1, 2], [1, 2], []], array.array)
 
     def test_pack_columns_exception(self):
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = [1, 2, 3, None, None]
         sf["b"] = [None, "2", "3", None, "5"]
         sf["c"] = [None, 2.0, 3.0, None, 5.0]
@@ -2712,7 +2712,7 @@ class SFrameTest(unittest.TestCase):
             sf.pack_columns(column_name_prefix="c", column_names=["a", "b"])
 
     def test_pack_columns2(self):
-        sf = SFrame()
+        sf = XFrame()
         sf["id"] = [1, 2, 3, 4]
         sf["category.a"] = [None, "2", "3", None]
         sf["category.b"] = [None, 2.0, None, 4.0]
@@ -2775,7 +2775,7 @@ class SFrameTest(unittest.TestCase):
         self.__assert_sarray_equal(result["id"], expected)
 
     def test_pack_columns(self):
-        sf = SFrame()
+        sf = XFrame()
         sf["id"] = [1, 2, 3, 4, 5]
         sf["b"] = [None, "2", "3", None, "5"]
         sf["c"] = [None, 2.0, 3.0, None, 5.0]
@@ -2848,7 +2848,7 @@ class SFrameTest(unittest.TestCase):
         self.__assert_sarray_equal(result["X1"], expected_dict_fillna)
 
         # pack large number of rows
-        sf = SFrame()
+        sf = XFrame()
         num_rows = 100000
         sf["a"] = list(range(0, num_rows))
         sf["b"] = list(range(0, num_rows))
@@ -2856,29 +2856,29 @@ class SFrameTest(unittest.TestCase):
         self.assertEqual(len(result), num_rows)
 
     def test_pack_columns_dtype(self):
-        a = SFrame({"name": [-140500967, -1405039672], "data": [3, 4]})
+        a = XFrame({"name": [-140500967, -1405039672], "data": [3, 4]})
         b = a.pack_columns(["name", "data"], dtype=array.array)
         expected = SArray([[-140500967, 3], [-1405039672, 4]])
         self.__assert_sarray_equal(b["X1"], expected)
 
     def test_unpack_dict_mixtype(self):
-        sf = SFrame(
+        sf = XFrame(
             {"a": [{"a": ["haha", "hoho"]}, {"a": array.array("d", [1, 2, 3])}]}
         )
         sf = sf.unpack("a", column_name_prefix="")
         self.assertEqual(sf["a"].dtype, list)
 
-        sf = SFrame(
+        sf = XFrame(
             {"a": [{"a": ["haha", "hoho"]}, {"a": array.array("d", [1, 2, 3])}]}
         )
         sf = sf.unpack()
         self.assertEqual(sf["a"].dtype, list)
 
-        sf = SFrame({"a": [{"a": ["haha", "hoho"]}, {"a": None}]})
+        sf = XFrame({"a": [{"a": ["haha", "hoho"]}, {"a": None}]})
         sf = sf.unpack("a", column_name_prefix="")
         self.assertEqual(sf["a"].dtype, list)
 
-        sf = SFrame({"a": [{"a": ["haha", "hoho"]}, {"a": None}]})
+        sf = XFrame({"a": [{"a": ["haha", "hoho"]}, {"a": None}]})
         sf = sf.unpack("a", column_name_prefix="")
         self.assertEqual(sf["a"].dtype, list)
 
@@ -2906,7 +2906,7 @@ class SFrameTest(unittest.TestCase):
             ]
         )
 
-        expected = SFrame()
+        expected = XFrame()
         expected["a"] = [1, 2, 3, 4, 5]
         expected["b"] = [None, "2", "3", None, "5"]
         expected["c"] = [None, 2.0, 3.0, None, 5.0]
@@ -2941,7 +2941,7 @@ class SFrameTest(unittest.TestCase):
         assert_frame_equal(result.to_dataframe(), e.to_dataframe())
 
         # fill na_value
-        e = SFrame()
+        e = XFrame()
         e["a"] = [1, 2, None, 4, 5]
         e["b"] = [None, "2", "3", None, "5"]
         e["c"] = [None, 2.0, None, None, 5.0]
@@ -2994,7 +2994,7 @@ class SFrameTest(unittest.TestCase):
             ]
         )
 
-        expected = SFrame()
+        expected = XFrame()
         expected["a"] = [1.0, 2.0, 3.0, -1.0, 5.0]
         expected["b"] = [1.0, -1.0, 3.0, 2.0, 5.0]
         expected["c"] = [0.0, 1.0, 2.0, 3.0, 4.0]
@@ -3035,7 +3035,7 @@ class SFrameTest(unittest.TestCase):
         assert_frame_equal(result.to_dataframe(), e.to_dataframe())
 
         # fill na_value
-        e = SFrame()
+        e = XFrame()
         e["a"] = SArray([1, 2, 3, None, 5], float)
         e["b"] = SArray([1, None, 3, 2, 5], float)
         e["c"] = SArray([0, 1, 2, 3, 4], float)
@@ -3045,36 +3045,36 @@ class SFrameTest(unittest.TestCase):
 
     def test_unpack_dict(self):
 
-        sf = SFrame([{"a": 1, "b": 2, "c": 3}, {"a": 4, "b": 5, "c": 6}])
-        expected_sf = SFrame()
+        sf = XFrame([{"a": 1, "b": 2, "c": 3}, {"a": 4, "b": 5, "c": 6}])
+        expected_sf = XFrame()
         expected_sf["a"] = [1, 4]
         expected_sf["b"] = [2, 5]
         expected_sf["c"] = [3, 6]
         unpacked_sf = sf.unpack()
         assert_frame_equal(unpacked_sf.to_dataframe(), expected_sf.to_dataframe())
 
-        expected_sf = SFrame()
+        expected_sf = XFrame()
         expected_sf["xx.a"] = [1, 4]
         expected_sf["xx.b"] = [2, 5]
         expected_sf["xx.c"] = [3, 6]
         unpacked_sf = sf.unpack(column_name_prefix="xx")
         assert_frame_equal(unpacked_sf.to_dataframe(), expected_sf.to_dataframe())
 
-        packed_sf = SFrame(
+        packed_sf = XFrame(
             {"X1": {"a": 1, "b": 2, "c": 3}, "X2": {"a": 4, "b": 5, "c": 6}}
         )
 
         with self.assertRaises(RuntimeError):
             packed_sf.unpack()
 
-        sf = SFrame()
+        sf = XFrame()
 
         sf["user_id"] = [1, 2, 3, 4, 5, 6, 7]
         sf["is_restaurant"] = [1, 1, 0, 0, 1, None, None]
         sf["is_retail"] = [None, 1, 1, None, 1, None, None]
         sf["is_electronics"] = ["yes", "no", "yes", None, "no", None, None]
 
-        packed_sf = SFrame()
+        packed_sf = XFrame()
         packed_sf["user_id"] = sf["user_id"]
         packed_sf["category"] = [
             {"is_restaurant": 1, "is_electronics": "yes"},
@@ -3096,7 +3096,7 @@ class SFrameTest(unittest.TestCase):
             packed_sf["category"].unpack(value_types=[int])
 
         # unpack only one column
-        expected_sf = SFrame()
+        expected_sf = XFrame()
         expected_sf["is_retail"] = sf["is_retail"]
         unpacked_sf = packed_sf["category"].unpack(
             limit=["is_retail"], column_types=[int], column_name_prefix=None
@@ -3132,7 +3132,7 @@ class SFrameTest(unittest.TestCase):
         )
 
         unpacked_sf = packed_sf["category"].unpack(na_value=0, column_name_prefix="new")
-        expected = SFrame()
+        expected = XFrame()
         expected["new.is_restaurant"] = [1, 1, None, None, 1, None, None]
         expected["new.is_retail"] = [None, 1, 1, None, 1, None, None]
         expected["new.is_electronics"] = ["yes", "no", "yes", None, "no", None, None]
@@ -3144,15 +3144,15 @@ class SFrameTest(unittest.TestCase):
         # unpack a dictionary key integer as key
         sa = SArray([{1: "a"}, {2: "b"}])
         result = sa.unpack()
-        expected = SFrame({"X.1": ["a", None], "X.2": [None, "b"]})
+        expected = XFrame({"X.1": ["a", None], "X.2": [None, "b"]})
         assert_frame_equal(result.to_dataframe(), expected.to_dataframe())
 
         result = sa.unpack(limit=[2])
-        expected = SFrame({"X.2": [None, "b"]})
+        expected = XFrame({"X.2": [None, "b"]})
         assert_frame_equal(result.to_dataframe(), expected.to_dataframe())
 
         result = sa.unpack(limit=[2], column_name_prefix="expanded")
-        expected = SFrame({"expanded.2": [None, "b"]})
+        expected = XFrame({"expanded.2": [None, "b"]})
         assert_frame_equal(result.to_dataframe(), expected.to_dataframe())
 
         sa = SArray([{i: i} for i in range(500)])
@@ -3198,8 +3198,8 @@ class SFrameTest(unittest.TestCase):
                 else:
                     self.assertEqual(v["c" + str(j)], "v" + str(j))
 
-    def test_unpack_sframe(self):
-        sf = SFrame()
+    def test_unpack_xframe(self):
+        sf = XFrame()
         sf["user_id"] = list(range(7))
         sf["category"] = [
             {"is_restaurant": 1, "is_electronics": "yes"},
@@ -3223,7 +3223,7 @@ class SFrameTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             sf.unpack("user_id")
 
-        expected = SFrame()
+        expected = XFrame()
         expected["user_id"] = sf["user_id"]
         expected["list"] = sf["list"]
         expected["is_restaurant"] = [1, 1, 0, 0, 1, None, None]
@@ -3284,7 +3284,7 @@ class SFrameTest(unittest.TestCase):
         )
 
         result = sf.unpack(column_name="list")
-        expected = SFrame()
+        expected = XFrame()
         expected["user_id"] = sf["user_id"]
         expected["list.0"] = [None, 0, 0, 0, 0, 0, 0]
         expected["list.1"] = [None, None, 1, 1, None, 1, 1]
@@ -3296,7 +3296,7 @@ class SFrameTest(unittest.TestCase):
         )
 
         result = sf.unpack(column_name="list", na_value=2)
-        expected = SFrame()
+        expected = XFrame()
         expected["user_id"] = sf["user_id"]
         expected["list.0"] = [None, 0, 0, 0, 0, 0, 0]
         expected["list.1"] = [None, None, 1, 1, None, 1, 1]
@@ -3308,7 +3308,7 @@ class SFrameTest(unittest.TestCase):
         )
 
         # auto resolving conflicting names
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = list(range(100))
         sf["b"] = [list(range(5)) for i in range(100)]
         sf["b.0"] = list(range(100))
@@ -3328,7 +3328,7 @@ class SFrameTest(unittest.TestCase):
             ],
         )
 
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = list(range(100))
         sf["b"] = [{"str1": i, "str2": i + 1} for i in range(100)]
         sf["b.str1"] = list(range(100))
@@ -3336,7 +3336,7 @@ class SFrameTest(unittest.TestCase):
         self.assertEqual(len(result.column_names()), 4)
 
     def test_stack_dict(self):
-        sf = SFrame()
+        sf = XFrame()
         sf["user_id"] = [1, 2, 3, 4, 5]
         sf["user_name"] = ["user" + str(i) for i in list(sf["user_id"])]
         sf["category"] = [
@@ -3347,7 +3347,7 @@ class SFrameTest(unittest.TestCase):
             None,
         ]
 
-        expected_sf = SFrame()
+        expected_sf = XFrame()
         expected_sf["user_id"] = [1, 2, 2, 3, 4, 5]
         expected_sf["user_name"] = [
             "user" + str(i) for i in list(expected_sf["user_id"])
@@ -3411,7 +3411,7 @@ class SFrameTest(unittest.TestCase):
         )
 
         # dropna
-        expected_sf = SFrame()
+        expected_sf = XFrame()
         expected_sf["user_id"] = [1, 2, 2, 3, 4, 5]
         expected_sf["user_name"] = [
             "user" + str(i) for i in list(expected_sf["user_id"])
@@ -3439,7 +3439,7 @@ class SFrameTest(unittest.TestCase):
             df_expected,
         )
 
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = SArray(([{}] * 100) + [{"a": 1}])
 
         # its a dict need 2 types
@@ -3449,15 +3449,15 @@ class SFrameTest(unittest.TestCase):
             sf.stack("a", ["key", "value"], new_column_type=str)
 
         sf.stack("a", ["key", "value"], new_column_type=[str, int])
-        expected_sf = SFrame()
+        expected_sf = XFrame()
         expected_sf["key"] = SArray([None] * 100 + ["a"])
         expected_sf["value"] = SArray([None] * 100 + [1])
 
     def test_stack_list(self):
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = [1, 2, 3, 4, 5]
         sf["b"] = [["a", "b"], ["c"], ["d"], ["e", None], None]
-        expected_result = SFrame()
+        expected_result = XFrame()
         expected_result["a"] = [1, 1, 2, 3, 4, 4, 5]
         expected_result["X1"] = ["a", "b", "c", "d", "e", None, None]
 
@@ -3491,19 +3491,19 @@ class SFrameTest(unittest.TestCase):
 
         # drop_na=True
         result = sf.stack("b", drop_na=True)
-        expected_result = SFrame()
+        expected_result = XFrame()
         expected_result["a"] = [1, 1, 2, 3, 4, 4]
         expected_result[result.column_names()[1]] = ["a", "b", "c", "d", "e", None]
         assert_frame_equal(result.to_dataframe(), expected_result.to_dataframe())
 
-        sf = SFrame()
+        sf = XFrame()
         n = 1000000
         sf["a"] = list(range(1, n))
         sf["b"] = [[str(i), str(i + 1)] for i in range(1, n)]
         result = sf.stack("b")
         self.assertTrue(len(result), n * 2)
 
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = SArray(([[]] * 100) + [["a", "b"]])
 
         # its a dict need 2 types
@@ -3511,14 +3511,14 @@ class SFrameTest(unittest.TestCase):
             sf.stack("a", "a", new_column_type=[str, int])
 
         sf.stack("a", "a", new_column_type=str)
-        expected_sf = SFrame()
+        expected_sf = XFrame()
         expected_sf["a"] = SArray([None] * 100 + ["a", "b"])
 
     def test_stack_vector(self):
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = [1, 2, 3, 4, 5]
         sf["b"] = [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4], None]
-        expected_result = SFrame()
+        expected_result = XFrame()
         expected_result["a"] = [1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5]
         expected_result["X1"] = [1, 1, 2, 1, 2, 3, 1, 2, 3, 4, None]
 
@@ -3552,7 +3552,7 @@ class SFrameTest(unittest.TestCase):
 
         # drop_na=True
         result = sf.stack("b", drop_na=True)
-        expected_result = SFrame()
+        expected_result = XFrame()
         expected_result["a"] = [1, 2, 2, 3, 3, 3, 4, 4, 4, 4]
         expected_result[result.column_names()[1]] = SArray(
             [1, 1, 2, 1, 2, 3, 1, 2, 3, 4], float
@@ -3561,7 +3561,7 @@ class SFrameTest(unittest.TestCase):
 
         import array
 
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = SArray(([array.array("d")] * 100) + [array.array("d", [1.0, 2.0])])
 
         # its a dict need 2 types
@@ -3569,11 +3569,11 @@ class SFrameTest(unittest.TestCase):
             sf.stack("a", "a", new_column_type=[str, int])
 
         sf.stack("a", "a", new_column_type=int)
-        expected_sf = SFrame()
+        expected_sf = XFrame()
         expected_sf["a"] = SArray([None] * 100 + [1, 2])
 
     def test_unstack_dict(self):
-        sf = SFrame()
+        sf = XFrame()
         sf["user_id"] = [1, 2, 3, 4]
         sf["user_name"] = ["user" + str(i) for i in list(sf["user_id"])]
         sf["categories"] = [
@@ -3619,7 +3619,7 @@ class SFrameTest(unittest.TestCase):
             unstacked_sf = stacked_sf.unstack(["category", "value"], "user_name")
 
     def test_unstack_list(self):
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = [1, 2, 3, 4]
         sf["b"] = [list(range(10)), list(range(20)), list(range(30)), list(range(50))]
         stacked_sf = sf.stack("b", new_column_name="new_b")
@@ -3644,7 +3644,7 @@ class SFrameTest(unittest.TestCase):
             stacked_sf.unstack("non exist")
 
     def test_content_identifier(self):
-        sf = SFrame({"a": [1, 2, 3, 4], "b": ["1", "2", "3", "4"]})
+        sf = XFrame({"a": [1, 2, 3, 4], "b": ["1", "2", "3", "4"]})
         a1 = sf["a"].__get_content_identifier__()
         a2 = sf["a"].__get_content_identifier__()
         self.assertEqual(a1, a2)
@@ -3653,7 +3653,7 @@ class SFrameTest(unittest.TestCase):
         t1 = list(range(0, 100000))
         t2 = [str(i) for i in t1]
         t = [{"t1": t1[i], "t2": t2[i]} for i in range(len(t1))]
-        s = SFrame({"t1": t1, "t2": t2})
+        s = XFrame({"t1": t1, "t2": t2})
         # simple slices
         self.__test_equal(s[1:10000], pd.DataFrame(t[1:10000]))
         self.__test_equal(s[0:10000:3], pd.DataFrame(t[0:10000:3]))
@@ -3681,13 +3681,13 @@ class SFrameTest(unittest.TestCase):
 
     def sort_n_rows(self, nrows=100):
         nrows += 1
-        sf = SFrame()
+        sf = XFrame()
         sf["a"] = list(range(1, nrows))
         sf["b"] = [float(i) for i in range(1, nrows)]
         sf["c"] = [str(i) for i in range(1, nrows)]
         sf["d"] = [[i, i + 1] for i in range(1, nrows)]
 
-        reversed_sf = SFrame()
+        reversed_sf = XFrame()
         reversed_sf["a"] = list(range(nrows - 1, 0, -1))
         reversed_sf["b"] = [float(i) for i in range(nrows - 1, 0, -1)]
         reversed_sf["c"] = [str(i) for i in range(nrows - 1, 0, -1)]
@@ -3744,7 +3744,7 @@ class SFrameTest(unittest.TestCase):
         assert_frame_equal(reversed_sf.to_dataframe(), result.to_dataframe())
 
         # empty sort should not throw
-        sf = SFrame({"x": []})
+        sf = XFrame({"x": []})
         sf.sort("x")
 
     def test_sort(self):
@@ -3754,7 +3754,7 @@ class SFrameTest(unittest.TestCase):
 
     def test_dropna(self):
         # empty case
-        sf = SFrame()
+        sf = XFrame()
         self.assertEqual(len(sf.dropna()), 0)
 
         # normal case
@@ -3766,7 +3766,7 @@ class SFrameTest(unittest.TestCase):
         self.__test_equal(test_split[1], self.employees_sf[5:6].to_dataframe())
 
         # test recursively removing nan
-        test_sf = SFrame(
+        test_sf = XFrame(
             {
                 "array": SArray(
                     [
@@ -3868,8 +3868,8 @@ class SFrameTest(unittest.TestCase):
             test_split[0], test_sf[0:4].append(test_sf[5:6]).to_dataframe()
         )
 
-        # create some other test sframe
-        test_sf = SFrame(
+        # create some other test xframe
+        test_sf = XFrame(
             {
                 "ints": SArray([None, None, 3, 4, None], int),
                 "floats": SArray([np.nan, 2.0, 3.0, 4.0, np.nan], float),
@@ -3944,7 +3944,7 @@ class SFrameTest(unittest.TestCase):
             test_sf.dropna_split("dontexist")
 
     def test_add_row_number(self):
-        sf = SFrame(self.__create_test_df(400000))
+        sf = XFrame(self.__create_test_df(400000))
 
         sf = sf.add_row_number("id")
         self.assertEqual(list(sf["id"]), list(range(0, 400000)))
@@ -3967,7 +3967,7 @@ class SFrameTest(unittest.TestCase):
 
     def test_inplace_not_inplace(self):
         # add row number
-        sf = SFrame(self.__create_test_df(1000))
+        sf = XFrame(self.__create_test_df(1000))
         sf2 = sf.add_row_number("id", inplace=False)
         self.assertTrue(sf2 is not sf)
         self.assertTrue("id" in sf2.column_names())
@@ -3978,7 +3978,7 @@ class SFrameTest(unittest.TestCase):
         self.assertTrue("id" in sf2.column_names())
 
         # add column
-        sf = SFrame(self.__create_test_df(1000))
+        sf = XFrame(self.__create_test_df(1000))
         newcol = SArray(list(range(1000)))
         sf2 = sf.add_column(newcol, "newcol", inplace=False)
         self.assertTrue(sf2 is not sf)
@@ -3989,8 +3989,8 @@ class SFrameTest(unittest.TestCase):
         self.assertTrue("newcol" in sf2.column_names())
 
         # add columns
-        sf = SFrame(self.__create_test_df(1000))
-        newcols = SFrame({"newcol": list(range(1000)), "newcol2": list(range(1000))})
+        sf = XFrame(self.__create_test_df(1000))
+        newcols = XFrame({"newcol": list(range(1000)), "newcol2": list(range(1000))})
         sf2 = sf.add_columns(newcols, inplace=False)
         self.assertTrue(sf2 is not sf)
         self.assertTrue("newcol" in sf2.column_names())
@@ -4003,7 +4003,7 @@ class SFrameTest(unittest.TestCase):
         self.assertTrue("newcol2" in sf2.column_names())
 
         # remove column
-        sf = SFrame(self.__create_test_df(1000))
+        sf = XFrame(self.__create_test_df(1000))
         sf2 = sf.remove_column("int_data", inplace=False)
         self.assertTrue(sf2 is not sf)
         self.assertTrue("int_data" in sf.column_names())
@@ -4013,7 +4013,7 @@ class SFrameTest(unittest.TestCase):
         self.assertTrue("int_data" not in sf2.column_names())
 
         # remove columns
-        sf = SFrame(self.__create_test_df(1000))
+        sf = XFrame(self.__create_test_df(1000))
         sf2 = sf.remove_columns(["int_data", "float_data"], inplace=False)
         self.assertTrue(sf2 is not sf)
         self.assertTrue("int_data" in sf.column_names())
@@ -4026,7 +4026,7 @@ class SFrameTest(unittest.TestCase):
         self.assertTrue("float_data" not in sf2.column_names())
 
         # rename
-        sf = SFrame(self.__create_test_df(1000))
+        sf = XFrame(self.__create_test_df(1000))
         sf2 = sf.rename({"int_data": "int", "float_data": "float"}, inplace=False)
         self.assertTrue(sf2 is not sf)
         self.assertTrue("int_data" in sf.column_names())
@@ -4045,7 +4045,7 @@ class SFrameTest(unittest.TestCase):
         self.assertTrue("float" in sf2.column_names())
 
         # swap
-        sf = SFrame(self.__create_test_df(1000))
+        sf = XFrame(self.__create_test_df(1000))
         old_cnames = sf.column_names()
 
         # swap int_data and float_data
@@ -4066,9 +4066,9 @@ class SFrameTest(unittest.TestCase):
         self.assertTrue(sf2 is sf)
         self.assertEqual(sf2.column_names(), new_cnames)
 
-    def test_check_lazy_sframe_size(self):
-        # empty sframe, materialized, has_size
-        sf = SFrame()
+    def test_check_lazy_xframe_size(self):
+        # empty xframe, materialized, has_size
+        sf = XFrame()
         self.assertTrue(sf.__is_materialized__())
         self.assertTrue(sf.__has_size__())
 
@@ -4096,21 +4096,21 @@ class SFrameTest(unittest.TestCase):
         z = a[a2 > 20]
         self.assertEqual(len(z), 9979)
 
-    def test_lazy_logical_filter_sframe(self):
-        g = SFrame({"a": list(range(10000))})
-        g2 = SFrame({"a": list(range(10000))})
+    def test_lazy_logical_filter_xframe(self):
+        g = XFrame({"a": list(range(10000))})
+        g2 = XFrame({"a": list(range(10000))})
         a = g[g["a"] > 10]
         a2 = g2[g["a"] > 10]
         z = a[a2["a"] > 20]
         self.assertEqual(len(z), 9979)
 
-    def test_column_manipulation_of_lazy_sframe(self):
-        g = SFrame({"a": [1, 2, 3, 4, 5], "id": [1, 2, 3, 4, 5]})
+    def test_column_manipulation_of_lazy_xframe(self):
+        g = XFrame({"a": [1, 2, 3, 4, 5], "id": [1, 2, 3, 4, 5]})
         g = g[g["id"] > 2]
         del g["id"]
         # if lazy column deletion is quirky, this will cause an exception
         self.assertEqual(list(g[0:2]["a"]), [3, 4])
-        g = SFrame({"a": [1, 2, 3, 4, 5], "id": [1, 2, 3, 4, 5]})
+        g = XFrame({"a": [1, 2, 3, 4, 5], "id": [1, 2, 3, 4, 5]})
         g = g[g["id"] > 2]
         g.swap_columns("a", "id", inplace=True)
         # if lazy column swap is quirky, this will cause an exception
@@ -4123,16 +4123,16 @@ class SFrameTest(unittest.TestCase):
             sf2 = SArray(f)
             self.assertEqual(len(sf2), 0)
 
-    def test_empty_sframe(self):
+    def test_empty_xframe(self):
         with util.TempDirectory() as f:
-            sf = SFrame()
+            sf = XFrame()
             sf.save(f)
-            sf2 = SFrame(f)
+            sf2 = XFrame(f)
             self.assertEqual(len(sf2), 0)
             self.assertEqual(sf2.num_columns(), 0)
 
     def test_none_column(self):
-        sf = SFrame({"a": [1, 2, 3, 4, 5]})
+        sf = XFrame({"a": [1, 2, 3, 4, 5]})
         sf["b"] = None
         self.assertEqual(sf["b"].dtype, float)
         df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [None, None, None, None, None]})
@@ -4143,7 +4143,7 @@ class SFrameTest(unittest.TestCase):
         self.assertEqual(sa.dtype, float)
 
     def test_apply_with_partial(self):
-        sf = SFrame({"a": [1, 2, 3, 4, 5]})
+        sf = XFrame({"a": [1, 2, 3, 4, 5]})
 
         def concat_fn(character, row):
             return "%s%d" % (character, row["a"])
@@ -4153,7 +4153,7 @@ class SFrameTest(unittest.TestCase):
         self.assertEqual(list(sa), ["x1", "x2", "x3", "x4", "x5"])
 
     def test_apply_with_functor(self):
-        sf = SFrame({"a": [1, 2, 3, 4, 5]})
+        sf = XFrame({"a": [1, 2, 3, 4, 5]})
 
         class Concatenator(object):
             def __init__(self, character):
@@ -4166,10 +4166,10 @@ class SFrameTest(unittest.TestCase):
         sa = sf.apply(concatenator)
         self.assertEqual(list(sa), ["x1", "x2", "x3", "x4", "x5"])
 
-    def test_save_sframe(self):
-        """save lazily evaluated SFrame should not materialize to target folder
+    def test_save_xframe(self):
+        """save lazily evaluated XFrame should not materialize to target folder
         """
-        data = SFrame()
+        data = XFrame()
         data["x"] = list(range(100))
         data["x"] = data["x"] > 50
         # lazy and good
@@ -4182,7 +4182,7 @@ class SFrameTest(unittest.TestCase):
 
     def test_empty_argmax_does_not_fail(self):
         # an empty argmax should not result in a crash
-        sf = SFrame(
+        sf = XFrame(
             {
                 "id": [0, 0, 0, 1, 1, 2, 2],
                 "value": [3.0, 2.0, 2.3, None, None, 4.3, 1.3],
@@ -4192,9 +4192,9 @@ class SFrameTest(unittest.TestCase):
         sf.groupby("id", aggregate.ARGMAX("value", "category"))
 
     def test_cache_invalidation(self):
-        # Changes to the SFrame should invalidate the indexing cache.
+        # Changes to the XFrame should invalidate the indexing cache.
 
-        X = SFrame({"a": list(range(4000)), "b": list(range(4000))})
+        X = XFrame({"a": list(range(4000)), "b": list(range(4000))})
 
         for i in range(0, 4000, 20):
             self.assertEqual(X[i], {"a": i, "b": i})
@@ -4220,7 +4220,7 @@ class SFrameTest(unittest.TestCase):
             self.assertEqual(X[i], {"a": 1000 + i, "c": 1000 + i})
 
     def test_to_numpy(self):
-        X = SFrame({"a": list(range(100)), "b": list(range(100))})
+        X = XFrame({"a": list(range(100)), "b": list(range(100))})
         import numpy as np
         import numpy.testing as nptest
 
@@ -4270,40 +4270,40 @@ class SFrameTest(unittest.TestCase):
         ]
 
         # bigger than cache, no Nones
-        sf = SFrame.from_sql(
+        sf = XFrame.from_sql(
             conn,
             "SELECT * FROM test_table",
             type_inference_rows=5,
             dbapi_module=dbapi2_mock(),
         )
-        _assert_sframe_equal(sf, self.sf_all_types)
+        _assert_xframe_equal(sf, self.sf_all_types)
 
         # smaller than cache, no Nones
         sf_iter = sf_data.__iter__()
-        sf = SFrame.from_sql(
+        sf = XFrame.from_sql(
             conn,
             "SELECT * FROM test_table",
             type_inference_rows=100,
             dbapi_module=dbapi2_mock(),
         )
-        _assert_sframe_equal(sf, self.sf_all_types)
+        _assert_xframe_equal(sf, self.sf_all_types)
 
         none_col = [None for i in range(5)]
         nones_in_cache = list(zip(*[none_col for i in range(len(sf_data[0]))]))
-        none_sf = SFrame(
+        none_sf = XFrame(
             {"X" + str(i): none_col for i in range(1, len(sf_data[0]) + 1)}
         )
         test_data = nones_in_cache + sf_data
         sf_iter = test_data.__iter__()
 
         # more None rows than cache & types in description
-        sf = SFrame.from_sql(
+        sf = XFrame.from_sql(
             conn,
             "SELECT * FROM test_table",
             type_inference_rows=5,
             dbapi_module=dbapi2_mock(),
         )
-        sf_inferred_types = SFrame()
+        sf_inferred_types = XFrame()
         expected_types = [float, float, str, str, str, str, dt.datetime]
         for i in zip(self.sf_all_types.column_names(), expected_types):
             new_col = SArray(none_col).astype(i[1])
@@ -4318,20 +4318,20 @@ class SFrameTest(unittest.TestCase):
         # funky consistency issues with the string representations of these
         sf.remove_columns(["X5", "X6"], inplace=True)
         sf_inferred_types.remove_columns(["X5", "X6"], inplace=True)
-        _assert_sframe_equal(sf, sf_inferred_types)
+        _assert_xframe_equal(sf, sf_inferred_types)
 
         # more None rows than cache & no type information
         for i in range(len(curs.description)):
             curs.description[i][1] = None
         sf_iter = test_data.__iter__()
-        sf = SFrame.from_sql(
+        sf = XFrame.from_sql(
             conn,
             "SELECT * FROM test_table",
             type_inference_rows=5,
             dbapi_module=dbapi2_mock(),
         )
 
-        sf_inferred_types = SFrame()
+        sf_inferred_types = XFrame()
         expected_types = [str for i in range(len(sf_data[0]))]
         for i in zip(self.sf_all_types.column_names(), expected_types):
             new_col = SArray(none_col).astype(i[1])
@@ -4341,11 +4341,11 @@ class SFrameTest(unittest.TestCase):
         # Don't test the string representation of dict, could be out of order
         sf.remove_columns(["X5", "X6"], inplace=True)
         sf_inferred_types.remove_columns(["X5", "X6"], inplace=True)
-        _assert_sframe_equal(sf, sf_inferred_types)
+        _assert_xframe_equal(sf, sf_inferred_types)
 
         ### column_type_hints tests
         sf_iter = test_data.__iter__()
-        sf = SFrame.from_sql(
+        sf = XFrame.from_sql(
             conn,
             "SELECT * FROM test_table",
             type_inference_rows=5,
@@ -4353,13 +4353,13 @@ class SFrameTest(unittest.TestCase):
             column_type_hints=str,
         )
         sf.remove_columns(["X5", "X6"], inplace=True)
-        _assert_sframe_equal(sf, sf_inferred_types)
+        _assert_xframe_equal(sf, sf_inferred_types)
 
         # Provide unhintable types
         sf_iter = test_data.__iter__()
         expected_types = [int, float, str, array.array, list, dict, dt.datetime]
         with self.assertRaises(TypeError):
-            sf = SFrame.from_sql(
+            sf = XFrame.from_sql(
                 conn,
                 "SELECT * FROM test_table",
                 type_inference_rows=5,
@@ -4369,57 +4369,57 @@ class SFrameTest(unittest.TestCase):
 
         sf_iter = test_data.__iter__()
         expected_types = {"X" + str(i + 1): expected_types[i] for i in range(3)}
-        sf = SFrame.from_sql(
+        sf = XFrame.from_sql(
             conn,
             "SELECT * FROM test_table",
             type_inference_rows=10,
             dbapi_module=dbapi2_mock(),
             column_type_hints=expected_types,
         )
-        _assert_sframe_equal(sf[5:], self.sf_all_types)
+        _assert_xframe_equal(sf[5:], self.sf_all_types)
 
         # Test a float forced to a str
         sf_iter = test_data.__iter__()
         expected_types["X2"] = str
         self.sf_all_types["X2"] = self.sf_all_types["X2"].apply(lambda x: str(x))
-        sf = SFrame.from_sql(
+        sf = XFrame.from_sql(
             conn,
             "SELECT * FROM test_table",
             type_inference_rows=10,
             dbapi_module=dbapi2_mock(),
             column_type_hints=expected_types,
         )
-        _assert_sframe_equal(sf[5:], self.sf_all_types)
+        _assert_xframe_equal(sf[5:], self.sf_all_types)
 
-        # Type unsupported by sframe
+        # Type unsupported by xframe
         curs.description = [["X1", 44], ["X2", 44]]
         sf_iter = [[complex(4.5, 3), 1], [complex(3.4, 5), 2]].__iter__()
-        sf = SFrame.from_sql(conn, "SELECT * FROM test_table")
-        expected_sf = SFrame({"X1": ["(4.5+3j)", "(3.4+5j)"], "X2": [1, 2]})
-        _assert_sframe_equal(sf, expected_sf)
+        sf = XFrame.from_sql(conn, "SELECT * FROM test_table")
+        expected_sf = XFrame({"X1": ["(4.5+3j)", "(3.4+5j)"], "X2": [1, 2]})
+        _assert_xframe_equal(sf, expected_sf)
 
         # bad DBAPI version!
         bad_version = dbapi2_mock()
         bad_version.apilevel = "1.0 "
         with self.assertRaises(NotImplementedError):
-            sf = SFrame.from_sql(
+            sf = XFrame.from_sql(
                 conn, "SELECT * FROM test_table", dbapi_module=bad_version
             )
 
         # Bad module
         with self.assertRaises(AttributeError):
-            sf = SFrame.from_sql(conn, "SELECT * FROM test_table", dbapi_module=os)
+            sf = XFrame.from_sql(conn, "SELECT * FROM test_table", dbapi_module=os)
 
         # Bad connection
         with self.assertRaises(AttributeError):
-            sf = SFrame.from_sql(4, "SELECT * FROM test_table")
+            sf = XFrame.from_sql(4, "SELECT * FROM test_table")
 
         # Empty query result
         curs.description = []
-        sf = SFrame.from_sql(
+        sf = XFrame.from_sql(
             conn, "SELECT * FROM test_table", dbapi_module=dbapi2_mock()
         )
-        _assert_sframe_equal(sf, SFrame())
+        _assert_xframe_equal(sf, XFrame())
 
     @mock.patch(__name__ + ".sqlite3.Cursor", spec=True)
     @mock.patch(__name__ + ".sqlite3.Connection", spec=True)
@@ -4481,7 +4481,7 @@ class SFrameTest(unittest.TestCase):
             self.sf_all_types.to_sql(conn, "ins_test", dbapi_module=bad_paramstyle)
 
     def test_materialize(self):
-        sf = SFrame({"a": list(range(100))})
+        sf = XFrame({"a": list(range(100))})
         sf = sf[sf["a"] > 10]
         self.assertFalse(sf.is_materialized())
         sf.materialize()
@@ -4489,7 +4489,7 @@ class SFrameTest(unittest.TestCase):
 
     def test_materialization_slicing(self):
         # Has been known to fail.
-        g = SFrame({"a": list(range(100))})[:10]
+        g = XFrame({"a": list(range(100))})[:10]
         g["b"] = g["a"] + 1
         g["b"].materialize()
         g.materialize()
@@ -4497,28 +4497,28 @@ class SFrameTest(unittest.TestCase):
     def test_copy(self):
         from copy import copy
 
-        sf = generate_random_sframe(100, "Cns")
+        sf = generate_random_xframe(100, "Cns")
         sf_copy = copy(sf)
 
         assert sf is not sf_copy
 
-        _assert_sframe_equal(sf, sf_copy)
+        _assert_xframe_equal(sf, sf_copy)
 
     def test_deepcopy(self):
         from copy import deepcopy
 
-        sf = generate_random_sframe(100, "Cns")
+        sf = generate_random_xframe(100, "Cns")
         sf_copy = deepcopy(sf)
 
         assert sf is not sf_copy
 
-        _assert_sframe_equal(sf, sf_copy)
+        _assert_xframe_equal(sf, sf_copy)
 
     def test_builtins(self):
         import builtins
         import six
 
-        sf = SFrame(
+        sf = XFrame(
             {
                 "dict": [builtins.dict({"foo": "bar"})],
                 "float": [builtins.float(3.14)],
@@ -4529,7 +4529,7 @@ class SFrameTest(unittest.TestCase):
                 "tuple": [builtins.tuple((1, 2))],
             }
         )
-        sf2 = SFrame(
+        sf2 = XFrame(
             {
                 "dict": [{"foo": "bar"}],
                 "float": [3.14],
@@ -4543,63 +4543,63 @@ class SFrameTest(unittest.TestCase):
 
         if six.PY2:
             sf = sf.add_columns(
-                SFrame(
+                XFrame(
                     {"long": [builtins.long(12)], "unicode": [builtins.str("foo")]}
                 )
             )
-            sf2 = sf2.add_columns(SFrame({"long": [12], "unicode": [str("foo")]}))
+            sf2 = sf2.add_columns(XFrame({"long": [12], "unicode": [str("foo")]}))
 
-        _assert_sframe_equal(sf, sf2)
+        _assert_xframe_equal(sf, sf2)
 
     def test_add_column_nonSArray(self):
-        sf = SFrame()
+        sf = XFrame()
         sf = sf.add_column([1, 2, 3, 4], "x")
 
-        sf_test = SFrame()
+        sf_test = XFrame()
         sf_test["x"] = SArray([1, 2, 3, 4])
 
-        _assert_sframe_equal(sf, sf_test)
+        _assert_xframe_equal(sf, sf_test)
 
     def test_add_column_noniterable1(self):
-        sf = SFrame()
+        sf = XFrame()
         sf = sf.add_column([1, 2, 3, 4], "x")
         sf = sf.add_column(5, "y")
 
-        sf_test = SFrame()
+        sf_test = XFrame()
         sf_test["x"] = SArray([1, 2, 3, 4])
         sf_test["y"] = 5
 
-        _assert_sframe_equal(sf, sf_test)
+        _assert_xframe_equal(sf, sf_test)
 
     def test_add_column_noniterable2(self):
-        # If SFrame is empty then the passed data should be treated as an SArray of size 1
-        sf = SFrame()
+        # If XFrame is empty then the passed data should be treated as an SArray of size 1
+        sf = XFrame()
         sf = sf.add_column(5, "y")
 
-        sf_test = SFrame()
+        sf_test = XFrame()
         sf_test["y"] = SArray([5])
 
-        _assert_sframe_equal(sf, sf_test)
+        _assert_xframe_equal(sf, sf_test)
 
     def test_filter_by_dict(self):
         # Check for dict in filter_by
-        sf = SFrame({"check": list(range(10))})
+        sf = XFrame({"check": list(range(10))})
         d = {1: 1}
 
         sf = sf.filter_by(list(d.keys()), "check")
         sf_test = sf.filter_by(list(d.keys()), "check")
-        _assert_sframe_equal(sf, sf_test)
+        _assert_xframe_equal(sf, sf_test)
 
         sf = sf.filter_by(list(d.values()), "check")
         sf_test = sf.filter_by(list(d.values()), "check")
-        _assert_sframe_equal(sf, sf_test)
+        _assert_xframe_equal(sf, sf_test)
 
-    def test_export_empty_SFrame(self):
+    def test_export_empty_XFrame(self):
         f = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
-        sf = SFrame()
+        sf = XFrame()
         sf.export_json(f.name)
-        sf2 = SFrame.read_json(f.name)
-        _assert_sframe_equal(sf, sf2)
+        sf2 = XFrame.read_json(f.name)
+        _assert_xframe_equal(sf, sf2)
 
 
 if __name__ == "__main__":

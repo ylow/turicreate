@@ -199,10 +199,10 @@ static lambda_master* instance_ptr = nullptr;
 
 
   /**
-   * \overload with sframe rows
+   * \overload with xframe rows
    */
   void lambda_master::bulk_eval(size_t lambda_hash,
-                                  const sframe_rows& args,
+                                  const xframe_rows& args,
                                   std::vector<flexible_type>& out,
                                   bool skip_undefined,
                                   uint64_t seed) {
@@ -260,7 +260,7 @@ static lambda_master* instance_ptr = nullptr;
 
   void lambda_master::bulk_eval(size_t lambda_hash,
                                   const std::vector<std::string>& keys,
-                                  const sframe_rows& rows,
+                                  const xframe_rows& rows,
                                   std::vector<flexible_type>& out,
                                   bool skip_undefined, uint64_t seed) {
     auto worker = m_worker_pool->get_worker();

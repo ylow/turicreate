@@ -84,8 +84,8 @@ table_printer::table_printer(const std::vector<std::pair<std::string, size_t> >&
 /**  Need to clean up some things.
  */
 table_printer::~table_printer() {
-  if(track_sframe.is_opened_for_write()) {
-    track_sframe.close();
+  if(track_xframe.is_opened_for_write()) {
+    track_xframe.close();
   }
 }
 
@@ -179,14 +179,14 @@ double table_printer::elapsed_time() const {
  *  called will cause the table to be cleared and all rows to be
  *  added to another table.
  */
-sframe table_printer::get_tracked_table() {
+xframe table_printer::get_tracked_table() {
 
   std::lock_guard<decltype(track_register_lock)> register_lock_guard(track_register_lock);
 
   if(!tracker_is_initialized) {
 
     // Initialize an empty table
-    track_sframe = sframe();
+    track_xframe = xframe();
 
     size_t n = format.size();
 
@@ -199,18 +199,18 @@ sframe table_printer::get_tracked_table() {
       column_types[i] = flex_type_enum::STRING;
     }
 
-    track_sframe.open_for_write(column_names, column_types, "", 1);
-    tracking_out_iter = track_sframe.get_output_iterator(0);
+    track_xframe.open_for_write(column_names, column_types, "", 1);
+    tracking_out_iter = track_xframe.get_output_iterator(0);
     tracker_is_initialized = true;
   }
 
-  if(track_sframe.is_opened_for_write()) {
-    track_sframe.close();
+  if(track_xframe.is_opened_for_write()) {
+    track_xframe.close();
   }
 
   tracker_is_initialized = false;
 
-  return track_sframe;
+  return track_xframe;
 }
 
 void table_printer::print_track_row_if_necessary() const {

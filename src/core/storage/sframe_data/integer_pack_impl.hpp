@@ -3,15 +3,15 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_INTEGER_PACK_IMPL_HPP
-#define TURI_SFRAME_INTEGER_PACK_IMPL_HPP
+#ifndef TURI_XFRAME_INTEGER_PACK_IMPL_HPP
+#define TURI_XFRAME_INTEGER_PACK_IMPL_HPP
 
 
 #include <core/storage/serialization/serialization_includes.hpp>
 namespace turi {
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup Compression Integer Compression Routines
  * \{
  */

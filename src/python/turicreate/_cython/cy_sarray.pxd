@@ -13,7 +13,7 @@ from .cy_unity_base_types cimport *
 from .cy_unity cimport function_closure_info
 from .cy_unity cimport make_function_closure_info
 
-cdef extern from "<core/storage/sframe_interface/unity_sarray.hpp>" namespace "turi":
+cdef extern from "<core/storage/xframe_interface/unity_sarray.hpp>" namespace "turi":
     cdef cppclass unity_sarray nogil:
         unity_sarray() except +
         void construct_from_vector(const flex_list&, flex_type_enum) except +
@@ -75,9 +75,9 @@ cdef extern from "<core/storage/sframe_interface/unity_sarray.hpp>" namespace "t
         unity_sarray_base_ptr dict_has_any_keys(vector[flexible_type]) except +
         unity_sarray_base_ptr dict_has_all_keys(vector[flexible_type]) except +
         unity_sarray_base_ptr item_length() except +
-        unity_sframe_base_ptr expand(string column_name_prefix, vector[flexible_type] limit, vector[flex_type_enum] value_types) except +
-        unity_sframe_base_ptr unpack_dict(string column_name_prefix, vector[flexible_type] limit, flexible_type) except +
-        unity_sframe_base_ptr unpack(string column_name_prefix, vector[flexible_type] limit, vector[flex_type_enum] value_types, flexible_type) except +
+        unity_xframe_base_ptr expand(string column_name_prefix, vector[flexible_type] limit, vector[flex_type_enum] value_types) except +
+        unity_xframe_base_ptr unpack_dict(string column_name_prefix, vector[flexible_type] limit, flexible_type) except +
+        unity_xframe_base_ptr unpack(string column_name_prefix, vector[flexible_type] limit, vector[flex_type_enum] value_types, flexible_type) except +
         size_t get_content_identifier() except +
         unity_sarray_base_ptr copy_range(size_t, size_t, size_t) except +
         unity_sarray_base_ptr builtin_rolling_apply(string, ssize_t, ssize_t, size_t) except +

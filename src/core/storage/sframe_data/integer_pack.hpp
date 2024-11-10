@@ -3,21 +3,21 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_INTEGER_PACK_HPP
-#define TURI_SFRAME_INTEGER_PACK_HPP
+#ifndef TURI_XFRAME_INTEGER_PACK_HPP
+#define TURI_XFRAME_INTEGER_PACK_HPP
 #include <cstdint>
 #include <cstddef>
 #include <algorithm>
 #include <core/logging/logger.hpp>
 #include <core/logging/assertions.hpp>
-#include <core/storage/sframe_data/integer_pack_impl.hpp>
+#include <core/storage/xframe_data/integer_pack_impl.hpp>
 #include <core/util/bitops.hpp>
 
 namespace turi {
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup Compression Integer Compression Routines
  * \{
  */

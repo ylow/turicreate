@@ -18,26 +18,26 @@ from .cy_flexible_type cimport pylist_from_flex_list
 
 from .cy_cpp_utils cimport str_to_cpp, to_vector_of_strings, from_vector_of_strings
 
-### sframe ###
-from .cy_sframe cimport create_proxy_wrapper_from_existing_proxy as sframe_proxy
+### xframe ###
+from .cy_xframe cimport create_proxy_wrapper_from_existing_proxy as xframe_proxy
 
-cdef create_proxy_wrapper_from_existing_proxy(const unity_sframe_builder_base_ptr& proxy):
+cdef create_proxy_wrapper_from_existing_proxy(const unity_xframe_builder_base_ptr& proxy):
     if proxy.get() == NULL:
         return None
-    ret = UnitySFrameBuilderProxy(True)
+    ret = UnityXFrameBuilderProxy(True)
     ret._base_ptr = proxy
-    ret.thisptr = <unity_sframe_builder*>(ret._base_ptr.get())
+    ret.thisptr = <unity_xframe_builder*>(ret._base_ptr.get())
     return ret
 
-cdef class UnitySFrameBuilderProxy:
+cdef class UnityXFrameBuilderProxy:
 
     def __cinit__(self, do_not_allocate=None):
         if do_not_allocate:
             self._base_ptr.reset()
             self.thisptr = NULL
         else:
-            self.thisptr = new unity_sframe_builder()
-            self._base_ptr.reset(<unity_sframe_builder_base*>(self.thisptr))
+            self.thisptr = new unity_xframe_builder()
+            self._base_ptr.reset(<unity_xframe_builder_base*>(self.thisptr))
 
     cpdef init(self, list column_types, _column_names, size_t num_segments,
                size_t history_size, _save_location):
@@ -74,7 +74,7 @@ cdef class UnitySFrameBuilderProxy:
         return [pytype_from_flex_type_enum(t) for t in self.thisptr.column_types()]
 
     cpdef close(self):
-        cdef unity_sframe_base_ptr proxy
+        cdef unity_xframe_base_ptr proxy
         with nogil:
             proxy = self.thisptr.close()
-        return sframe_proxy(proxy)
+        return xframe_proxy(proxy)

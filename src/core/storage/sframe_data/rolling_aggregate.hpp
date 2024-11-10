@@ -3,17 +3,17 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_ROLLING_AGGREGATE_HPP
-#define TURI_SFRAME_ROLLING_AGGREGATE_HPP
+#ifndef TURI_XFRAME_ROLLING_AGGREGATE_HPP
+#define TURI_XFRAME_ROLLING_AGGREGATE_HPP
 
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/groupby_aggregate_operators.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_operators.hpp>
 
 namespace turi {
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup groupby_aggregate Groupby Aggregation
  * \{
  */
@@ -104,4 +104,4 @@ bool has_min_observations(size_t min_observations,
 
 } // namespace rolling_aggregate
 } // namespace turi
-#endif // TURI_SFRAME_ROLLING_AGGREGATE_HPP
+#endif // TURI_XFRAME_ROLLING_AGGREGATE_HPP

@@ -16,11 +16,11 @@ Download the [stop_sign_starter.png](images/stop_sign_starter.png) image. Also D
 import turicreate as tc
 
 # Load the starter images
-starter_images = tc.SFrame({'image':[tc.Image('stop_sign_starter.png')],
+starter_images = tc.XFrame({'image':[tc.Image('stop_sign_starter.png')],
                    'label':['stop_sign']})
 
 # Load test images
-test_images = tc.SFrame({'image':[tc.Image('stop_sign_test1.jpg'), 
+test_images = tc.XFrame({'image':[tc.Image('stop_sign_test1.jpg'), 
                                   tc.Image('stop_sign_test2.jpg')]})
 
 # Create a model. This step will take a few hours on CPU and about an hour on GPU
@@ -76,7 +76,7 @@ Here is a collection of some known caveats and their respective workarounds whil
 
 ##### My starter image can appear upside down as well as rotated 90 degrees in the wild. Is there anything I can do to improve the quality of the model?
 
-To ensure a higher quality model, instead of providing *one* starter image, feel free to provide *more than one* starter images. For every starter image, we rotate the starter image by up to 20 degrees. As a result, to detect both inverted and erect projections of the same starter image, you can provide *2* starter images with the same label. Here is an example to rotate a Stop Sign starter image by 90 degrees, 180 degrees, and 270 degrees, and construct an SFrame with four starter images:
+To ensure a higher quality model, instead of providing *one* starter image, feel free to provide *more than one* starter images. For every starter image, we rotate the starter image by up to 20 degrees. As a result, to detect both inverted and erect projections of the same starter image, you can provide *2* starter images with the same label. Here is an example to rotate a Stop Sign starter image by 90 degrees, 180 degrees, and 270 degrees, and construct an XFrame with four starter images:
 
 ```python
 import turicreate as tc
@@ -99,7 +99,7 @@ for rotation_angle in [90, 180, 270]:
     rotated = pil_to_tc(pil_image.rotate(rotation_angle, expand=True))
     images.append(rotated)
 
-starter_images = tc.SFrame({
+starter_images = tc.XFrame({
     'image': images,
     'label': ['my_label'] * 4
 })

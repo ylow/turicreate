@@ -47,7 +47,7 @@ all generated recommendations are for items that the user has not
 already seen.
 
 ```python
-data = turicreate.SFrame({'user_id': ["Ann", "Ann", "Ann", "Brian", "Brian", "Brian"],
+data = turicreate.XFrame({'user_id': ["Ann", "Ann", "Ann", "Brian", "Brian", "Brian"],
                   		'item_id': ["Item1", "Item2", "Item4", "Item2", "Item3", "Item5"],
                   		'rating': [1, 3, 2, 5, 4, 2]})
 m = turicreate.factorization_recommender.create(data, target='rating')
@@ -109,7 +109,7 @@ recommender model that knows how to incorporate side features.  This can
 be done by passing in side information to `create()`.  For example:
 
 ```python
-user_info = turicreate.SFrame({'user_id': ['Ann', 'Brian'],
+user_info = turicreate.XFrame({'user_id': ['Ann', 'Brian'],
                        		 'age_category': ['2', '3']})
 m_side_info = turicreate.factorization_recommender.create(data, target='rating',
            		      		                            user_data=user_info)
@@ -122,7 +122,7 @@ as the column in the training data that's designated as the 'user_id'.
 [turicreate.recommender.create](https://apple.github.io/turicreate/docs/api/generated/turicreate.recommender.create.html#turicreate.recommender.create).)
 
 ```python
-new_user_info = turicreate.SFrame({'user_id' : ['Charlie'],
+new_user_info = turicreate.XFrame({'user_id' : ['Charlie'],
 								 'age_category' : ['2']})
 recommendations = m_side_info.recommend(['Charlie'],
 										new_user_data = new_user_info)
@@ -136,7 +136,7 @@ Given Charlie's age category, the model can incorporate what it knows about the 
 
 ```python
 m_item_sim = turicreate.item_similarity_recommender.create(data)
-new_obs_data = turicreate.SFrame({'user_id' : ['Charlie', 'Charlie'],
+new_obs_data = turicreate.XFrame({'user_id' : ['Charlie', 'Charlie'],
 	                        	'item_id' : ['Item1', 'Item5']})
 recommendations = m_item_sim.recommend(['Charlie'], new_observation_data = new_obs_data)
 ```
@@ -156,7 +156,7 @@ So now you want other recommendations.  This can be done by explicitly
 excluding those undesirable items via the `exclude` keyword argument.
 
 ```python
-exclude_pairs = turicreate.SFrame({'user_id' : ['Ann'],
+exclude_pairs = turicreate.XFrame({'user_id' : ['Ann'],
                            		 'item_id' : ['Item3']})
 
 recommendations = m.recommend(['Ann'], k = 5, exclude = exclude_pairs)
@@ -195,7 +195,7 @@ function:
 similar_items = model.get_similar_items(my_list_of_items, k=20)
 ```
 
-The above will return an SFrame containing the 20 nearest items for
+The above will return an XFrame containing the 20 nearest items for
 every item in `my_list_of_items`. The definition of "nearest" depends on
 the type of similarity used by the model. For instance, "jaccard"
 similarity measures the two item's overlapping users. The 'score' column

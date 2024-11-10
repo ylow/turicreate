@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_OPTIMIZATION_SOURCE_TRANSFORMS_H_
-#define TURI_SFRAME_QUERY_OPTIMIZATION_SOURCE_TRANSFORMS_H_
+#ifndef TURI_XFRAME_QUERY_OPTIMIZATION_SOURCE_TRANSFORMS_H_
+#define TURI_XFRAME_QUERY_OPTIMIZATION_SOURCE_TRANSFORMS_H_
 
 #include <core/storage/query_engine/planning/optimizations/optimization_transforms.hpp>
 #include <core/storage/query_engine/planning/optimization_engine.hpp>
@@ -19,17 +19,17 @@ namespace turi {
 namespace query_eval {
 
 /**  This optimization scans the entire graph for duplicate sarrays,
- *   including inside of sframes, and then merges them, using projects
+ *   including inside of xframes, and then merges them, using projects
  *   to keep things consistent.
  *
  *   THis works by:
  *
  *   1.  If it's the tip node of the tree to be optimized, it goes
- *   through and makes a list of all source nodes. sframe sources are
+ *   through and makes a list of all source nodes. xframe sources are
  *   assumed to be a collection of sarray sources.
  *
- *   2. Identical sarrays are merged.  If they are part of sframes,
- *   the two sframes are merged together, with a project transform
+ *   2. Identical sarrays are merged.  If they are part of xframes,
+ *   the two xframes are merged together, with a project transform
  *   following them for each of the outputs.
  *
  *   3. Other identical source nodes (e.g. range nodes) are merged.
@@ -92,10 +92,10 @@ class opt_merge_all_same_sarrays : public opt_transform {
     for(const cnode_info_ptr& sn : source_nodes) {
 
       switch(sn->type) {
-        case planner_node_type::SFRAME_SOURCE_NODE: {
+        case planner_node_type::XFRAME_SOURCE_NODE: {
           size_t begin_index = sn->p("begin_index");
           size_t end_index = sn->p("end_index");
-          sframe sf = sn->any_p<sframe>("sframe");
+          xframe sf = sn->any_p<xframe>("xframe");
 
           for(size_t i = 0; i < sf.num_columns(); ++i) {
             source_id id;
@@ -168,18 +168,18 @@ class opt_merge_all_same_sarrays : public opt_transform {
       // depending on the different cases.
 
       size_t sarray_count = 0;
-      size_t sframe_count = 0;
+      size_t xframe_count = 0;
       size_t range_node_count = 0;
 
       for(const source_out& out : out_v) {
         switch(out.src_node->type) {
 
-          // Count sframe sources with one column as sarray sources.
-          case planner_node_type::SFRAME_SOURCE_NODE: {
+          // Count xframe sources with one column as sarray sources.
+          case planner_node_type::XFRAME_SOURCE_NODE: {
             if(out.src_node->num_columns() == 1)
               ++sarray_count;
             else
-              ++sframe_count;
+              ++xframe_count;
             break;
           }
 
@@ -198,14 +198,14 @@ class opt_merge_all_same_sarrays : public opt_transform {
       if(range_node_count > 0) {
         // All range nodes.
         DASSERT_EQ(sarray_count, 0);
-        DASSERT_EQ(sframe_count, 0);
+        DASSERT_EQ(xframe_count, 0);
 
         for(size_t i = 1; i < out_v.size(); ++i) {
           opt_manager->replace_node(out_v[i].src_node, out_v[0].src_node->pnode);
           return true;
         }
 
-      } else if(sframe_count == 0) {
+      } else if(xframe_count == 0) {
         // All sarrays.
         DASSERT_EQ(sarray_count, out_v.size());
 
@@ -214,35 +214,35 @@ class opt_merge_all_same_sarrays : public opt_transform {
         }
         change_occured = true;
 
-      } else if(sframe_count == 1) {
-        // One sframe, the rest sarrays.  Another easy case.
+      } else if(xframe_count == 1) {
+        // One xframe, the rest sarrays.  Another easy case.
 
-        size_t sframe_index = 0;
+        size_t xframe_index = 0;
 
         for(size_t i = 1; i < out_v.size(); ++i) {
-          if(out_v[i].src_node->type == planner_node_type::SFRAME_SOURCE_NODE
+          if(out_v[i].src_node->type == planner_node_type::XFRAME_SOURCE_NODE
              && out_v[i].src_node->num_columns() > 1) {
-            sframe_index = i;
+            xframe_index = i;
             break;
           }
         }
 
         pnode_ptr out_project = op_project::make_planner_node(
-            out_v[sframe_index].src_node->pnode, {out_v[sframe_index].column_index});
+            out_v[xframe_index].src_node->pnode, {out_v[xframe_index].column_index});
 
         for(size_t i = 0; i < out_v.size(); ++i) {
-          if(i != sframe_index)
+          if(i != xframe_index)
             opt_manager->replace_node(out_v[i].src_node, out_project);
         }
 
         change_occured = true;
 
       } else {
-        // The hardest.  Merge all of these into one sframe, slap
+        // The hardest.  Merge all of these into one xframe, slap
         // projections on it afterwords, and then exit as we've
         // possibly invalidated the rest of the lookup tables since
         // they will possibly refer to the other components of the
-        // replaced sframe.
+        // replaced xframe.
 
         std::map<void*, size_t> idx_map;
 
@@ -262,9 +262,9 @@ class opt_merge_all_same_sarrays : public opt_transform {
         };
 
         for(size_t i = 0; i < out_v.size(); ++i) {
-          if(out_v[i].src_node->type == planner_node_type::SFRAME_SOURCE_NODE) {
+          if(out_v[i].src_node->type == planner_node_type::XFRAME_SOURCE_NODE) {
 
-            sframe sf = out_v[i].src_node->any_p<sframe>("sframe");
+            xframe sf = out_v[i].src_node->any_p<xframe>("xframe");
             projections[i].resize(sf.num_columns());
 
             for(size_t j = 0; j < sf.num_columns(); ++j) {
@@ -281,8 +281,8 @@ class opt_merge_all_same_sarrays : public opt_transform {
           }
         }
 
-        // Now, make a new sframe
-        pnode_ptr sf_src = op_sframe_source::make_planner_node(sframe(new_columns), id.begin_index, id.end_index);
+        // Now, make a new xframe
+        pnode_ptr sf_src = op_xframe_source::make_planner_node(xframe(new_columns), id.begin_index, id.end_index);
 
         for(size_t i = 0; i < out_v.size(); ++i) {
           pnode_ptr rep_node = op_project::make_planner_node(sf_src, projections[i]);

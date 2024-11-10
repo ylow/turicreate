@@ -43,7 +43,7 @@ model for you based on statistics collected from the data set.
 import turicreate as tc
 
 # Load the data
-data =  tc.SFrame('ratings-data.csv')
+data =  tc.XFrame('ratings-data.csv')
 
 # Make a train-test split
 train_data, test_data = data.random_split(0.8)

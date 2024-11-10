@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_MANAGER_CONSTANT_HPP
-#define TURI_SFRAME_QUERY_MANAGER_CONSTANT_HPP
+#ifndef TURI_XFRAME_QUERY_MANAGER_CONSTANT_HPP
+#define TURI_XFRAME_QUERY_MANAGER_CONSTANT_HPP
 #include <core/logging/assertions.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/storage/query_engine/operators/operator.hpp>
@@ -15,7 +15,7 @@ namespace turi {
 namespace query_eval {
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup operators Logical Operators
  * \{
  */
@@ -29,7 +29,7 @@ struct operator_impl<planner_node_type::CONSTANT_NODE> : public query_operator {
  public:
 
   DECL_CORO_STATE(execute);
-  std::shared_ptr<sframe_rows>  retbuf;
+  std::shared_ptr<xframe_rows>  retbuf;
   size_t i;
   size_t len;
 
@@ -142,4 +142,4 @@ typedef operator_impl<planner_node_type::CONSTANT_NODE> op_constant;
 } // query_eval
 } // turicreate
 
-#endif // TURI_SFRAME_QUERY_MANAGER_CONSTANT_HPP
+#endif // TURI_XFRAME_QUERY_MANAGER_CONSTANT_HPP

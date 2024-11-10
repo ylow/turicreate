@@ -3,12 +3,12 @@
 Suppose our text data is currently arranged into a single file, where
 each line of that file contains all of the text in a single document.
 Here we can use
-[SFrame.read_csv](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.read_csv.html)
-to parse the text data into a one-column SFrame.
+[XFrame.read_csv](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.read_csv.html)
+to parse the text data into a one-column XFrame.
 
 ```python
 import turicreate
-sf = turicreate.SFrame('wikipedia_data')
+sf = turicreate.XFrame('wikipedia_data')
 ```
 ```no-highlight
 Columns:
@@ -33,12 +33,12 @@ Data:
 |              ...               |
 +--------------------------------+
 [72269 rows x 1 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 ```
 
 ##### Text cleaning
 
-First, we must convert our SFrame of `str` into an SFrame of type `dict` using [turicreate.text_analytics.count_words](https://apple.github.io/turicreate/docs/api/generated/turicreate.text_analytics.count_words). This operations converts the array of strings into an array of dictionaries. The keys are each word in the document and the values are the number of times the word occurs.
+First, we must convert our XFrame of `str` into an XFrame of type `dict` using [turicreate.text_analytics.count_words](https://apple.github.io/turicreate/docs/api/generated/turicreate.text_analytics.count_words). This operations converts the array of strings into an array of dictionaries. The keys are each word in the document and the values are the number of times the word occurs.
 
 We can easily remove all words do not occur at least twice in each
 document using

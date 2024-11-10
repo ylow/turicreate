@@ -5,9 +5,9 @@
  */
 #ifndef TURI_SARRAY_SAVING_HPP
 #define TURI_SARRAY_SAVING_HPP
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_manager.hpp>
-#include <core/storage/sframe_data/sframe_saving_impl.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_manager.hpp>
+#include <core/storage/xframe_data/xframe_saving_impl.hpp>
 namespace turi {
 
 template <typename T>
@@ -33,7 +33,7 @@ void sarray_save_blockwise(const sarray<T>& cur_column,
   writer.open_segment(0, segment_file);
 
 
-  sframe_saving_impl::column_blocks col;
+  xframe_saving_impl::column_blocks col;
   // this is going to be a max heap with each entry referencing a column.
   try {
     col.column_index = cur_column.get_index_info();

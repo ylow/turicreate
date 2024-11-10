@@ -7,17 +7,17 @@
 #include <vector>
 #include <cstdio>
 #include <boost/algorithm/string.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/join_impl.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/join_impl.hpp>
 
 namespace turi {
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup Join Join
  *
- * Joins two SFrames.
+ * Joins two XFrames.
  *
  * \param sf_left Left side of the join
  * \param sfr_right Right side of the join
@@ -25,11 +25,11 @@ namespace turi {
  * \param join_columns A map of columns to equijoin on.
  * \param max_buffer_size The maximum number of cells to buffer in memory.
  */
-sframe join(sframe& sf_left,
-            sframe& sf_right,
+xframe join(xframe& sf_left,
+            xframe& sf_right,
             std::string join_type,
             const std::map<std::string, std::string>& join_columns,
             const std::map<std::string, std::string>& alternative_names,
-            size_t max_buffer_size = SFRAME_JOIN_BUFFER_NUM_CELLS);
+            size_t max_buffer_size = XFRAME_JOIN_BUFFER_NUM_CELLS);
 
 } // end of turicreate

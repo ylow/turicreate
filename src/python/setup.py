@@ -13,7 +13,7 @@ from setuptools.dist import Distribution
 from setuptools.command.install import install
 
 PACKAGE_NAME = "turicreate"
-VERSION = "6.4.2"  # {{VERSION_STRING}}
+VERSION = "1.0.0"  # {{VERSION_STRING}}
 # pkgs not needed for minimal pkg
 NON_MINIMAL_LIST = [
     "pandas",

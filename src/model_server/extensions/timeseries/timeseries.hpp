@@ -14,10 +14,10 @@
 #include <math.h>
 #include <core/logging/logger.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/group_aggregate_value.hpp>
+#include <core/storage/xframe_data/group_aggregate_value.hpp>
 #include <model_server/lib/toolkit_class_macros.hpp>
-#include <core/data/sframe/gl_sarray.hpp>
-#include <core/data/sframe/gl_sframe.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
 #include <model_server/lib/extensions/model_base.hpp>
 #include <model_server/extensions/timeseries/grouped_timeseries.hpp>
 #include <model_server/extensions/timeseries/interpolate_value.hpp>
@@ -36,7 +36,7 @@ class grouped_timeseries;
 
 /***
  * gl_timeseries is the fundamental data-structure to hold multi-variate
- * timeseries data.  It is backed by a single gl_sframe and some meta-data.
+ * timeseries data.  It is backed by a single gl_xframe and some meta-data.
  *
  ***/
 class EXPORT gl_timeseries : public model_base {
@@ -45,7 +45,7 @@ class EXPORT gl_timeseries : public model_base {
 
   protected:
       static constexpr size_t TIMESERIES_VERSION = 0;
-      gl_sframe m_sframe;                 // The backend gl_sframe
+      gl_xframe m_xframe;                 // The backend gl_xframe
       bool m_initialized = false;
 
       void _check_if_initialized() const {
@@ -57,11 +57,11 @@ class EXPORT gl_timeseries : public model_base {
       std::vector<std::string> m_value_col_names;
       std::string m_index_col_name;
 
-      gl_sframe get_sframe() const {
-        return m_sframe;
+      gl_xframe get_xframe() const {
+        return m_xframe;
       }
-      void set_sframe(gl_sframe sf) {
-        m_sframe = sf;
+      void set_xframe(gl_xframe sf) {
+        m_xframe = sf;
       }
 
       std::string get_index_col_name() const {
@@ -69,7 +69,7 @@ class EXPORT gl_timeseries : public model_base {
       }
 
       flex_type_enum get_index_col_type() const {
-        return m_sframe[m_index_col_name].dtype();
+        return m_xframe[m_index_col_name].dtype();
       }
 
       void set_index_col_name(std::string index_col) {
@@ -101,7 +101,7 @@ class EXPORT gl_timeseries : public model_base {
        **/
       void load_version(iarchive& iarc, size_t version);
 
-      void init(const gl_sframe & _input_sf,const std::string & _name, bool
+      void init(const gl_xframe & _input_sf,const std::string & _name, bool
           is_sorted=false,std::vector<int64_t>  ranges={-1,-1});
 
       /**
@@ -204,8 +204,8 @@ class EXPORT gl_timeseries : public model_base {
       REGISTER_CLASS_MEMBER_FUNCTION(gl_timeseries::resample_wrapper, "period",
           "downsample_params", "upsample_params", "left", "close")
 
-      REGISTER_GETTER("sframe", gl_timeseries::get_sframe)
-      REGISTER_SETTER("sframe", gl_timeseries::set_sframe)
+      REGISTER_GETTER("xframe", gl_timeseries::get_xframe)
+      REGISTER_SETTER("xframe", gl_timeseries::set_xframe)
       REGISTER_GETTER("value_col_names", gl_timeseries::get_value_col_names)
       REGISTER_SETTER("value_col_names", gl_timeseries::set_value_col_names)
       REGISTER_GETTER("index_col_name", gl_timeseries::get_index_col_name)

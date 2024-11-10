@@ -6,8 +6,8 @@
 #ifndef __TC_ITEM_FREQUENCY
 #define __TC_ITEM_FREQUENCY
 
-#include <core/data/sframe/gl_sarray.hpp>
-#include <core/storage/sframe_data/groupby_aggregate_operators.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_operators.hpp>
 #include <visualization/server/item_frequency.hpp>
 #include <visualization/server/plot.hpp>
 #include <visualization/server/vega_spec.hpp>
@@ -17,12 +17,12 @@
 namespace turi {
 namespace visualization {
 
-class item_frequency_result: public sframe_transformation_output,
+class item_frequency_result: public xframe_transformation_output,
                              public ::turi::groupby_operators::frequency_count {
   public:
     virtual void add_element_simple(const flexible_type& flex) override;
     virtual void combine(const group_aggregate_value& other) override;
-    virtual std::string vega_column_data(bool sframe) const override;
+    virtual std::string vega_column_data(bool xframe) const override;
     virtual std::string vega_summary_data() const override;
 
     // also store and compute basic summary stats

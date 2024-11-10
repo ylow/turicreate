@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include <core/storage/sframe_data/sframe_iterators.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
+#include <core/storage/xframe_data/xframe_iterators.hpp>
+#include <core/storage/xframe_data/xframe_config.hpp>
 
 namespace turi {
 
@@ -13,7 +13,7 @@ namespace turi {
  *  only once and change the row_start and row_end multiple times.
  *
  */
-void parallel_sframe_iterator_initializer::set_global_block(
+void parallel_xframe_iterator_initializer::set_global_block(
                   size_t _row_start,
                   size_t _row_end){
 
@@ -31,11 +31,11 @@ void parallel_sframe_iterator_initializer::set_global_block(
 
 
 /**
- * Initialize the Parallel SFrame iterator.
- * \note This operation is more expensive than the SFrame iterator creation.
+ * Initialize the Parallel XFrame iterator.
+ * \note This operation is more expensive than the XFrame iterator creation.
  */
-parallel_sframe_iterator_initializer::parallel_sframe_iterator_initializer(
-    const std::vector<sframe>& data_sources,
+parallel_xframe_iterator_initializer::parallel_xframe_iterator_initializer(
+    const std::vector<xframe>& data_sources,
     const size_t& _row_start,
     const size_t& _row_end) {
 
@@ -49,7 +49,7 @@ parallel_sframe_iterator_initializer::parallel_sframe_iterator_initializer(
   sf_size = data_sources.front().size();
 
   // Get each of the columns we want.
-  for(const sframe& sf : data_sources) {
+  for(const xframe& sf : data_sources) {
     column_offsets.push_back(current_offset);
     current_offset += sf.num_columns();
 
@@ -65,10 +65,10 @@ parallel_sframe_iterator_initializer::parallel_sframe_iterator_initializer(
 }
 
 /**
- * Create an SFrame parallel iterator.
+ * Create an XFrame parallel iterator.
  */
-parallel_sframe_iterator::parallel_sframe_iterator(
-    const parallel_sframe_iterator_initializer& it_init, size_t thread_idx, size_t num_threads)
+parallel_xframe_iterator::parallel_xframe_iterator(
+    const parallel_xframe_iterator_initializer& it_init, size_t thread_idx, size_t num_threads)
     : sources(it_init.sources)
     , column_offsets(it_init.column_offsets)
 {
@@ -82,7 +82,7 @@ parallel_sframe_iterator::parallel_sframe_iterator(
   end_idx   = it_init.row_start +
         ((thread_idx + 1) * it_init.global_block_size) / num_threads;
 
-  max_block_size = std::min(sframe_config::SFRAME_READ_BATCH_SIZE, end_idx - start_idx);
+  max_block_size = std::min(xframe_config::XFRAME_READ_BATCH_SIZE, end_idx - start_idx);
   for(auto& b : buffers)
     b.reserve(max_block_size);
   reset();
@@ -91,7 +91,7 @@ parallel_sframe_iterator::parallel_sframe_iterator(
 /**
  * Load the current block
  */
-void parallel_sframe_iterator::load_current_block() {
+void parallel_xframe_iterator::load_current_block() {
   DASSERT_EQ(current_idx, block_end_idx);
 
   block_start_idx = current_idx;

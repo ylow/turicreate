@@ -14,7 +14,7 @@ import uuid
 import sys as _sys
 
 from .. import util as glutil
-from .. import SFrame, SArray
+from .. import XFrame, SArray
 from ..util import get_turicreate_object_type
 from ..config import get_runtime_config, set_runtime_config
 from . import util
@@ -27,26 +27,26 @@ pytestmark = [pytest.mark.minimal]
 class UtilTests(unittest.TestCase):
     def test_archive_utils(self):
         # Arrange
-        sf = SFrame([1, 2, 3, 4, 5])
+        sf = XFrame([1, 2, 3, 4, 5])
         dir = tempfile.mkdtemp(prefix="archive-tests")
         try:
             sf.save(dir)
 
             # Act & Assert
             self.assertTrue(glutil.is_directory_archive(dir))
-            self.assertEqual(glutil.get_archive_type(dir), "sframe")
+            self.assertEqual(glutil.get_archive_type(dir), "xframe")
             self.assertFalse(glutil.is_directory_archive("/tmp"))
             self.assertRaises(TypeError, lambda: glutil.get_archive_type("/tmp"))
         finally:
             shutil.rmtree(dir)
 
     def test_crossproduct(self):
-        s = util.SFrameComparer()
+        s = util.XFrameComparer()
 
         d = {"opt1": [1, 2, 3], "opt2": ["a", "b"]}
         actual = glutil.crossproduct(d)
         actual = actual.sort("opt1")
-        expected = SFrame(
+        expected = XFrame(
             {"opt1": [1, 1, 2, 2, 3, 3], "opt2": ["a", "b", "a", "b", "a", "b"]}
         )
         # Check columns individually since there is no
@@ -61,119 +61,119 @@ class UtilTests(unittest.TestCase):
             self.assertEqual(t, expected)
 
     def test_get_turicreate_object_type(self):
-        sf = SFrame({"a": [1, 2]})
-        self._validate_gl_object_type(sf, "sframe")
+        sf = XFrame({"a": [1, 2]})
+        self._validate_gl_object_type(sf, "xframe")
 
         sa = SArray([1, 2])
         self._validate_gl_object_type(sa, "sarray")
 
-        d = SFrame(
+        d = XFrame(
             {
                 "__src_id": [175343, 163607, 44041, 101370, 64892],
                 "__dst_id": [1011, 7928, 7718, 12966, 11080],
             }
         )
 
-    def test_sframe_equals(self):
-        # Empty SFrames should be equal
-        sf_a = SFrame()
-        sf_b = SFrame()
+    def test_xframe_equals(self):
+        # Empty XFrames should be equal
+        sf_a = XFrame()
+        sf_b = XFrame()
 
-        glutil._assert_sframe_equal(sf_a, sf_b)
+        glutil._assert_xframe_equal(sf_a, sf_b)
 
         the_data = [i for i in range(0, 10)]
-        sf = SFrame()
+        sf = XFrame()
         sf["ints"] = SArray(data=the_data, dtype=int)
         sf["floats"] = SArray(data=the_data, dtype=float)
         sf["floats"] = sf["floats"] * 0.5
         sf["strings"] = SArray(data=the_data, dtype=str)
         sf["strings"] = sf["strings"].apply(lambda x: x + x + x)
 
-        # Make sure these aren't pointing to the same SFrame
+        # Make sure these aren't pointing to the same XFrame
         sf_a = sf.filter_by([43], "ints", exclude=True)
         sf_b = sf.filter_by([43], "ints", exclude=True)
 
-        glutil._assert_sframe_equal(sf_a, sf_b)
+        glutil._assert_xframe_equal(sf_a, sf_b)
 
         # Difference in number of columns
         sf_a["extra"] = SArray(data=the_data)
         with self.assertRaises(AssertionError):
-            glutil._assert_sframe_equal(sf_a, sf_b)
+            glutil._assert_xframe_equal(sf_a, sf_b)
 
         del sf_a["extra"]
-        glutil._assert_sframe_equal(sf_a, sf_b)
+        glutil._assert_xframe_equal(sf_a, sf_b)
 
         # Difference in number of rows
         with self.assertRaises(AssertionError):
-            glutil._assert_sframe_equal(sf_a, sf_b[0:5])
+            glutil._assert_xframe_equal(sf_a, sf_b[0:5])
 
         # Difference in types
         sf_a["diff_type"] = sf_a["ints"].astype(str)
         sf_b["diff_type"] = sf_b["ints"]
         with self.assertRaises(AssertionError):
-            glutil._assert_sframe_equal(sf_a, sf_b)
+            glutil._assert_xframe_equal(sf_a, sf_b)
 
         del sf_a["diff_type"]
         del sf_b["diff_type"]
-        glutil._assert_sframe_equal(sf_a, sf_b)
+        glutil._assert_xframe_equal(sf_a, sf_b)
 
         # Difference in column name
         sf_a.rename({"strings": "string"}, inplace=True)
         with self.assertRaises(AssertionError):
-            glutil._assert_sframe_equal(sf_a, sf_b)
+            glutil._assert_xframe_equal(sf_a, sf_b)
 
-        glutil._assert_sframe_equal(sf_a, sf_b, check_column_names=False)
+        glutil._assert_xframe_equal(sf_a, sf_b, check_column_names=False)
 
         sf_a.rename({"string": "strings"}, inplace=True)
-        glutil._assert_sframe_equal(sf_a, sf_b)
+        glutil._assert_xframe_equal(sf_a, sf_b)
 
         sf_a.rename({"ints": "floats1"}, inplace=True)
         sf_a.rename({"floats": "ints"}, inplace=True)
         sf_a.rename({"floats1": "floats"}, inplace=True)
-        glutil._assert_sframe_equal(sf_a, sf_b, check_column_names=False)
+        glutil._assert_xframe_equal(sf_a, sf_b, check_column_names=False)
 
         sf_a = sf.filter_by([43], "ints", exclude=True)
 
         # Difference in column order
         sf_a.swap_columns("strings", "ints", inplace=True)
         with self.assertRaises(AssertionError):
-            glutil._assert_sframe_equal(sf_a, sf_b)
+            glutil._assert_xframe_equal(sf_a, sf_b)
 
-        glutil._assert_sframe_equal(sf_a, sf_b, check_column_order=False)
+        glutil._assert_xframe_equal(sf_a, sf_b, check_column_order=False)
 
         sf_a.swap_columns("strings", "ints", inplace=True)
-        glutil._assert_sframe_equal(sf_a, sf_b)
+        glutil._assert_xframe_equal(sf_a, sf_b)
 
         # Difference in row order
         sf_a = sf_a.append(sf[0:5])
         sf_b = sf[0:5].append(sf_b)
         with self.assertRaises(AssertionError):
-            glutil._assert_sframe_equal(sf_a, sf_b)
+            glutil._assert_xframe_equal(sf_a, sf_b)
 
-        glutil._assert_sframe_equal(sf_a, sf_b, check_row_order=False)
+        glutil._assert_xframe_equal(sf_a, sf_b, check_row_order=False)
 
         # Difference in column order AND row order
         sf_a.swap_columns("floats", "strings", inplace=True)
         with self.assertRaises(AssertionError):
-            glutil._assert_sframe_equal(sf_a, sf_b)
+            glutil._assert_xframe_equal(sf_a, sf_b)
 
-        glutil._assert_sframe_equal(
+        glutil._assert_xframe_equal(
             sf_a, sf_b, check_column_order=False, check_row_order=False
         )
 
         # Column order, row order, names
         sf_a.rename({"floats": "foo", "strings": "bar", "ints": "baz"}, inplace=True)
         with self.assertRaises(AssertionError):
-            glutil._assert_sframe_equal(sf_a, sf_b)
+            glutil._assert_xframe_equal(sf_a, sf_b)
 
         # Illegal stuff
         with self.assertRaises(ValueError):
-            glutil._assert_sframe_equal(
+            glutil._assert_xframe_equal(
                 sf_a, sf_b, check_column_names=False, check_column_order=False
             )
 
         with self.assertRaises(ValueError):
-            glutil._assert_sframe_equal(
+            glutil._assert_xframe_equal(
                 sf_a,
                 sf_b,
                 check_column_names=False,
@@ -182,7 +182,7 @@ class UtilTests(unittest.TestCase):
             )
 
         with self.assertRaises(TypeError):
-            glutil._assert_sframe_equal(sf_b["floats"], sf_a["foo"])
+            glutil._assert_xframe_equal(sf_b["floats"], sf_a["foo"])
 
     def test_get_temp_file_location(self):
         from ..util import _get_temp_file_location

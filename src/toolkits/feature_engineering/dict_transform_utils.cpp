@@ -5,7 +5,7 @@
  */
 #include <toolkits/feature_engineering/dict_transform_utils.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/data/sframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
 
 namespace turi {
 

@@ -9,7 +9,7 @@
 namespace turi {
 namespace timeseries {
 
-void gl_grouped_timeseries::group(const gl_sframe &sf,
+void gl_grouped_timeseries::group(const gl_xframe &sf,
                                   std::string index_col_name,
                                   const std::vector<std::string> column_names) {
   m_time_index_name = index_col_name;
@@ -54,17 +54,17 @@ void gl_grouped_timeseries::group(const gl_sframe &sf,
   sort_columns[column_names.size()] = m_time_index_name;
   auto grouped_sf = sf.sort(sort_columns);
 
-  m_grouped_sframe = turi::grouped_sframe();
-  m_grouped_sframe.group(grouped_sf, column_names, true);
+  m_grouped_xframe = turi::grouped_xframe();
+  m_grouped_xframe.group(grouped_sf, column_names, true);
 }
 
-gl_sframe gl_grouped_timeseries::get_group(const std::vector<flexible_type> key) {
-  return m_grouped_sframe.get_group(key);
+gl_xframe gl_grouped_timeseries::get_group(const std::vector<flexible_type> key) {
+  return m_grouped_xframe.get_group(key);
 }
 
-std::vector<std::pair<flexible_type,gl_sframe>>
+std::vector<std::pair<flexible_type,gl_xframe>>
 gl_grouped_timeseries::iterator_get_next(size_t num) {
-  return m_grouped_sframe.iterator_get_next(num);
+  return m_grouped_xframe.iterator_get_next(num);
 }
 
 } // namespace timeseries

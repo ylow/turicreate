@@ -69,7 +69,7 @@ struct archive_index_information {
  *    which points to an "objects.bin" file in the directory.
  *  - The ability to obtain prefixes (for instance [directory]/0000) which
  *    consumers can then use for other file storage purposes. (for instance,
- *    an sframe could create 0000.sidx, 0000.0001, 0000.0002, etc),
+ *    an xframe could create 0000.sidx, 0000.0001, 0000.0002, etc),
  *
  * The directory archive provide management for the prefixes and the objects
  * as well as directory archive creation / deletion.

@@ -5,7 +5,7 @@
 #include <core/storage/query_engine/planning/planner_node.hpp>
 #include <core/storage/query_engine/operators/all_operators.hpp>
 #include <core/storage/query_engine/util/aggregates.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
 
 using namespace turi;
 using namespace turi::query_eval;
@@ -28,7 +28,7 @@ struct basic_end_to_end {
     auto add_one = 
         op_transform::make_planner_node(
             root, 
-            [](const sframe_rows::row& a)->flexible_type {
+            [](const xframe_rows::row& a)->flexible_type {
               return a[0] + 1;
             },
             flex_type_enum::INTEGER);
@@ -39,8 +39,8 @@ struct basic_end_to_end {
         op_binary_transform::make_planner_node(
             root, 
             add_one,
-            [](const sframe_rows::row& a, 
-               const sframe_rows::row& b)->flexible_type {
+            [](const xframe_rows::row& a, 
+               const xframe_rows::row& b)->flexible_type {
               return a[0] + b[0];
             },
             flex_type_enum::INTEGER);
@@ -71,7 +71,7 @@ struct basic_end_to_end {
     auto even_selector = 
         op_transform::make_planner_node(
             root, 
-            [](const sframe_rows::row& a)->flexible_type {
+            [](const xframe_rows::row& a)->flexible_type {
               return (flex_int)(a[0]) % 2 == 0;
             },
             flex_type_enum::INTEGER);
@@ -105,7 +105,7 @@ struct basic_end_to_end {
     auto even_selector = 
         op_transform::make_planner_node(
             root, 
-            [](const sframe_rows::row& a)->flexible_type {
+            [](const xframe_rows::row& a)->flexible_type {
               return (flex_int)(a[0]) % 2 == 0;
             },
             flex_type_enum::INTEGER);
@@ -114,7 +114,7 @@ struct basic_end_to_end {
     auto add_one = 
         op_transform::make_planner_node(
             root, 
-            [](const sframe_rows::row& a)->flexible_type {
+            [](const xframe_rows::row& a)->flexible_type {
               return a[0] + 1;
             },
             flex_type_enum::INTEGER);
@@ -193,7 +193,7 @@ struct basic_end_to_end {
       auto add_one =
         op_transform::make_planner_node(
             root,
-            [](const sframe_rows::row& a)->flexible_type {
+            [](const xframe_rows::row& a)->flexible_type {
               return a[0] + 1;
             },
             flex_type_enum::INTEGER);
@@ -219,7 +219,7 @@ struct basic_end_to_end {
       auto even_selector =
           op_transform::make_planner_node(
               root,
-              [](const sframe_rows::row& a)->flexible_type {
+              [](const xframe_rows::row& a)->flexible_type {
                 return (flex_int)(a[0]) % 2 == 0;
               },
               flex_type_enum::INTEGER);
@@ -241,7 +241,7 @@ struct basic_end_to_end {
       auto add_one =
           op_transform::make_planner_node(
               root,
-              [](const sframe_rows::row& a)->flexible_type {
+              [](const xframe_rows::row& a)->flexible_type {
                 return a[0] + 1;
               },
               flex_type_enum::INTEGER);

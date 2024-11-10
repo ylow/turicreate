@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_OPTIMIZATION_PROJECTION_TRANSFORMS_H_
-#define TURI_SFRAME_QUERY_OPTIMIZATION_PROJECTION_TRANSFORMS_H_
+#ifndef TURI_XFRAME_QUERY_OPTIMIZATION_PROJECTION_TRANSFORMS_H_
+#define TURI_XFRAME_QUERY_OPTIMIZATION_PROJECTION_TRANSFORMS_H_
 
 #include <core/storage/query_engine/planning/optimizations/optimization_transforms.hpp>
 #include <core/storage/query_engine/planning/optimization_engine.hpp>
@@ -32,12 +32,12 @@ class opt_project_on_source : public opt_project_transform {
 
   bool apply_transform(optimization_engine *opt_manager, cnode_info_ptr n) {
 
-    if(n->inputs[0]->type != planner_node_type::SFRAME_SOURCE_NODE)
+    if(n->inputs[0]->type != planner_node_type::XFRAME_SOURCE_NODE)
       return false;
 
     auto flex_indices = n->p("indices").get<flex_list>();
 
-    sframe old_sf = n->inputs[0]->any_p<sframe>("sframe");
+    xframe old_sf = n->inputs[0]->any_p<xframe>("xframe");
 
     // Only apply this if the projection does not expand the number of
     // columns present.
@@ -57,7 +57,7 @@ class opt_project_on_source : public opt_project_transform {
     size_t begin_index = n->inputs[0]->p("begin_index");
     size_t end_index = n->inputs[0]->p("end_index");
 
-    pnode_ptr new_pnode = op_sframe_source::make_planner_node(sframe(columns), begin_index, end_index);
+    pnode_ptr new_pnode = op_xframe_source::make_planner_node(xframe(columns), begin_index, end_index);
 
     opt_manager->replace_node(n, new_pnode);
     return true;

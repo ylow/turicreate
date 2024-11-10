@@ -29,7 +29,7 @@ def dumps(obj):
 
     * The return value is always valid JSON according to RFC 7159.
     * The input can be any of the following types:
-        - SFrame
+        - XFrame
         - SArray
         - SGraph
         - single flexible_type (int, long, float, datetime.datetime)

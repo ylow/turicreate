@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_MANAGER_IDENTITY_NODE_HPP_
-#define TURI_SFRAME_QUERY_MANAGER_IDENTITY_NODE_HPP_
+#ifndef TURI_XFRAME_QUERY_MANAGER_IDENTITY_NODE_HPP_
+#define TURI_XFRAME_QUERY_MANAGER_IDENTITY_NODE_HPP_
 
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/random/random.hpp>

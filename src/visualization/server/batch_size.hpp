@@ -7,8 +7,8 @@
 #ifndef TURI_VISUALIZATION_BATCH_SIZE_HPP
 #define TURI_VISUALIZATION_BATCH_SIZE_HPP
 
-#include <core/data/sframe/gl_sarray.hpp>
-#include <core/data/sframe/gl_sframe.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
 
 namespace turi {
 namespace visualization {
@@ -18,7 +18,7 @@ namespace visualization {
   // But could potentially use the types of columns or even the data itself.
   size_t batch_size(const gl_sarray& x);
   size_t batch_size(const gl_sarray& x, const gl_sarray& y);
-  size_t batch_size(const gl_sframe& sf);
+  size_t batch_size(const gl_xframe& sf);
 
 }
 }

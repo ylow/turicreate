@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_UNITY_LIB_SFRAME_CSV_LINE_TOKENIZER_HPP
-#define TURI_UNITY_LIB_SFRAME_CSV_LINE_TOKENIZER_HPP
+#ifndef TURI_UNITY_LIB_XFRAME_CSV_LINE_TOKENIZER_HPP
+#define TURI_UNITY_LIB_XFRAME_CSV_LINE_TOKENIZER_HPP
 #include <vector>
 #include <string>
 #include <cstdlib>
@@ -19,7 +19,7 @@ namespace turi {
 class flexible_type_parser;
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup csv_utils CSV Parsing and Writing
  * \{
  */

@@ -7,7 +7,7 @@
 #include <core/parallel/atomic.hpp>
 #include <core/system/platform/timer//timer.hpp>
 #include <core/parallel/pthread_tools.hpp>
-#include <core/storage/sframe_data/unfair_lock.hpp>
+#include <core/storage/xframe_data/unfair_lock.hpp>
 namespace turi {
 namespace {
 // Some magic to ensure that keys are created at program startup =========>

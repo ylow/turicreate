@@ -12,8 +12,8 @@
 #include <unistd.h>
 
 #include <core/storage/fileio/temp_files.hpp>
-#include <core/storage/sframe_interface/unity_sarray.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_data/xframe_config.hpp>
 using namespace turi;
 
 struct unity_sarray_test {
@@ -70,11 +70,11 @@ struct unity_sarray_test {
     std::vector<flexible_type> vec;
     std::vector<flexible_type> vec_out;
 
-    for (size_t i = 0;i < turi::sframe_config::SFRAME_READ_BATCH_SIZE * 2.5; ++i) vec.emplace_back((double)i);
+    for (size_t i = 0;i < turi::xframe_config::XFRAME_READ_BATCH_SIZE * 2.5; ++i) vec.emplace_back((double)i);
     dbl.construct_from_vector(vec, flex_type_enum::FLOAT);
 
     // test larger size, internally we read a batch of 100, so test with bigger number
-    size_t items_to_read = turi::sframe_config::SFRAME_READ_BATCH_SIZE * 1.5;
+    size_t items_to_read = turi::xframe_config::XFRAME_READ_BATCH_SIZE * 1.5;
     vec_out = dbl._head(items_to_read);
     for(size_t i =0; i < items_to_read; i++) {
         TS_ASSERT_EQUALS(i, vec_out[i]);
@@ -660,9 +660,9 @@ struct unity_sarray_test {
 
     // test bigger size
     vec.clear();
-    for(size_t i = 0; i < turi::sframe_config::SFRAME_READ_BATCH_SIZE * 2.5; i++) { vec.emplace_back(i); }
+    for(size_t i = 0; i < turi::xframe_config::XFRAME_READ_BATCH_SIZE * 2.5; i++) { vec.emplace_back(i); }
     dbl->construct_from_vector(vec, flex_type_enum::INTEGER);
-    size_t items_to_read = turi::sframe_config::SFRAME_READ_BATCH_SIZE * 1.5;
+    size_t items_to_read = turi::xframe_config::XFRAME_READ_BATCH_SIZE * 1.5;
     tail_out = dbl->_tail(items_to_read);
     TS_ASSERT_EQUALS(items_to_read, tail_out.size());
     for(size_t i = 0; i < tail_out.size(); i++) {

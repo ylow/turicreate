@@ -6,8 +6,8 @@
 #include <model_server/lib/variant.hpp>
 #include <model_server/lib/variant_converter.hpp>
 #include <model_server/lib/variant_deep_serialize.hpp>
-#include <core/storage/sframe_interface/unity_sframe.hpp>
-#include <core/storage/sframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
 #include <core/storage/serialization/serialization_includes.hpp>
 namespace turi {
 /**
@@ -27,8 +27,8 @@ void variant_deep_save(const variant_type& v, oarchive& oarc) {
      break;
    case 3:
      {
-       std::shared_ptr<unity_sframe> s =
-           std::static_pointer_cast<unity_sframe>(variant_get_ref<std::shared_ptr<unity_sframe_base>>(v));
+       std::shared_ptr<unity_xframe> s =
+           std::static_pointer_cast<unity_xframe>(variant_get_ref<std::shared_ptr<unity_xframe_base>>(v));
        oarc << *s;
        break;
      }
@@ -89,9 +89,9 @@ void variant_deep_load(variant_type& v, iarchive& iarc) {
      break;
    case 3:
      {
-       std::shared_ptr<unity_sframe> s(new unity_sframe());
+       std::shared_ptr<unity_xframe> s(new unity_xframe());
        iarc >> *s;
-       variant_set_value<std::shared_ptr<unity_sframe>>(v, s);
+       variant_set_value<std::shared_ptr<unity_xframe>>(v, s);
        break;
      }
    case 4:

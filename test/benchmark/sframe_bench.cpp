@@ -4,8 +4,8 @@
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
 #include <iostream>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/parallel_csv_parser.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/parallel_csv_parser.hpp>
 #include <core/storage/fileio/temp_files.hpp>
 #include <timer/timer.hpp>
 using namespace turi;
@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
   csv_line_tokenizer tokenizer;
   tokenizer.delimiter = ',';
   tokenizer.init();
-  sframe frame;
+  xframe frame;
   frame.init_from_csvs(argv[1],
                        tokenizer,
                        true,   // header

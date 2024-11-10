@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include <core/storage/sframe_data/sframe_rows.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
+#include <core/storage/xframe_data/xframe_rows.hpp>
+#include <core/storage/xframe_data/xframe_config.hpp>
 #include <core/globals/globals.hpp>
 #include <core/storage/query_engine/execution/query_context.hpp>
 #include <core/storage/query_engine/execution/execution_node.hpp>
@@ -53,7 +53,7 @@ void execution_node::reset() {
 
 void execution_node::start_coroutines() {
   // create the output queue
-  m_output_queue.reset(new broadcast_queue<std::shared_ptr<sframe_rows>>(m_consumer_pos.size(), 2));
+  m_output_queue.reset(new broadcast_queue<std::shared_ptr<xframe_rows>>(m_consumer_pos.size(), 2));
 
   // restart the coroutine
   m_coroutines_started = true;
@@ -90,10 +90,10 @@ void execution_node::start_coroutines() {
    *  - If the operator does not support skipping AND is a non-linear operator
    *  we need to proess it normally.
    */
-  m_context = std::make_shared<query_context>(this, sframe_config::SFRAME_READ_BATCH_SIZE);
+  m_context = std::make_shared<query_context>(this, xframe_config::XFRAME_READ_BATCH_SIZE);
 }
 
-std::shared_ptr<sframe_rows> execution_node::get_next(size_t consumer_id, bool skip) {
+std::shared_ptr<xframe_rows> execution_node::get_next(size_t consumer_id, bool skip) {
   if (cppipc::must_cancel()) {
     throw("Canceled by user");
   }
@@ -132,7 +132,7 @@ std::shared_ptr<sframe_rows> execution_node::get_next(size_t consumer_id, bool s
 
   ASSERT_TRUE(!m_output_queue->empty(consumer_id));
 
-  std::shared_ptr<sframe_rows> ret;
+  std::shared_ptr<xframe_rows> ret;
   m_output_queue->pop(consumer_id, ret);
   ++m_consumer_pos[consumer_id];
 
@@ -140,11 +140,11 @@ std::shared_ptr<sframe_rows> execution_node::get_next(size_t consumer_id, bool s
   else return ret;
 }
 
-void execution_node::add_operator_output(const std::shared_ptr<sframe_rows>& rows) {
+void execution_node::add_operator_output(const std::shared_ptr<xframe_rows>& rows) {
   m_output_queue->push(rows);
 }
 
-std::shared_ptr<sframe_rows> execution_node::get_next_from_input(size_t input_id, bool skip) {
+std::shared_ptr<xframe_rows> execution_node::get_next_from_input(size_t input_id, bool skip) {
   ASSERT_LT(input_id, m_inputs.size());
   auto& input = m_inputs[input_id];
   return input.m_node->get_next(input.m_consumer_id, skip);

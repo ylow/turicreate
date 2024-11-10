@@ -16,9 +16,9 @@ macro(make_extension NAME)
     SHARED)
 endmacro()
 #----------------------------
-make_extension(additional_sframe_utilities SOURCES additional_sframe_utilities.cpp)
+make_extension(additional_xframe_utilities SOURCES additional_xframe_utilities.cpp)
 
-# make_extension(grouped_sframe SOURCES grouped_sframe.cpp)
+# make_extension(grouped_xframe SOURCES grouped_xframe.cpp)
 
 make_extension(internal_demo SOURCES internal_demo.cpp)
 make_extension(json SOURCES

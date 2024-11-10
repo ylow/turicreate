@@ -7,9 +7,9 @@
 #include <visualization/server/vega_spec.hpp>
 #include <visualization/server/plot.hpp>
 
-#include <core/data/sframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
 #include <core/logging/assertions.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
 
 // generated include files for vega spec JSON
 #include <visualization/server/vega_spec/boxes_and_whiskers.h>

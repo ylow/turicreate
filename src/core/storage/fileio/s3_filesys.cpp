@@ -146,7 +146,7 @@ void WriteStream::Upload(bool force_upload) {
   my_request.SetUploadId(upload_id_.c_str());
 
   Aws::StringStream ss;
-  // force write all '\0', which sframe uses for paddings
+  // force write all '\0', which xframe uses for paddings
   ss.write(buffer_.c_str(), buffer_.size());
 
   std::shared_ptr<Aws::StringStream> stream_ptr =

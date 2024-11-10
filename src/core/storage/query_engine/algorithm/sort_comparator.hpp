@@ -13,7 +13,7 @@ namespace turi {
 namespace query_eval {
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup Algorithms Algorithms
  * \{
  */

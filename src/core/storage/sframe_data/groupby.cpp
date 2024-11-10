@@ -3,18 +3,18 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include<core/storage/sframe_data/groupby.hpp>
-#include<core/storage/sframe_data/sarray_reader_buffer.hpp>
+#include<core/storage/xframe_data/groupby.hpp>
+#include<core/storage/xframe_data/sarray_reader_buffer.hpp>
 #include<unordered_set>
 #include<queue>
 #include <core/util/cityhash_tc.hpp>
 
 namespace turi {
 
-sframe group(sframe sframe_in, std::string key_column) {
-  sframe ret;
+xframe group(xframe xframe_in, std::string key_column) {
+  xframe ret;
   // Comparator that compares rows based on the key column value.
-  size_t key_column_id = sframe_in.column_index(key_column);
+  size_t key_column_id = xframe_in.column_index(key_column);
   auto comparator = [=](const std::vector<flexible_type>& a, const std::vector<flexible_type>& b) {
     auto atype = a[key_column_id].get_type();
     auto btype = b[key_column_id].get_type();
@@ -29,14 +29,14 @@ sframe group(sframe sframe_in, std::string key_column) {
     }
   };
 
-  size_t input_nsegments = sframe_in.num_segments();
+  size_t input_nsegments = xframe_in.num_segments();
 
   size_t output_nsegments = std::max(input_nsegments,
                               thread::cpu_count() * std::max<size_t>(1, log2(thread::cpu_count())));
   hash_bucket_container<std::vector<flexible_type>> hash_container(output_nsegments, comparator);
 
   // shuffle the rows based on the value of the key column.
-  auto input_reader = sframe_in.get_reader();
+  auto input_reader = xframe_in.get_reader();
   parallel_for (0, input_nsegments, [&](size_t i) {
     auto iter = input_reader->begin(i);
     auto enditer = input_reader->end(i);
@@ -49,8 +49,8 @@ sframe group(sframe sframe_in, std::string key_column) {
     }
   });
 
-  ret.open_for_write(sframe_in.column_names(),
-                     sframe_in.column_types(),
+  ret.open_for_write(xframe_in.column_names(),
+                     xframe_in.column_types(),
                      "",
                      output_nsegments);
   hash_container.sort_and_write(ret);
@@ -226,7 +226,7 @@ void hash_bucket<T>::save_buffer(std::vector<value_type>& swap_buffer) {
 
 // Explicit template class instantiation
 typedef sarray<flexible_type>::iterator __sarray_iterator__;
-typedef sframe::iterator __sframe_iterator__;
+typedef xframe::iterator __xframe_iterator__;
 typedef std::insert_iterator<std::vector<flexible_type>> __vec_iterator__;
 
 template class hash_bucket<flexible_type>;
@@ -234,5 +234,5 @@ template class hash_bucket<std::vector<flexible_type>>;
 
 template void hash_bucket<flexible_type>::sort_and_write<__sarray_iterator__>(__sarray_iterator__ out_iter);
 template void hash_bucket<flexible_type>::sort_and_write<__vec_iterator__>(__vec_iterator__ out_iter);
-template void hash_bucket<std::vector<flexible_type>>::sort_and_write<__sframe_iterator__>(__sframe_iterator__ out_iter);
+template void hash_bucket<std::vector<flexible_type>>::sort_and_write<__xframe_iterator__>(__xframe_iterator__ out_iter);
 } // end of turicreate

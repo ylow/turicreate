@@ -6,12 +6,12 @@
 #include <model_server/lib/variant.hpp>
 #include <model_server/lib/unity_global.hpp>
 #include <model_server/lib/variant_converter.hpp>
-#include <core/storage/sframe_interface/unity_sarray.hpp>
-#include <core/storage/sframe_interface/unity_sframe.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
 
 #ifndef DISABLE_SDK_TYPES
-#include <core/data/sframe/gl_sframe.hpp>
-#include <core/data/sframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
 #include <core/globals/globals.hpp>
 #endif
 
@@ -33,12 +33,12 @@ variant_type variant_converter<std::shared_ptr<unity_sarray>, void>::set(std::sh
 }
 
 
-std::shared_ptr<unity_sframe> variant_converter<std::shared_ptr<unity_sframe>, void>::get(const variant_type& val) {
-  return std::static_pointer_cast<unity_sframe>(variant_get_ref<std::shared_ptr<unity_sframe_base>>(val));
+std::shared_ptr<unity_xframe> variant_converter<std::shared_ptr<unity_xframe>, void>::get(const variant_type& val) {
+  return std::static_pointer_cast<unity_xframe>(variant_get_ref<std::shared_ptr<unity_xframe_base>>(val));
 }
 
-variant_type variant_converter<std::shared_ptr<unity_sframe>, void>::set(std::shared_ptr<unity_sframe> val) {
-  return variant_type(std::static_pointer_cast<unity_sframe_base>(val));
+variant_type variant_converter<std::shared_ptr<unity_xframe>, void>::set(std::shared_ptr<unity_xframe> val) {
+  return variant_type(std::static_pointer_cast<unity_xframe_base>(val));
 }
 
 
@@ -55,11 +55,11 @@ variant_type variant_converter<gl_sarray, void>::set(gl_sarray val) {
   }
 }
 
-gl_sframe variant_converter<gl_sframe, void>::get(const variant_type& val) {
-  return variant_get_ref<std::shared_ptr<unity_sframe_base>>(val);
+gl_xframe variant_converter<gl_xframe, void>::get(const variant_type& val) {
+  return variant_get_ref<std::shared_ptr<unity_xframe_base>>(val);
 }
-variant_type variant_converter<gl_sframe, void>::set(gl_sframe val) {
-  return variant_type(std::shared_ptr<unity_sframe_base>(val));
+variant_type variant_converter<gl_xframe, void>::set(gl_xframe val) {
+  return variant_type(std::shared_ptr<unity_xframe_base>(val));
 };
 
 #endif

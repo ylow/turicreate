@@ -17,8 +17,8 @@ class iarchive;
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  * \{
  */
 
@@ -69,7 +69,7 @@ struct index_file_information {
  * Raise an exception on failure.
  *
  * This function will also automatically de-relativize the
- * \ref sframe_index_file_information::column_files to get absolute paths
+ * \ref xframe_index_file_information::column_files to get absolute paths
  */
 index_file_information read_index_file(std::string index_file);
 
@@ -116,7 +116,7 @@ group_index_file_information read_array_group_index_file(std::string group_index
  * Raises an exception on failure.
  *
  * This function will also automatically relativize the
- * \ref sframe_index_file_information::column_files to get relative paths
+ * \ref xframe_index_file_information::column_files to get relative paths
  * when writing to disk
  */
 void write_array_group_index_file(std::string group_index_file,

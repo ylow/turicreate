@@ -3,13 +3,13 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_UNITY_SFRAME_IS_SARRAY_LIKE_HPP
-#define TURI_UNITY_SFRAME_IS_SARRAY_LIKE_HPP
+#ifndef TURI_UNITY_XFRAME_IS_SARRAY_LIKE_HPP
+#define TURI_UNITY_XFRAME_IS_SARRAY_LIKE_HPP
 #include <memory>
-#include <core/storage/sframe_data/is_siterable.hpp>
-#include <core/storage/sframe_data/is_swriter_base.hpp>
+#include <core/storage/xframe_data/is_siterable.hpp>
+#include <core/storage/xframe_data/is_swriter_base.hpp>
 namespace turi {
-namespace sframe_impl {
+namespace xframe_impl {
 
 template <typename T>
 struct has_get_reader_function {
@@ -21,7 +21,7 @@ struct has_get_reader_function {
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * is_sarray_like<T>::value is true if T inherits from swriter_base and
  * has a get_reader() function implemented which returns an
  * std::unique_ptr<T::reader_type>
@@ -42,6 +42,6 @@ struct is_sarray_like<T,void,void> {
 };
 
 
-} // sframe_impl
+} // xframe_impl
 } // turicreate
 #endif

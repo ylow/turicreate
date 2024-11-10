@@ -12,7 +12,7 @@ summary_view_transformation_output::summary_view_transformation_output(const std
   : m_outputs(outputs), m_column_names(column_names), m_column_types(column_types), m_size(size) {
 }
 
-std::string summary_view_transformation_output::vega_column_data(bool sframe) const {
+std::string summary_view_transformation_output::vega_column_data(bool xframe) const {
   std::stringstream ss;
   for (size_t i=0; i<m_outputs.size(); i++) {
     ss << "{\"a\": " << std::to_string(i) << ",";
@@ -25,13 +25,13 @@ std::string summary_view_transformation_output::vega_column_data(bool sframe) co
       case flex_type_enum::FLOAT:
       case flex_type_enum::STRING:
       {
-        auto h_result = std::dynamic_pointer_cast<sframe_transformation_output>(m_outputs[i]);
+        auto h_result = std::dynamic_pointer_cast<xframe_transformation_output>(m_outputs[i]);
         ss << h_result->vega_summary_data();
         ss << "}";
         break;
       }
       default:
-        throw std::runtime_error("Unexpected dtype. SFrame plot expects int, float or str dtypes.");
+        throw std::runtime_error("Unexpected dtype. XFrame plot expects int, float or str dtypes.");
     }
     if (i != m_outputs.size() - 1) {
       ss << ", ";

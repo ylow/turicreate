@@ -4,22 +4,22 @@
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
 #include <core/logging/logger.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sframe_reader.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
-#include <core/storage/sframe_data/parallel_csv_parser.hpp>
-#include <core/storage/sframe_data/csv_writer.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/xframe_reader.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
+#include <core/storage/xframe_data/parallel_csv_parser.hpp>
+#include <core/storage/xframe_data/csv_writer.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <core/storage/fileio/temp_files.hpp>
 #include <boost/filesystem.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
-#include <core/storage/sframe_data/sframe_saving.hpp>
-#include <core/storage/sframe_data/sframe_compact.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
+#include <core/storage/xframe_data/xframe_config.hpp>
+#include <core/storage/xframe_data/xframe_saving.hpp>
+#include <core/storage/xframe_data/xframe_compact.hpp>
 #include <core/system/exceptions/error_types.hpp>
 namespace turi {
 
-sframe::sframe(const sframe& other) {
+xframe::xframe(const xframe& other) {
   Dlog_func_entry();
   if (other.inited) {
     if (other.writing) {
@@ -34,7 +34,7 @@ sframe::sframe(const sframe& other) {
   }
 }
 
-sframe& sframe::operator=(const sframe& other) {
+xframe& xframe::operator=(const xframe& other) {
   ASSERT_MSG(!writing, "Cannot copy over an array which is currently writing");
   reset();
   if (other.inited) {
@@ -50,7 +50,7 @@ sframe& sframe::operator=(const sframe& other) {
   return *this;
 }
 
-sframe::sframe(const dataframe_t& data) {
+xframe::xframe(const dataframe_t& data) {
   Dlog_func_entry();
   // extract the column information
   std::vector<std::string> column_names = data.names;
@@ -62,7 +62,7 @@ sframe::sframe(const dataframe_t& data) {
     column_values[i] = &(data.values.at(column_names[i]));
   }
 
-  // create the sframe
+  // create the xframe
   open_for_write(column_names, column_types, "", 1);
   group_writer->set_options("disable_padding", 1);
 
@@ -83,9 +83,9 @@ sframe::sframe(const dataframe_t& data) {
 /**
  * Move Assignment operator.
  * Moves other into this. Other will be cleared as if it is a newly
- * constructed sframe object.
+ * constructed xframe object.
  */
-sframe& sframe::operator=(sframe&& other) {
+xframe& xframe::operator=(xframe&& other) {
   index_info = std::move(other.index_info);
   index_file = std::move(other.index_file);
   columns = std::move(other.columns);
@@ -93,7 +93,7 @@ sframe& sframe::operator=(sframe&& other) {
   inited = std::move(other.inited);
   writing = std::move(other.writing);
 
-  other.index_info = sframe_index_file_information();
+  other.index_info = xframe_index_file_information();
   other.index_file = "";
   other.columns.clear();
 
@@ -102,7 +102,7 @@ sframe& sframe::operator=(sframe&& other) {
   return *this;
 }
 
-std::map<std::string, std::shared_ptr<sarray<flexible_type>>> sframe::init_from_csvs(
+std::map<std::string, std::shared_ptr<sarray<flexible_type>>> xframe::init_from_csvs(
     const std::string& url,
     csv_line_tokenizer& tokenizer,
     bool use_header,
@@ -120,14 +120,14 @@ std::map<std::string, std::shared_ptr<sarray<flexible_type>>> sframe::init_from_
   opts.output_columns = output_columns;
   opts.row_limit = row_limit;
   opts.skip_rows = skip_rows;
-  return parse_csvs_to_sframe(url, tokenizer, opts, *this);
+  return parse_csvs_to_xframe(url, tokenizer, opts, *this);
 }
 
-sframe::~sframe() {
+xframe::~xframe() {
   Dlog_func_entry();
 }
 
-void sframe::create_arrays_for_reading(sframe_index_file_information frame_index_info) {
+void xframe::create_arrays_for_reading(xframe_index_file_information frame_index_info) {
   Dlog_func_entry();
   logstream(LOG_DEBUG) << "Opening Frame for Reading of size (" << frame_index_info.nrows
                       << "," << frame_index_info.ncolumns << ")" << std::endl;
@@ -139,7 +139,7 @@ void sframe::create_arrays_for_reading(sframe_index_file_information frame_index
     columns.emplace_back(new sarray<flexible_type>);
   }
   /*
-   * In a regular saved sframe, each sarray has index file of the following form:
+   * In a regular saved xframe, each sarray has index file of the following form:
    *  1st col : group_index.sidx:0
    *  2nd col : group_index.sidx:1
    *  3rd col : group_index.sidx:2
@@ -173,7 +173,7 @@ void sframe::create_arrays_for_reading(sframe_index_file_information frame_index
   keep_array_file_ref();
 }
 
-void sframe::create_arrays_for_reading(
+void xframe::create_arrays_for_reading(
           const std::vector<std::shared_ptr<sarray<flexible_type> > >& new_columns,
           const std::vector<std::string>& column_names,
           bool fail_on_column_names) {
@@ -228,7 +228,7 @@ void sframe::create_arrays_for_reading(
  * initializes each of the sarrays for writing; filling up
  * the columns array.
  */
-void sframe::create_arrays_for_writing(const std::vector<std::string>& column_names,
+void xframe::create_arrays_for_writing(const std::vector<std::string>& column_names,
                                        const std::vector<flex_type_enum>& column_types,
                                        size_t nsegments,
                                        const std::string& frame_sidx_file,
@@ -302,7 +302,7 @@ void sframe::create_arrays_for_writing(const std::vector<std::string>& column_na
 }
 
 
-sframe sframe::append(const sframe& other) const {
+xframe xframe::append(const xframe& other) const {
   // both cannot be writing
   ASSERT_EQ(writing, false);
   ASSERT_EQ(other.writing, false);
@@ -320,7 +320,7 @@ sframe sframe::append(const sframe& other) const {
     ASSERT_EQ((int)column_type(i), (int)other.column_type(i));
   }
 
-  sframe ret = (*this);
+  xframe ret = (*this);
   // validated. now combine each column individually
   for (size_t i = 0;i < ret.columns.size(); ++i) {
     // append the columns
@@ -332,33 +332,33 @@ sframe sframe::append(const sframe& other) const {
   return ret;
 }
 
-void sframe::try_compact() {
+void xframe::try_compact() {
   for (auto& col : columns) col->try_compact();
 }
 
-std::unique_ptr<sframe::reader_type> sframe::get_reader() const {
+std::unique_ptr<xframe::reader_type> xframe::get_reader() const {
   Dlog_func_entry();
-  ASSERT_MSG(inited, "Invalid SFrame");
-  ASSERT_MSG(!writing, "SFrame not opened for reading");
+  ASSERT_MSG(inited, "Invalid XFrame");
+  ASSERT_MSG(!writing, "XFrame not opened for reading");
   std::unique_ptr<reader_type> reader(new reader_type());
   reader->init(*this);
   return reader;
 }
 
-std::unique_ptr<sframe::reader_type> sframe::get_reader(size_t num_segments) const {
+std::unique_ptr<xframe::reader_type> xframe::get_reader(size_t num_segments) const {
   Dlog_func_entry();
-  ASSERT_MSG(inited, "Invalid SFrame");
-  ASSERT_MSG(!writing, "SFrame not opened for reading");
+  ASSERT_MSG(inited, "Invalid XFrame");
+  ASSERT_MSG(!writing, "XFrame not opened for reading");
   std::unique_ptr<reader_type> reader(new reader_type());
   reader->init(*this, num_segments);
   return reader;
 }
 
 
-std::unique_ptr<sframe::reader_type> sframe::get_reader(const std::vector<size_t>& segment_lengths) const {
+std::unique_ptr<xframe::reader_type> xframe::get_reader(const std::vector<size_t>& segment_lengths) const {
   Dlog_func_entry();
-  ASSERT_MSG(inited, "Invalid SFrame");
-  ASSERT_MSG(!writing, "SFrame not opened for reading");
+  ASSERT_MSG(inited, "Invalid XFrame");
+  ASSERT_MSG(!writing, "XFrame not opened for reading");
   std::unique_ptr<reader_type> reader(new reader_type());
   reader->init(*this, segment_lengths);
   return reader;
@@ -366,11 +366,11 @@ std::unique_ptr<sframe::reader_type> sframe::get_reader(const std::vector<size_t
 
 /**************************************************************************/
 /*                                                                        */
-/*                     Other SFrame Unique Accessors                      */
+/*                     Other XFrame Unique Accessors                      */
 /*                                                                        */
 /**************************************************************************/
 
-dataframe_t sframe::to_dataframe() {
+dataframe_t xframe::to_dataframe() {
   log_func_entry();
   dataframe_t ret;
   for (size_t i = 0; i < num_columns(); ++i) {
@@ -383,7 +383,7 @@ dataframe_t sframe::to_dataframe() {
 }
 
 
-std::shared_ptr<sarray<flexible_type> > sframe::select_column(size_t column_id) const {
+std::shared_ptr<sarray<flexible_type> > xframe::select_column(size_t column_id) const {
   if (column_id < num_columns()) {
     return columns[column_id];
   } else {
@@ -392,35 +392,35 @@ std::shared_ptr<sarray<flexible_type> > sframe::select_column(size_t column_id) 
   }
 }
 
-std::shared_ptr<sarray<flexible_type> > sframe::select_column(const std::string &name) const {
+std::shared_ptr<sarray<flexible_type> > xframe::select_column(const std::string &name) const {
   size_t col_index = column_index(name);
   return select_column(col_index);
 }
 
-sframe sframe::select_columns(const std::vector<std::string>& names) const {
+xframe xframe::select_columns(const std::vector<std::string>& names) const {
   log_func_entry();
   std::vector<std::shared_ptr<sarray<flexible_type> > > new_columns;
   for (const auto& name : names) {
     size_t col_index = column_index(name);
     new_columns.push_back(columns[col_index]);
   }
-  return sframe(new_columns, names);
+  return xframe(new_columns, names);
 }
 
 
-sframe sframe::add_column(std::shared_ptr<sarray<flexible_type> > sarr_ptr,
+xframe xframe::add_column(std::shared_ptr<sarray<flexible_type> > sarr_ptr,
                           const std::string& column_name) const {
   log_func_entry();
   if (num_columns() == 0) {
-    // appending to an empty sframe. just return a new sframe of 1 column
+    // appending to an empty xframe. just return a new xframe of 1 column
     std::vector<std::shared_ptr<sarray<flexible_type> > > new_columns{sarr_ptr};
     std::vector<std::string> new_column_names{column_name};
-    return sframe(new_columns, new_column_names);
+    return xframe(new_columns, new_column_names);
   }
 
   // Make sure we're given a correctly formed column
   if(num_rows() != sarr_ptr->size()) {
-    log_and_throw(std::string("Column must have the same # of rows as sframe."));
+    log_and_throw(std::string("Column must have the same # of rows as xframe."));
   }
 
   std::vector<std::shared_ptr<sarray<flexible_type> > > new_columns = columns;
@@ -437,10 +437,10 @@ sframe sframe::add_column(std::shared_ptr<sarray<flexible_type> > sarr_ptr,
   std::string tmp = generate_valid_column_name(column_name);
   new_column_names.push_back(tmp);
 
-  return sframe(new_columns, new_column_names);
+  return xframe(new_columns, new_column_names);
 }
 
-std::string sframe::generate_valid_column_name(const std::string &column_name) const {
+std::string xframe::generate_valid_column_name(const std::string &column_name) const {
   std::string name;
 
   if(column_name.empty()) {
@@ -466,22 +466,22 @@ std::string sframe::generate_valid_column_name(const std::string &column_name) c
 }
 
 
-void sframe::set_column_name(size_t i, const std::string& name) {
+void xframe::set_column_name(size_t i, const std::string& name) {
   ASSERT_LT(i, num_columns());
   index_info.column_names[i] = name;
 }
 
-sframe sframe::remove_column(size_t i) const {
+xframe xframe::remove_column(size_t i) const {
   ASSERT_LT(i, num_columns());
 
   std::vector<std::shared_ptr<sarray<flexible_type> > > new_columns = columns;
   std::vector<std::string> new_column_names = index_info.column_names;
   new_columns.erase(new_columns.begin() + i);
   new_column_names.erase(new_column_names.begin() + i);
-  return sframe(new_columns, new_column_names);
+  return xframe(new_columns, new_column_names);
 }
 
-sframe sframe::swap_columns(size_t column_1, size_t column_2) const {
+xframe xframe::swap_columns(size_t column_1, size_t column_2) const {
   ASSERT_LT(column_1, num_columns());
   ASSERT_LT(column_2, num_columns());
 
@@ -491,17 +491,17 @@ sframe sframe::swap_columns(size_t column_1, size_t column_2) const {
   std::swap(new_columns[column_1], new_columns[column_2]);
   std::swap(new_column_names[column_1], new_column_names[column_2]);
 
-  return sframe(new_columns, new_column_names);
+  return xframe(new_columns, new_column_names);
 }
 
-sframe sframe::replace_column(std::shared_ptr<sarray<flexible_type>> sarr_ptr,
+xframe xframe::replace_column(std::shared_ptr<sarray<flexible_type>> sarr_ptr,
                               const std::string& column_name) const {
   ASSERT_TRUE(contains_column(column_name));
   std::string tmp_column_name = "__" + column_name + "__";
   while(contains_column(tmp_column_name)) {
     tmp_column_name += "__";
   }
-  sframe newsf = add_column(sarr_ptr, tmp_column_name);
+  xframe newsf = add_column(sarr_ptr, tmp_column_name);
   size_t oldidx = newsf.column_index(column_name);
   size_t newidx = newsf.column_index(tmp_column_name);
   newsf = newsf.swap_columns(oldidx, newidx);
@@ -516,10 +516,10 @@ sframe sframe::replace_column(std::shared_ptr<sarray<flexible_type>> sarr_ptr,
 /*                                                                        */
 /**************************************************************************/
 
-bool sframe::set_num_segments(size_t numseg) {
+bool xframe::set_num_segments(size_t numseg) {
   Dlog_func_entry();
-  ASSERT_MSG(inited, "Invalid SFrame");
-  ASSERT_MSG(!writing, "SFrame not opened for writing");
+  ASSERT_MSG(inited, "Invalid XFrame");
+  ASSERT_MSG(!writing, "XFrame not opened for writing");
   if (numseg == 0) return false;
   if (numseg != num_segments()) {
     // re-open
@@ -531,17 +531,17 @@ bool sframe::set_num_segments(size_t numseg) {
   return true;
 }
 
-sframe::iterator sframe::get_output_iterator(size_t segmentid) {
-  ASSERT_MSG(inited, "Invalid SFrame");
-  ASSERT_MSG(writing, "SFrame not opened for writing");
+xframe::iterator xframe::get_output_iterator(size_t segmentid) {
+  ASSERT_MSG(inited, "Invalid XFrame");
+  ASSERT_MSG(writing, "XFrame not opened for writing");
   ASSERT_MSG((segmentid < num_segments() || num_segments() == 0), "Invalid segment ID");
   std::vector<flex_type_enum> ctypes = column_types();
-  return sframe::iterator(
+  return xframe::iterator(
       [=](const std::vector<flexible_type>& val)->void{
         // check that all the types match up
         if (UNLIKELY(val.size() != ctypes.size())) {
           std::stringstream ss;
-          ss << "Can not write to SFrame, got the wrong number of columns. "
+          ss << "Can not write to XFrame, got the wrong number of columns. "
              << "Expected: " << ctypes.size() << " columns. Got: " << val.size()
              << " columns.";
           log_and_throw(ss.str());
@@ -585,7 +585,7 @@ sframe::iterator sframe::get_output_iterator(size_t segmentid) {
         // but with this one we can modify val directly
         if (UNLIKELY(val.size() != ctypes.size())) {
           std::stringstream ss;
-          ss << "Can not write to SFrame, got the wrong number of columns. "
+          ss << "Can not write to XFrame, got the wrong number of columns. "
              << "Expected: " << ctypes.size() << " columns. Got: " << val.size()
              << " columns.";
           log_and_throw(ss.str());
@@ -608,10 +608,10 @@ sframe::iterator sframe::get_output_iterator(size_t segmentid) {
         }
         this->write(segmentid, std::forward<std::vector<flexible_type>>(val));
       },
-      [=](const sframe_rows& sfr)->void {
+      [=](const xframe_rows& sfr)->void {
         if (sfr.num_columns() != ctypes.size()) {
           std::stringstream ss;
-          ss << "Write to sframe with row size mismatch. "
+          ss << "Write to xframe with row size mismatch. "
              << "Expected: " << ctypes.size() << " Actual: " << sfr.num_columns();
           log_and_throw(ss.str());
         } else {
@@ -620,21 +620,21 @@ sframe::iterator sframe::get_output_iterator(size_t segmentid) {
       });
 }
 
-void sframe::flush_write_to_segment(size_t segment) {
+void xframe::flush_write_to_segment(size_t segment) {
   if (group_writer) {
     group_writer->flush_segment(segment);
   } else {
-    log_and_throw("Attempting to flush an SFrame not opened for writing");
+    log_and_throw("Attempting to flush an XFrame not opened for writing");
   }
 }
 
-void sframe::close() {
+void xframe::close() {
   group_writer->close();
   group_writer->write_index_file();
   group_index_file_information group_index = group_writer->get_index_info();
   Dlog_func_entry();
-  ASSERT_MSG(inited, "Invalid SFrame");
-  ASSERT_MSG(writing, "SFrame not opened for writing");
+  ASSERT_MSG(inited, "Invalid XFrame");
+  ASSERT_MSG(writing, "XFrame not opened for writing");
   if (index_info.ncolumns > 0) {
     index_info.nrows = 0;
     for (size_t rows: group_writer->get_index_info().columns[0].segment_sizes) {
@@ -654,7 +654,7 @@ void sframe::close() {
             group_index.group_index_file));
   }
   group_writer.reset();
-  write_sframe_index_file(index_file, index_info);
+  write_xframe_index_file(index_file, index_info);
   inited = true;
   writing = false;
   columns.resize(index_info.ncolumns);
@@ -667,7 +667,7 @@ void sframe::close() {
 }
 
 
-void sframe::save_as_csv(std::string csv_file,
+void xframe::save_as_csv(std::string csv_file,
                          csv_writer& writer) {
   general_ofstream fout(csv_file);
   if (!fout.good()) {
@@ -685,39 +685,39 @@ void sframe::save_as_csv(std::string csv_file,
   }
 }
 
-bool sframe::set_metadata(const std::string& key, std::string val) {
+bool xframe::set_metadata(const std::string& key, std::string val) {
   Dlog_func_entry();
-  ASSERT_MSG(inited, "Invalid SFrame");
-  ASSERT_MSG(writing, "SFrame not opened for writing");
+  ASSERT_MSG(inited, "Invalid XFrame");
+  ASSERT_MSG(writing, "XFrame not opened for writing");
   index_info.metadata[key] = val;
   return true;
 }
 
 
-void sframe::reset() {
+void xframe::reset() {
   Dlog_func_entry();
   index_file = "";
-  index_info = sframe_index_file_information();
+  index_info = xframe_index_file_information();
   columns.clear();
 }
 
 
-void sframe::write(size_t segmentid, const std::vector<flexible_type>& t) {
+void xframe::write(size_t segmentid, const std::vector<flexible_type>& t) {
   DASSERT_TRUE(group_writer != NULL);
   group_writer->write_segment(segmentid, t);
 }
 
-void sframe::write(size_t segmentid, std::vector<flexible_type>&& t) {
+void xframe::write(size_t segmentid, std::vector<flexible_type>&& t) {
   DASSERT_TRUE(group_writer != NULL);
   group_writer->write_segment(segmentid, std::forward<std::vector<flexible_type>>(t));
 }
 
-void sframe::write(size_t segmentid, const sframe_rows& t) {
+void xframe::write(size_t segmentid, const xframe_rows& t) {
   DASSERT_TRUE(group_writer != NULL);
   group_writer->write_segment(segmentid, t);
 }
 
-void sframe::save(std::string index_file) const {
+void xframe::save(std::string index_file) const {
   ASSERT_TRUE(inited);
   ASSERT_FALSE(writing);
   std::string expected_ext(".frame_idx");
@@ -725,10 +725,10 @@ void sframe::save(std::string index_file) const {
     log_and_throw("Index file must end with " + expected_ext);
   }
 
-  sframe_save(*this, index_file);
+  xframe_save(*this, index_file);
 }
 
-void sframe::debug_print() {
+void xframe::debug_print() {
     std::stringstream ss;
     auto names = column_names();
     auto types = column_types();
@@ -750,18 +750,18 @@ void sframe::debug_print() {
     std::cerr << ss.str() << std::endl;
 }
 
-void sframe::save(oarchive& oarc) const {
+void xframe::save(oarchive& oarc) const {
   std::string prefix = oarc.get_prefix();
   save(prefix + ".frame_idx");
 }
 
-void sframe::load(iarchive& iarc) {
+void xframe::load(iarchive& iarc) {
   std::string prefix = iarc.get_prefix();
-  auto frame_index_info = read_sframe_index_file(prefix + ".frame_idx");
+  auto frame_index_info = read_xframe_index_file(prefix + ".frame_idx");
   open_for_read(frame_index_info);
 }
 
-bool sframe::delete_files_on_destruction() {
+bool xframe::delete_files_on_destruction() {
   for(auto &i: columns) {
     i->delete_files_on_destruction();
   }
@@ -772,7 +772,7 @@ bool sframe::delete_files_on_destruction() {
   return true;
 }
 
-void sframe::keep_array_file_ref() {
+void xframe::keep_array_file_ref() {
   // Add cache entries for frame_idx
   if (!index_file.empty()) {
     index_file_handle.push_back(

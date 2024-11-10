@@ -3,17 +3,17 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_GROUPBY_AGGREGATE_HPP
-#define TURI_SFRAME_GROUPBY_AGGREGATE_HPP
+#ifndef TURI_XFRAME_GROUPBY_AGGREGATE_HPP
+#define TURI_XFRAME_GROUPBY_AGGREGATE_HPP
 
 #include <memory>
 #include <vector>
 #include <cstdint>
 #include <functional>
 #include <unordered_set>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
-#include <core/storage/sframe_data/group_aggregate_value.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
+#include <core/storage/xframe_data/group_aggregate_value.hpp>
 
 namespace turi {
 
@@ -21,18 +21,18 @@ const std::set<std::string> registered_arg_functions = {"argmax","argmin"};
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup groupby_aggregate Groupby Aggregation
  * \{
  */
 
 /**
- * Groupby Aggregate function for an SFrame.
- * Given the source SFrame this function performs a group-by aggregate of the
- * SFrame, using one or more columns to define the group key, and a descriptor
+ * Groupby Aggregate function for an XFrame.
+ * Given the source XFrame this function performs a group-by aggregate of the
+ * XFrame, using one or more columns to define the group key, and a descriptor
  * for how to aggregate other non-key columns.
  *
- * For instance given an SFrame:
+ * For instance given an XFrame:
  * \verbatim
  * user_id  movie_id  rating  time
  *      5        10       1    4pm
@@ -41,7 +41,7 @@ const std::set<std::string> registered_arg_functions = {"argmax","argmin"};
  *      7        13       1    3am
  * \endverbatim
  * \code
- * sframe output = turi::groupby_aggregate(input,
+ * xframe output = turi::groupby_aggregate(input,
  *                    {"user_id"},
  *                    {"movie_count", "rating_sum"},
  *                    {{"movie_id", std::make_shared<groupby_operators::count>()},
@@ -69,7 +69,7 @@ const std::set<std::string> registered_arg_functions = {"argmax","argmin"};
  * sent a flexible type of type FLEX_UNDEFINED for every row (this is useful
  * for COUNT).
  *
- * \param source The input SFrame to group
+ * \param source The input XFrame to group
  * \param keys An array of column names to generate the group on
  * \param group_output_columns The output column names for each aggregate.
  *                           This must be the same length as the 'groups' parameter.
@@ -84,16 +84,16 @@ const std::set<std::string> registered_arg_functions = {"argmax","argmin"};
  *               'group_output_columns' parameter.
  * \param max_buffer_size The maximum size of intermediate aggregation buffers
  *
- * \return The new aggregated SFrame. throws a string exception on failures.
+ * \return The new aggregated XFrame. throws a string exception on failures.
  */
-sframe groupby_aggregate(const sframe& source,
+xframe groupby_aggregate(const xframe& source,
       const std::vector<std::string>& keys,
       const std::vector<std::string>& group_output_columns,
       const std::vector<std::pair<std::vector<std::string>,
                                   std::shared_ptr<group_aggregate_value>>>& groups,
-      size_t max_buffer_size = SFRAME_GROUPBY_BUFFER_NUM_ROWS);
+      size_t max_buffer_size = XFRAME_GROUPBY_BUFFER_NUM_ROWS);
 
 
 /// \}
 } // end of turi
-#endif //TURI_SFRAME_GROUPBY_AGGREGATE_HPP
+#endif //TURI_XFRAME_GROUPBY_AGGREGATE_HPP

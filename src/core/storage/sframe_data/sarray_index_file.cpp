@@ -12,7 +12,7 @@
 #include <boost/algorithm/string.hpp>
 #include <core/logging/logger.hpp>
 #include <core/logging/assertions.hpp>
-#include <core/storage/sframe_data/sarray_index_file.hpp>
+#include <core/storage/xframe_data/sarray_index_file.hpp>
 #include <core/storage/fileio/general_fstream.hpp>
 #include <core/storage/fileio/fs_utils.hpp>
 #include <core/storage/fileio/sanitize_url.hpp>

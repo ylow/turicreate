@@ -10,15 +10,15 @@
 #include <iostream>
 #include <algorithm>
 #include <core/storage/fileio/temp_files.hpp>
-#include <core/storage/sframe_interface/unity_sframe.hpp>
-#include <core/storage/sframe_data/dataframe.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
+#include <core/storage/xframe_data/dataframe.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/xframe_config.hpp>
 using namespace turi;
 
-struct unity_sframe_test {
+struct unity_xframe_test {
   dataframe_t _create_test_dataframe() {
     dataframe_t testdf;
     std::vector<flexible_type> a;
@@ -36,38 +36,38 @@ struct unity_sframe_test {
     return testdf;
   }
  public:
-  unity_sframe_test() {
+  unity_xframe_test() {
     global_logger().set_log_level(LOG_WARNING);
   }
 
   void test_array_construction() {
     dataframe_t testdf = _create_test_dataframe();
-    // create a unity_sframe
-    auto sframe = std::make_shared<unity_sframe>();
-    sframe->construct_from_dataframe(testdf);
+    // create a unity_xframe
+    auto xframe = std::make_shared<unity_xframe>();
+    xframe->construct_from_dataframe(testdf);
 
     // check basic stats
-    TS_ASSERT_EQUALS(sframe->size(), 100);
-    TS_ASSERT_EQUALS(sframe->num_columns(), 3);
+    TS_ASSERT_EQUALS(xframe->size(), 100);
+    TS_ASSERT_EQUALS(xframe->num_columns(), 3);
 
     // check types match
-    std::vector<flex_type_enum> dtypes = sframe->dtype();
+    std::vector<flex_type_enum> dtypes = xframe->dtype();
     TS_ASSERT_EQUALS(dtypes[0], flex_type_enum::INTEGER);
-    TS_ASSERT_EQUALS(sframe->dtype(0), flex_type_enum::INTEGER);
+    TS_ASSERT_EQUALS(xframe->dtype(0), flex_type_enum::INTEGER);
     TS_ASSERT_EQUALS(dtypes[1], flex_type_enum::FLOAT);
-    TS_ASSERT_EQUALS(sframe->dtype(1), flex_type_enum::FLOAT);
+    TS_ASSERT_EQUALS(xframe->dtype(1), flex_type_enum::FLOAT);
     TS_ASSERT_EQUALS(dtypes[2], flex_type_enum::STRING);
-    TS_ASSERT_EQUALS(sframe->dtype(2), flex_type_enum::STRING);
+    TS_ASSERT_EQUALS(xframe->dtype(2), flex_type_enum::STRING);
 
     // check names match
-    std::vector<std::string> names = sframe->column_names();
+    std::vector<std::string> names = xframe->column_names();
     TS_ASSERT_EQUALS(names[0], "a");
     TS_ASSERT_EQUALS(names[1], "b");
     TS_ASSERT_EQUALS(names[2], "c");
 
     // get the first 50 and check that newdf == testdf for the first 50 rows
     // and that newdf is well formed
-    dataframe_t newdf = sframe->_head(50);
+    dataframe_t newdf = xframe->_head(50);
     TS_ASSERT_EQUALS(newdf.ncols(), 3);
     TS_ASSERT_EQUALS(newdf.nrows(), 50);
 
@@ -86,7 +86,7 @@ struct unity_sframe_test {
     }
 
     // check the tail end too
-    dataframe_t taildf = sframe->_tail(50);
+    dataframe_t taildf = xframe->_tail(50);
     TS_ASSERT_EQUALS(taildf.ncols(), 3);
     TS_ASSERT_EQUALS(taildf.nrows(), 50);
 
@@ -145,8 +145,8 @@ struct unity_sframe_test {
     unity_zero->construct_from_vector(zero_vec, flex_type_enum::INTEGER);
     unity_flipflop->construct_from_vector(flipflop_vec, flex_type_enum::STRING);
 
-    // Empty sframe
-    auto sf = std::make_shared<unity_sframe>();
+    // Empty xframe
+    auto sf = std::make_shared<unity_xframe>();
     auto sa = std::make_shared<unity_sarray>();
 
     // One empty column
@@ -157,7 +157,7 @@ struct unity_sframe_test {
     TS_ASSERT_THROWS_ANYTHING(sf->logical_filter(unity_float_data));
     TS_ASSERT_THROWS_ANYTHING(sa->logical_filter(unity_float_data));
 
-    // Fill sframe with test data
+    // Fill xframe with test data
     sf->remove_column(0);
     sf->add_column(unity_int_data, std::string("intstuff"));
     sf->add_column(unity_float_data, std::string("floatstuff"));
@@ -215,9 +215,9 @@ struct unity_sframe_test {
   // tests add_column(s), select_column(s)
   void test_column_ops() {
     dataframe_t testdf = _create_test_dataframe();
-    auto sf = std::make_shared<unity_sframe>();
+    auto sf = std::make_shared<unity_xframe>();
 
-    // an empty sframe
+    // an empty xframe
     std::vector<std::string> col_names{"a","c"};
     TS_ASSERT_THROWS_ANYTHING(sf->select_columns(col_names)->size());
 
@@ -230,7 +230,7 @@ struct unity_sframe_test {
     std::shared_ptr<unity_sarray> us_ptr(new unity_sarray());
     us_ptr->construct_from_sarray(sarray_ptr);
 
-    // Add to an empty sframe
+    // Add to an empty xframe
     sf->add_column(us_ptr, std::string("testname"));
 
     // Check size and contents
@@ -321,8 +321,8 @@ struct unity_sframe_test {
     std::vector<flexible_type> test_data1;
     std::vector<flexible_type> test_data2;
 
-    std::shared_ptr<unity_sframe> sf1(new unity_sframe());
-    std::shared_ptr<unity_sframe> sf2(new unity_sframe());
+    std::shared_ptr<unity_xframe> sf1(new unity_xframe());
+    std::shared_ptr<unity_xframe> sf2(new unity_xframe());
 
     std::shared_ptr<unity_sarray> sa1(new unity_sarray());
     std::shared_ptr<unity_sarray> sa2(new unity_sarray());
@@ -342,8 +342,8 @@ struct unity_sframe_test {
     std::vector<flexible_type> test_data1;
     std::vector<flexible_type> test_data2;
 
-    std::shared_ptr<unity_sframe> sf1(new unity_sframe());
-    std::shared_ptr<unity_sframe> sf2(new unity_sframe());
+    std::shared_ptr<unity_xframe> sf1(new unity_xframe());
+    std::shared_ptr<unity_xframe> sf2(new unity_xframe());
 
     std::shared_ptr<unity_sarray> sa1(new unity_sarray());
     std::shared_ptr<unity_sarray> sa2(new unity_sarray());
@@ -362,8 +362,8 @@ struct unity_sframe_test {
   void test_append() {
     dataframe_t testdf = _create_test_dataframe();
 
-    auto sf1 = std::make_shared<unity_sframe>();
-    auto sf2 = std::make_shared<unity_sframe>();
+    auto sf1 = std::make_shared<unity_xframe>();
+    auto sf2 = std::make_shared<unity_xframe>();
     sf1->construct_from_dataframe(testdf);
     sf2->construct_from_dataframe(testdf);
     auto sf3 = sf1->append(sf2);
@@ -387,8 +387,8 @@ struct unity_sframe_test {
   }
 
   void test_append_empty() {
-    auto sf1 = std::make_shared<unity_sframe>();
-    auto sf2 = std::make_shared<unity_sframe>();
+    auto sf1 = std::make_shared<unity_xframe>();
+    auto sf2 = std::make_shared<unity_xframe>();
     auto sf3 = sf1->append(sf2);
     TS_ASSERT_EQUALS(sf3->size(), 0);
   }
@@ -396,8 +396,8 @@ struct unity_sframe_test {
   void test_append_left_empty() {
     dataframe_t testdf = _create_test_dataframe();
 
-    auto sf1 = std::make_shared<unity_sframe>();
-    auto sf2 = std::make_shared<unity_sframe>();
+    auto sf1 = std::make_shared<unity_xframe>();
+    auto sf2 = std::make_shared<unity_xframe>();
     sf2->construct_from_dataframe(testdf);
     auto sf3 = sf1->append(sf2);
     TS_ASSERT_EQUALS(sf3->size(), sf2->size());
@@ -406,8 +406,8 @@ struct unity_sframe_test {
   void test_append_right_empty() {
     dataframe_t testdf = _create_test_dataframe();
 
-    auto sf1 = std::make_shared<unity_sframe>();
-    auto sf2 = std::make_shared<unity_sframe>();
+    auto sf1 = std::make_shared<unity_xframe>();
+    auto sf2 = std::make_shared<unity_xframe>();
     sf1->construct_from_dataframe(testdf);
     auto sf3 = sf1->append(sf2);
     TS_ASSERT_EQUALS(sf3->size(), sf1->size());
@@ -432,8 +432,8 @@ struct unity_sframe_test {
     sa1->construct_from_vector(test_data1, flex_type_enum::INTEGER);
     sa2->construct_from_vector(test_data2, flex_type_enum::INTEGER);
 
-    auto sf1 = std::make_shared<unity_sframe>();
-    auto sf2 = std::make_shared<unity_sframe>();
+    auto sf1 = std::make_shared<unity_xframe>();
+    auto sf2 = std::make_shared<unity_xframe>();
     sf1->add_column(sa1, "something");
     sf2->add_column(sa2, "something");
 
@@ -469,22 +469,22 @@ struct unity_sframe_test {
     sa1->construct_from_vector(test_data1, flex_type_enum::INTEGER);
     sa2->construct_from_vector(test_data2, flex_type_enum::INTEGER);
 
-    auto sf1 = std::make_shared<unity_sframe>();
-    auto sf2 = std::make_shared<unity_sframe>();
+    auto sf1 = std::make_shared<unity_xframe>();
+    auto sf2 = std::make_shared<unity_xframe>();
     for(size_t i = 0; i < num_columns; i++) {
       std::cout << "appending column " << i << std::endl;
       sf1->add_column(sa1, std::to_string(i));
       sf2->add_column(sa2, std::to_string(i));
     }
 
-    std::cout << "appending two sframes " << std::endl;
+    std::cout << "appending two xframes " << std::endl;
 
     auto sf3 = sf1->append(sf2);
 
     // check only first column to save time
     auto sf3_values = sf3->select_column("1")->_head((size_t)(-1));
 
-    std::cout << "done appending two sframes " << std::endl;
+    std::cout << "done appending two xframes " << std::endl;
 
     TS_ASSERT_EQUALS(sf3->size(), sf1->size() + sf2->size());
     for (size_t i = 0; i < num_items; i++) {
@@ -493,12 +493,12 @@ struct unity_sframe_test {
     }
   }
 
-  // This is how toolkit wants to use sframe, so make the scenario work
-  void test_empty_sframe() {
-    unity_sframe us;
-    sframe& sframe = *(us.get_underlying_sframe());
-    TS_ASSERT_EQUALS(sframe.size(), 0);
-    TS_ASSERT_EQUALS(sframe.num_columns(), 0);
+  // This is how toolkit wants to use xframe, so make the scenario work
+  void test_empty_xframe() {
+    unity_xframe us;
+    xframe& xframe = *(us.get_underlying_xframe());
+    TS_ASSERT_EQUALS(xframe.size(), 0);
+    TS_ASSERT_EQUALS(xframe.num_columns(), 0);
   }
 
   void _create_test_dataframe_for_sort(
@@ -564,11 +564,11 @@ struct unity_sframe_test {
     }
     std::cout << std::endl;
 
-    unity_sframe sframe;
-    sframe.construct_from_dataframe(testdf);
+    unity_xframe xframe;
+    xframe.construct_from_dataframe(testdf);
 
     timer mytimer; mytimer.start();
-    std::shared_ptr<unity_sframe_base> result = sframe.sort(keys, orders);
+    std::shared_ptr<unity_xframe_base> result = xframe.sort(keys, orders);
     // do a tail will cause it to materialize
     result->tail(1);
     std::cout << "Sort takes " << mytimer.current_time() << " seconds" << std::endl;
@@ -616,12 +616,12 @@ struct unity_sframe_test {
     _create_test_dataframe_for_sort(testdf, false, values);
 
     // change sort buffer size to smaller to speed up testing
-    turi::sframe_config::SFRAME_SORT_BUFFER_SIZE = 1024 * 1024;
+    turi::xframe_config::XFRAME_SORT_BUFFER_SIZE = 1024 * 1024;
 
     std::vector<std::string> sort_keys;
     std::vector<int> sort_orders;
 
-    std::cout << "testing random sframe" << std::endl;
+    std::cout << "testing random xframe" << std::endl;
 
     // Sort by single column
     sort_keys = {"a"};
@@ -668,14 +668,14 @@ struct unity_sframe_test {
     // all sorted
     sort_keys = {"b", "c", "a"};
     sort_orders = {1, 0, 1};
-    std::cout << "testing all sorted sframe" << std::endl;
+    std::cout << "testing all sorted xframe" << std::endl;
     _create_test_dataframe_for_sort(testdf, true, values);
     __test_one_sort(values, testdf,  sort_keys, sort_orders);
   }
 
   void test_sort_exception() {
     auto sa = std::make_shared<unity_sarray>();
-    auto sf = std::make_shared<unity_sframe>();
+    auto sf = std::make_shared<unity_xframe>();
 
     std::vector<flexible_type> vec_val;
     for(size_t i = 0; i < 100; i++) {
@@ -694,7 +694,7 @@ struct unity_sframe_test {
 
   void test_save_load() {
     dataframe_t testdf = _create_test_dataframe();
-    auto sf = std::make_shared<unity_sframe>();
+    auto sf = std::make_shared<unity_xframe>();
     sf->construct_from_dataframe(testdf);
 
     const std::string temp_dir = get_temp_name();
@@ -706,7 +706,7 @@ struct unity_sframe_test {
     write_arc.close();
 
 
-    auto sf2 = std::make_shared<unity_sframe>();
+    auto sf2 = std::make_shared<unity_xframe>();
     dir_archive read_arc;
     read_arc.open_directory_for_read(temp_dir);
     iarchive iarc(read_arc);
@@ -717,47 +717,47 @@ struct unity_sframe_test {
   }
 };
 
-BOOST_FIXTURE_TEST_SUITE(_unity_sframe_test, unity_sframe_test)
+BOOST_FIXTURE_TEST_SUITE(_unity_xframe_test, unity_xframe_test)
 BOOST_AUTO_TEST_CASE(test_array_construction) {
-  unity_sframe_test::test_array_construction();
+  unity_xframe_test::test_array_construction();
 }
 BOOST_AUTO_TEST_CASE(test_logical_filter) {
-  unity_sframe_test::test_logical_filter();
+  unity_xframe_test::test_logical_filter();
 }
 BOOST_AUTO_TEST_CASE(test_column_ops) {
-  unity_sframe_test::test_column_ops();
+  unity_xframe_test::test_column_ops();
 }
 BOOST_AUTO_TEST_CASE(test_append_name_mismatch) {
-  unity_sframe_test::test_append_name_mismatch();
+  unity_xframe_test::test_append_name_mismatch();
 }
 BOOST_AUTO_TEST_CASE(test_append_type_mismatch) {
-  unity_sframe_test::test_append_type_mismatch();
+  unity_xframe_test::test_append_type_mismatch();
 }
 BOOST_AUTO_TEST_CASE(test_append) {
-  unity_sframe_test::test_append();
+  unity_xframe_test::test_append();
 }
 BOOST_AUTO_TEST_CASE(test_append_empty) {
-  unity_sframe_test::test_append_empty();
+  unity_xframe_test::test_append_empty();
 }
 BOOST_AUTO_TEST_CASE(test_append_left_empty) {
-  unity_sframe_test::test_append_left_empty();
+  unity_xframe_test::test_append_left_empty();
 }
 BOOST_AUTO_TEST_CASE(test_append_right_empty) {
-  unity_sframe_test::test_append_right_empty();
+  unity_xframe_test::test_append_right_empty();
 }
 BOOST_AUTO_TEST_CASE(test_append_one_column) {
-  unity_sframe_test::test_append_one_column();
+  unity_xframe_test::test_append_one_column();
 }
-BOOST_AUTO_TEST_CASE(test_empty_sframe) {
-  unity_sframe_test::test_empty_sframe();
+BOOST_AUTO_TEST_CASE(test_empty_xframe) {
+  unity_xframe_test::test_empty_xframe();
 }
 BOOST_AUTO_TEST_CASE(test_sort) {
-  unity_sframe_test::test_sort();
+  unity_xframe_test::test_sort();
 }
 BOOST_AUTO_TEST_CASE(test_sort_exception) {
-  unity_sframe_test::test_sort_exception();
+  unity_xframe_test::test_sort_exception();
 }
 BOOST_AUTO_TEST_CASE(test_save_load) {
-  unity_sframe_test::test_save_load();
+  unity_xframe_test::test_save_load();
 }
 BOOST_AUTO_TEST_SUITE_END()

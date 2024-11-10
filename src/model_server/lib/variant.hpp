@@ -12,14 +12,14 @@
 #include <boost/variant/recursive_variant.hpp>
 #include <boost/variant/get.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/dataframe.hpp>
+#include <core/storage/xframe_data/dataframe.hpp>
 #include <core/storage/serialization/serialization_includes.hpp>
 #include <model_server/lib/variant.hpp>
 
 namespace turi {
 class model_base;
 struct function_closure_info;
-class unity_sframe_base;
+class unity_xframe_base;
 class unity_sarray_base;
 
 /**
@@ -28,7 +28,7 @@ class unity_sarray_base;
  * \li flexible_type
  * \li dataframe_t
  * \li model
- * \li std::shared_ptr<unity_sframe>
+ * \li std::shared_ptr<unity_xframe>
  * \li std::shared_ptr<unity_sarray>
  * \li std::map<variant>
  * \li std::vector<variant>
@@ -43,7 +43,7 @@ typedef typename boost::make_recursive_variant<
             flexible_type,
             dataframe_t,
             std::shared_ptr<model_base>,
-            std::shared_ptr<unity_sframe_base>,
+            std::shared_ptr<unity_xframe_base>,
             std::shared_ptr<unity_sarray_base>,
             std::map<std::string, boost::recursive_variant_>,
             std::vector<boost::recursive_variant_>,
@@ -72,7 +72,7 @@ inline std::string get_variant_which_name(int i) {
    case 2:
      return "Model";
    case 3:
-     return "SFrame";
+     return "XFrame";
    case 4:
      return "SArray";
    case 5:
@@ -230,15 +230,15 @@ inline bool variant_is<std::shared_ptr<model_base> >(const variant_type& t) {
 
 template <>
 GL_HOT_INLINE_FLATTEN
-inline bool variant_is<std::shared_ptr<unity_sframe_base> >(const variant_type& t) {
+inline bool variant_is<std::shared_ptr<unity_xframe_base> >(const variant_type& t) {
    return t.which() == 3;
 }
 
-class gl_sframe;
+class gl_xframe;
 
 template <>
 GL_HOT_INLINE_FLATTEN
-inline bool variant_is<gl_sframe>(const variant_type& t) {
+inline bool variant_is<gl_xframe>(const variant_type& t) {
    return t.which() == 3;
 }
 

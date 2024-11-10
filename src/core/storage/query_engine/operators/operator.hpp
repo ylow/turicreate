@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_ENGINE_OPERATORS_QUERY_OPERATOR_HPP
-#define TURI_SFRAME_QUERY_ENGINE_OPERATORS_QUERY_OPERATOR_HPP
+#ifndef TURI_XFRAME_QUERY_ENGINE_OPERATORS_QUERY_OPERATOR_HPP
+#define TURI_XFRAME_QUERY_ENGINE_OPERATORS_QUERY_OPERATOR_HPP
 #include <cstddef>
 #include <string>
 #include <map>
@@ -19,7 +19,7 @@ namespace query_eval {
 class query_context;
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup operators Logical Operators
  * \{
  */
@@ -37,7 +37,7 @@ struct query_operator_attributes {
     SUB_LINEAR = 2, /** A sublinear operator consumes input sources at the
                        same rate, but may generate output at a different
                        lower or higher rate */
-    SOURCE = 4, /** A source operator is a direct source from an sframe
+    SOURCE = 4, /** A source operator is a direct source from an xframe
                  * or sarray and has no inputs. */
 
     LOGICAL_NODE_ONLY = 8, /** A node that never turns into an
@@ -167,4 +167,4 @@ class operator_impl : query_operator_attributes {
 } // namespace query_eval
 } // namespace turi
 
-#endif // TURI_SFRAME_QUERY_ENGINE_OPERATORS_QUERY_OPERATOR_HPP
+#endif // TURI_XFRAME_QUERY_ENGINE_OPERATORS_QUERY_OPERATOR_HPP

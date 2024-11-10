@@ -77,7 +77,7 @@ def _minimal_package_import_check(name):
             # append more information from Import error
             emsg = str(e)
             emsg = (
-                "{}.\nThis is a minimal package for SFrame only, without {} pinned"
+                "{}.\nThis is a minimal package for XFrame only, without {} pinned"
                 " as a dependency. You can try install all required packages by installing"
                 " the full package. For example:\n"
                 "pip install --force-reinstall turicreate=={}\n"

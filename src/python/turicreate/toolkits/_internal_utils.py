@@ -12,10 +12,10 @@ This module defines the (internal) utility functions used by the toolkits.
 
 
 
-from ..data_structures.sframe import SArray as _SArray
-from ..data_structures.sframe import SFrame as _SFrame
+from ..data_structures.xframe import SArray as _SArray
+from ..data_structures.xframe import XFrame as _XFrame
 from .._cython.cy_sarray import UnitySArrayProxy
-from .._cython.cy_sframe import UnitySFrameProxy
+from .._cython.cy_xframe import UnityXFrameProxy
 from ..toolkits._main import ToolkitError
 
 import json
@@ -23,7 +23,7 @@ import six as _six
 
 
 _proxy_map = {
-    UnitySFrameProxy: (lambda x: _SFrame(_proxy=x)),
+    UnityXFrameProxy: (lambda x: _XFrame(_proxy=x)),
     UnitySArrayProxy: (lambda x: _SArray(_proxy=x)),
 }
 
@@ -87,9 +87,9 @@ def _add_docstring(format_dict):
     return add_docstring_context
 
 
-def _find_only_column_of_type(sframe, target_type, type_name, col_name):
+def _find_only_column_of_type(xframe, target_type, type_name, col_name):
     """
-    Finds the only column in `SFrame` with a type specified by `target_type`.
+    Finds the only column in `XFrame` with a type specified by `target_type`.
     If there are zero or more than one such columns, an exception will be
     raised. The name and type of the target column should be provided as
     strings for the purpose of error feedback.
@@ -97,7 +97,7 @@ def _find_only_column_of_type(sframe, target_type, type_name, col_name):
     image_column_name = None
     if type(target_type) != list:
         target_type = [target_type]
-    for name, ctype in zip(sframe.column_names(), sframe.column_types()):
+    for name, ctype in zip(xframe.column_names(), xframe.column_types()):
         if ctype in target_type:
             if image_column_name is not None:
                 raise ToolkitError(
@@ -112,26 +112,26 @@ def _find_only_column_of_type(sframe, target_type, type_name, col_name):
                 col_name=col_name, type_name=type_name
             )
             + ' "datasets" consists of columns with types: '
-            + ", ".join([x.__name__ for x in sframe.column_types()])
+            + ", ".join([x.__name__ for x in xframe.column_types()])
             + "."
         )
     return image_column_name
 
 
-def _find_only_image_column(sframe):
+def _find_only_image_column(xframe):
     """
-    Finds the only column in `sframe` with a type of turicreate.Image.
+    Finds the only column in `xframe` with a type of turicreate.Image.
     If there are zero or more than one image columns, an exception will
     be raised.
     """
     from turicreate import Image
 
     return _find_only_column_of_type(
-        sframe, target_type=Image, type_name="image", col_name="feature"
+        xframe, target_type=Image, type_name="image", col_name="feature"
     )
 
 
-def _find_only_drawing_column(sframe):
+def _find_only_drawing_column(xframe):
     """
     Finds the only column that can be interpreted as a drawing feature column.
     A drawing column can be a stroke-based drawing column (with dtype list)
@@ -147,7 +147,7 @@ def _find_only_drawing_column(sframe):
     feature = None
     try:
         feature = _find_only_column_of_type(
-            sframe, target_type=Image, type_name="drawing", col_name="feature"
+            xframe, target_type=Image, type_name="drawing", col_name="feature"
         )
         bitmap_success = True
     except ToolkitError as err_from_bitmap_search:
@@ -155,7 +155,7 @@ def _find_only_drawing_column(sframe):
 
     try:
         feature = _find_only_column_of_type(
-            sframe, target_type=list, type_name="drawing", col_name="feature"
+            xframe, target_type=list, type_name="drawing", col_name="feature"
         )
         stroke_success = True
     except ToolkitError as err_from_stroke_search:
@@ -267,9 +267,9 @@ def _summarize_coefficients(top_coefs, bottom_coefs):
 
     Parameters
     ----------
-    top_coefs : SFrame of top k coefficients
+    top_coefs : XFrame of top k coefficients
 
-    bottom_coefs : SFrame of bottom k coefficients
+    bottom_coefs : XFrame of bottom k coefficients
 
     Returns
     -------
@@ -314,7 +314,7 @@ def _toolkit_get_topk_bottomk(values, k=5):
 
     Parameters
     ----------
-    values : SFrame of model coefficients
+    values : XFrame of model coefficients
 
     k: Maximum number of largest positive and k lowest negative numbers to return
 
@@ -381,12 +381,12 @@ def __extract_model_summary_value(model, value):
     return field_value
 
 
-def _make_repr_table_from_sframe(X):
+def _make_repr_table_from_xframe(X):
     """
-    Serializes an SFrame to a list of strings, that, when printed, creates a well-formatted table.
+    Serializes an XFrame to a list of strings, that, when printed, creates a well-formatted table.
     """
 
-    assert isinstance(X, _SFrame)
+    assert isinstance(X, _XFrame)
 
     column_names = X.column_names()
 
@@ -478,9 +478,9 @@ def _toolkit_repr_print(model, fields, section_titles, width=None, class_name="a
                 f = (str(f[0]), f[1])
                 out_fields.append((f[0], __extract_model_summary_value(model, f[1])))
                 max_width = max(max_width, len(f[0]))
-            elif isinstance(f, _SFrame):
+            elif isinstance(f, _XFrame):
                 out_fields.append("")
-                out_fields += _make_repr_table_from_sframe(f)
+                out_fields += _make_repr_table_from_xframe(f)
                 out_fields.append("")
             else:
                 raise TypeError("Type of field %s not recognized." % str(f))
@@ -505,7 +505,7 @@ def _toolkit_repr_print(model, fields, section_titles, width=None, class_name="a
 
 def _map_unity_proxy_to_object(value):
     """
-    Map returning value, if it is unity SFrame, SArray, map it
+    Map returning value, if it is unity XFrame, SArray, map it
     """
     vtype = type(value)
     if vtype in _proxy_map:
@@ -539,9 +539,9 @@ def _raise_error_if_column_exists(
     column_name_error_message_name="column_name",
 ):
     """
-    Check if a column exists in an SFrame with error message.
+    Check if a column exists in an XFrame with error message.
     """
-    err_msg = "The SFrame {0} must contain the column {1}.".format(
+    err_msg = "The XFrame {0} must contain the column {1}.".format(
         dataset_variable_name, column_name_error_message_name
     )
     if column_name not in dataset.column_names():
@@ -579,30 +579,30 @@ def _raise_error_if_sarray_not_expected_dtype(sa, name, types):
         raise ToolkitError(err_msg)
 
 
-def _raise_error_if_not_sframe(dataset, variable_name="SFrame"):
+def _raise_error_if_not_xframe(dataset, variable_name="XFrame"):
     """
-    Check if the input is an SFrame. Provide a proper error
+    Check if the input is an XFrame. Provide a proper error
     message otherwise.
     """
-    err_msg = "Input %s is not an SFrame. If it is a Pandas DataFrame,"
-    err_msg += " you may use the to_sframe() function to convert it to an SFrame."
+    err_msg = "Input %s is not an XFrame. If it is a Pandas DataFrame,"
+    err_msg += " you may use the to_xframe() function to convert it to an XFrame."
 
-    if not isinstance(dataset, _SFrame):
+    if not isinstance(dataset, _XFrame):
         raise ToolkitError(err_msg % variable_name)
 
 
-def _raise_error_if_sframe_empty(dataset, variable_name="SFrame"):
+def _raise_error_if_xframe_empty(dataset, variable_name="XFrame"):
     """
     Check if the input is empty.
     """
-    err_msg = "Input %s either has no rows or no columns. A non-empty SFrame "
+    err_msg = "Input %s either has no rows or no columns. A non-empty XFrame "
     err_msg += "is required."
 
     if dataset.num_rows() == 0 or dataset.num_columns() == 0:
         raise ToolkitError(err_msg % variable_name)
 
 
-def _raise_error_if_not_iterable(dataset, variable_name="SFrame"):
+def _raise_error_if_not_iterable(dataset, variable_name="XFrame"):
     """
     Check if the input is iterable.
     """
@@ -614,7 +614,7 @@ def _raise_error_if_not_iterable(dataset, variable_name="SFrame"):
 
 def _raise_error_evaluation_metric_is_valid(metric, allowed_metrics):
     """
-    Check if the input is an SFrame. Provide a proper error
+    Check if the input is an XFrame. Provide a proper error
     message otherwise.
     """
 
@@ -643,7 +643,7 @@ def _validate_data(dataset, target, features=None, validation_set="auto"):
 
     Parameters
     ----------
-    dataset : SFrame
+    dataset : XFrame
         Dataset for training the model.
 
     target : string
@@ -652,24 +652,24 @@ def _validate_data(dataset, target, features=None, validation_set="auto"):
     features : list[string], optional
         List of feature names used.
 
-    validation_set : SFrame, optional
+    validation_set : XFrame, optional
         A dataset for monitoring the model's generalization performance, with
         the same schema as the training dataset. Can also be None or 'auto'.
 
     Returns
     -------
-    dataset : SFrame
+    dataset : XFrame
         The input dataset, minus any columns not referenced by target or
         features
 
-    validation_set : SFrame or str
-        A canonicalized version of the input validation_set. For SFrame
-        arguments, the returned SFrame only includes those columns referenced by
-        target or features. SFrame arguments that do not match the schema of
+    validation_set : XFrame or str
+        A canonicalized version of the input validation_set. For XFrame
+        arguments, the returned XFrame only includes those columns referenced by
+        target or features. XFrame arguments that do not match the schema of
         dataset, or string arguments that are not 'auto', trigger an exception.
     """
 
-    _raise_error_if_not_sframe(dataset, "training dataset")
+    _raise_error_if_not_xframe(dataset, "training dataset")
 
     # Determine columns to keep
     if features is None:
@@ -686,7 +686,7 @@ def _validate_data(dataset, target, features=None, validation_set="auto"):
         # Only string value allowed is 'auto'
         if validation_set != "auto":
             raise TypeError("Unrecognized value for validation_set.")
-    elif isinstance(validation_set, _SFrame):
+    elif isinstance(validation_set, _XFrame):
         # Attempt to append the two datasets together to check schema
         validation_set.head().append(dataset.head())
 
@@ -695,7 +695,7 @@ def _validate_data(dataset, target, features=None, validation_set="auto"):
     elif not validation_set is None:
         raise TypeError(
             "validation_set must be either 'auto', None, or an "
-            "SFrame matching the training data."
+            "XFrame matching the training data."
         )
 
     # Reduce training set to requested columns
@@ -711,7 +711,7 @@ def _handle_missing_values(dataset, feature_column_name, variable_name="dataset"
             + str(feature_column_name)
             + " in the "
             + variable_name
-            + ". Use the SFrame's dropna function to drop rows with 'None' values in them."
+            + ". Use the XFrame's dropna function to drop rows with 'None' values in them."
         )
 
 
@@ -723,7 +723,7 @@ def _validate_row_label(dataset, label=None, default_label="__id"):
 
     Parameters
     ----------
-    dataset : SFrame
+    dataset : XFrame
         Input dataset.
 
     label : str, optional
@@ -731,11 +731,11 @@ def _validate_row_label(dataset, label=None, default_label="__id"):
 
     default_label : str, optional
         The default column name if `label` is not specified. A column with row
-        numbers is added to the output SFrame in this case.
+        numbers is added to the output XFrame in this case.
 
     Returns
     -------
-    dataset : SFrame
+    dataset : XFrame
         The input dataset, but with an additional row label column, *if* there
         was no input label.
 

@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include <core/util/hash_value.hpp>
-#include <core/storage/sframe_data/groupby_aggregate.hpp>
+#include <core/storage/xframe_data/groupby_aggregate.hpp>
 #include <model_server/extensions/timeseries/timeseries.hpp>
 
 using namespace turi;
@@ -24,13 +24,13 @@ namespace timeseries {
 /**
  * Resample helper: Parse and split operators.
  *
- * \param[in]     sframe            Input data.
+ * \param[in]     xframe            Input data.
  * \param[in]     operators         Operators.
  * \param[in,out] agg_ops_vec       Aggregators used in the timeseries.
  * \param[in,out] ret_column_names  Names of the columns in output timeseries.
  */
 void parse_split_log_operators(
-      const gl_sframe& sframe,
+      const gl_xframe& xframe,
       const std::map<std::string,
            aggregate::groupby_descriptor_type>& operators,
       std::vector<std::pair<std::vector<std::string>,
@@ -42,10 +42,10 @@ void parse_split_log_operators(
   for (const auto& op: operators) {
     std::shared_ptr<group_aggregate_value> aggregator;
     if (op.second.m_aggregator->name() == "Sum" &&
-        sframe[op.second.m_group_columns[0]].dtype() == flex_type_enum::VECTOR){
+        xframe[op.second.m_group_columns[0]].dtype() == flex_type_enum::VECTOR){
       aggregator = get_builtin_group_aggregator("__builtin__vector__sum__");
     } else if (op.second.m_aggregator->name() == "Avg" &&
-        sframe[op.second.m_group_columns[0]].dtype() == flex_type_enum::VECTOR){
+        xframe[op.second.m_group_columns[0]].dtype() == flex_type_enum::VECTOR){
       aggregator = get_builtin_group_aggregator("__builtin__vector__avg__");
     } else {
       aggregator = op.second.m_aggregator;
@@ -84,18 +84,18 @@ void parse_split_log_operators(
 /**
  * Resample helper: Validate the names and types of the aggregators.
  *
- * \param[in] sframe          SFrame being operated on.
+ * \param[in] xframe          XFrame being operated on.
  * \param[in] agg_ops           Aggregate ops.
  * \param[in] interpolation_fn  Interpolation functions.
  */
 void validate_aggregators_and_interpolators(
-        const gl_sframe& sframe,
+        const gl_xframe& xframe,
         const std::vector<std::pair<std::vector<std::string>,
                std::shared_ptr<group_aggregate_value>>>& agg_ops,
         const interpolator_type& interpolation_fn) {
 
-  std::vector<std::string> source_column_names = sframe.column_names();
-  std::vector<flex_type_enum> source_types = sframe.column_types();
+  std::vector<std::string> source_column_names = xframe.column_names();
+  std::vector<flex_type_enum> source_types = xframe.column_types();
   DASSERT_EQ(source_types.size(), source_column_names.size());
 
   std::map<std::string, size_t> source_column_to_index;
@@ -169,25 +169,25 @@ void get_relevant_columns(
 /**
  * Resample helper: Get the return column types from the aggregates.
  *
- * \param[in]     sframe            SFrame being operated on.
+ * \param[in]     xframe            XFrame being operated on.
  * \param[in]     ret_column_names  Relevant column names.
  * \param[in,out] agg_ops           Interpolation functions.
  * \param[in,out] ret_column_types  Relevant column types.
  */
 void get_return_column_types(
-      const gl_sframe& sframe,
+      const gl_xframe& xframe,
       const std::vector<std::string>& ret_column_names,
       std::vector<std::pair<std::vector<std::string>,
                std::shared_ptr<group_aggregate_value>>>& agg_ops,
       interpolator_type& interpolation_fn,
       std::vector<flex_type_enum>& ret_column_types) {
 
-  std::vector<flex_type_enum> source_types = sframe.column_types();
+  std::vector<flex_type_enum> source_types = xframe.column_types();
 
   for (const auto& agg_op: agg_ops) {
     std::vector<flex_type_enum> input_types;
     for(auto col_name : agg_op.first) {
-      size_t id = sframe.column_index(col_name);
+      size_t id = xframe.column_index(col_name);
       input_types.push_back(source_types[id]);
     }
     auto output_type = agg_op.second->set_input_types(input_types);
@@ -198,12 +198,12 @@ void get_return_column_types(
 /**
  * Resample helper: Index the column used by each aggregate.
  *
- * \param[in] sframe             SFrame being operated on.
+ * \param[in] xframe             XFrame being operated on.
  * \param[in,out] agg_ops        Interpolation functions.
  * \param[in,out] agg_op_col_ids Column IDs (needed for writing)
  */
 void get_column_ids_for_aggregates(
-     const gl_sframe& sframe,
+     const gl_xframe& xframe,
      const std::vector<std::pair<std::vector<std::string>,
                std::shared_ptr<group_aggregate_value>>>& agg_ops,
      std::vector<std::vector<size_t>>& agg_op_col_ids) {
@@ -211,7 +211,7 @@ void get_column_ids_for_aggregates(
   for (const auto& agg_op: agg_ops) {
     std::vector<size_t> cids;
     for(auto col_name : agg_op.first) {
-      size_t id = sframe.column_index(col_name);
+      size_t id = xframe.column_index(col_name);
       cids.push_back(id);
     }
 
@@ -287,7 +287,7 @@ void gl_timeseries::load_version(iarchive& iarc, size_t version) {
        >> m_initialized;
 
   const std::string & prefix = iarc.get_prefix();
-  m_sframe = gl_sframe(prefix);
+  m_xframe = gl_xframe(prefix);
 }
 
 /**
@@ -298,10 +298,10 @@ void gl_timeseries::save_impl(oarchive& oarc) const {
        << m_value_col_names
        << m_initialized;
   const std::string & prefix = oarc.get_prefix();
-  m_sframe.save(prefix);
+  m_xframe.save(prefix);
 }
 
-void gl_timeseries::init(const gl_sframe & input_sf, const std::string & name,
+void gl_timeseries::init(const gl_xframe & input_sf, const std::string & name,
     bool is_sorted,std::vector<int64_t> ranges) {
 
   if(m_initialized) {
@@ -321,7 +321,7 @@ void gl_timeseries::init(const gl_sframe & input_sf, const std::string & name,
 
   if(!does_index_col_exist) {
     log_and_throw(std::string(
-        "The index column '" + name + "' does not exist in the input sframe."));
+        "The index column '" + name + "' does not exist in the input xframe."));
   }
   if(input_sf[name].dtype() != flex_type_enum::DATETIME &&
      input_sf[name].dtype() != flex_type_enum::INTEGER) {
@@ -333,7 +333,7 @@ void gl_timeseries::init(const gl_sframe & input_sf, const std::string & name,
         "The ranges argument should have at least two elements"));
   }
 
-  gl_sframe refined_input_sf = input_sf;
+  gl_xframe refined_input_sf = input_sf;
   if(ranges[0] > 0 || ranges[1] > 0) {
     if(ranges[0] < 0)
       ranges[0] = 0;
@@ -356,10 +356,10 @@ void gl_timeseries::init(const gl_sframe & input_sf, const std::string & name,
     refined_input_sf.remove_column("_temp_row_num_used_for_stable_sorting");
   }
 
-  // for convenience reasons we restructure the input sframe such that
+  // for convenience reasons we restructure the input xframe such that
   // index column to be the first column.
-  m_sframe.add_column(refined_input_sf[m_index_col_name],m_index_col_name);
-  m_sframe.add_columns(refined_input_sf[m_value_col_names]);
+  m_xframe.add_column(refined_input_sf[m_index_col_name],m_index_col_name);
+  m_xframe.add_columns(refined_input_sf[m_value_col_names]);
   m_initialized = true;
 }
 
@@ -481,7 +481,7 @@ gl_timeseries gl_timeseries::resample(const flex_float& period,
   // --------------------------------------------------------------------------
   const size_t MICROSECONDS = 1000000;
   const size_t micro_period = period * MICROSECONDS;
-  if (m_sframe.size() == 0) {
+  if (m_xframe.size() == 0) {
     return *this;
   }
 
@@ -505,33 +505,33 @@ gl_timeseries gl_timeseries::resample(const flex_float& period,
   std::vector<std::pair<std::vector<std::string>,
                    std::shared_ptr<group_aggregate_value>>> agg_ops;
   std::vector<std::string> ret_column_names {m_index_col_name};
-  parse_split_log_operators(m_sframe, operators, agg_ops, ret_column_names);
+  parse_split_log_operators(m_xframe, operators, agg_ops, ret_column_names);
 
   // Validate the aggregates & column names.
-  validate_aggregators_and_interpolators(m_sframe, agg_ops, interpolation_fn);
+  validate_aggregators_and_interpolators(m_xframe, agg_ops, interpolation_fn);
 
   // Filter out only the used columns.
   std::vector<std::string> input_column_names {m_index_col_name};
   get_relevant_columns(agg_ops, input_column_names);
-  gl_sframe relevant_sframe = m_sframe[input_column_names];
+  gl_xframe relevant_xframe = m_xframe[input_column_names];
 
 
   // Prepare the output time-series.
   // --------------------------------------------------------------------------
   std::vector<flex_type_enum> ret_column_types {this->get_index_col_type()};
-  get_return_column_types(relevant_sframe, ret_column_names,
+  get_return_column_types(relevant_xframe, ret_column_names,
       agg_ops, interpolation_fn, ret_column_types);
 
   std::vector<std::vector<size_t>> agg_op_col_ids;
-  get_column_ids_for_aggregates(relevant_sframe, agg_ops, agg_op_col_ids);
+  get_column_ids_for_aggregates(relevant_xframe, agg_ops, agg_op_col_ids);
 
   // Resample code!
   // --------------------------------------------------------------------------
   DASSERT_EQ(ret_column_names.size(), ret_column_types.size());
-  gl_sframe_writer writer(ret_column_names, ret_column_types, 1);
+  gl_xframe_writer writer(ret_column_names, ret_column_types, 1);
 
   // Assume uniform timezone.
-  flex_date_time first_time = relevant_sframe[m_index_col_name][0];
+  flex_date_time first_time = relevant_xframe[m_index_col_name][0];
   int32_t tz = first_time.time_zone_offset();
 
   // timestamp -> bucket_id
@@ -564,7 +564,7 @@ gl_timeseries gl_timeseries::resample(const flex_float& period,
   std::vector<flexible_type> curr_values(ret_size, FLEX_UNDEFINED);
   std::vector<flexible_type> prev_values(ret_size, FLEX_UNDEFINED);
 
-  auto range = relevant_sframe.range_iterator();
+  auto range = relevant_xframe.range_iterator();
   auto iter = range.begin();
   DASSERT_TRUE(iter->size() > 0);
 
@@ -644,14 +644,14 @@ gl_timeseries gl_timeseries::resample(const flex_float& period,
 
 gl_timeseries gl_timeseries::tshift(const flex_float & delta) {
   _check_if_initialized();
-  auto sa_index = m_sframe[m_index_col_name];
+  auto sa_index = m_xframe[m_index_col_name];
   auto sa_index_shifted = sa_index + delta;
 
-  auto shifted_sframe = m_sframe[m_value_col_names];
-  shifted_sframe.add_column(sa_index_shifted,m_index_col_name);
+  auto shifted_xframe = m_xframe[m_value_col_names];
+  shifted_xframe.add_column(sa_index_shifted,m_index_col_name);
 
   gl_timeseries g_ts;
-  g_ts.init(shifted_sframe,m_index_col_name,true);
+  g_ts.init(shifted_xframe,m_index_col_name,true);
   return g_ts;
 
 }
@@ -662,17 +662,17 @@ gl_timeseries gl_timeseries::shift(const int64_t & steps){
   if(steps == 0)
     return *this;
 
-  auto sframe_no_index = m_sframe[m_value_col_names];
-  auto len_sf = sframe_no_index.size();
+  auto xframe_no_index = m_xframe[m_value_col_names];
+  auto len_sf = xframe_no_index.size();
   auto num_missing = std::abs(steps);
 
-  // The part of the SFrame that will be part of the result. The rest of the
+  // The part of the XFrame that will be part of the result. The rest of the
   // rows will be missing values. sf_cut.size() + num_missing == len_sf
-  auto sf_cut = gl_sframe();
+  auto sf_cut = gl_xframe();
   if (steps < 0) {
-    sf_cut = sframe_no_index[{num_missing,int64_t(len_sf)}];
+    sf_cut = xframe_no_index[{num_missing,int64_t(len_sf)}];
   } else {
-    sf_cut = sframe_no_index[{0,int64_t(len_sf) - num_missing}];
+    sf_cut = xframe_no_index[{0,int64_t(len_sf) - num_missing}];
   }
 
   // Fill a correctly-typed SArray with missing values for each value column
@@ -683,34 +683,34 @@ gl_timeseries gl_timeseries::shift(const int64_t & steps){
 
   std::map< std::string,gl_sarray> none_sas;
   for(auto &val_name : m_value_col_names) {
-    gl_sarray none_sa(none_input, sframe_no_index[val_name].dtype());
+    gl_sarray none_sa(none_input, xframe_no_index[val_name].dtype());
     none_sas[val_name] = none_sa;
   }
 
-  gl_sframe none_sf(none_sas);
-  auto result_sframe = gl_sframe();
+  gl_xframe none_sf(none_sas);
+  auto result_xframe = gl_xframe();
   if(steps < 0)
-    result_sframe = sf_cut.append(none_sf);
+    result_xframe = sf_cut.append(none_sf);
   else
-    result_sframe = none_sf.append(sf_cut);
+    result_xframe = none_sf.append(sf_cut);
 
   // Add back the index
-  result_sframe.add_column(m_sframe[m_index_col_name],m_index_col_name);
+  result_xframe.add_column(m_xframe[m_index_col_name],m_index_col_name);
 
   gl_timeseries g_ts;
-  g_ts.init(result_sframe,m_index_col_name,true);
+  g_ts.init(result_xframe,m_index_col_name,true);
   return g_ts;
 }
 
 // This helper function starts writing the remaining rows of one of
-// the input sframes to the output sframe. It starts from the
-// current position of the sframe iterator and fills columns of the
-// output sframe started from the offset index.
-void _write_remaining_of_sframe(std::vector<flexible_type> & v,
+// the input xframes to the output xframe. It starts from the
+// current position of the xframe iterator and fills columns of the
+// output xframe started from the offset index.
+void _write_remaining_of_xframe(std::vector<flexible_type> & v,
                   int offset,
-                  std::shared_ptr<gl_sframe_range> & range,
-                  std::shared_ptr<gl_sframe_range::iterator> & range_iter,
-                  gl_sframe_writer & w) {
+                  std::shared_ptr<gl_xframe_range> & range,
+                  std::shared_ptr<gl_xframe_range::iterator> & range_iter,
+                  gl_xframe_writer & w) {
 
   while((*range_iter) != range->end()) {
     const auto & elem = *(*range_iter);
@@ -731,16 +731,16 @@ gl_timeseries gl_timeseries::ts_union(const gl_timeseries & other_ts) {
   std::vector<flex_type_enum> col_types; // return column types.
 
   const std::vector<std::string>& ref_col_names =
-    this->m_sframe.column_names();
+    this->m_xframe.column_names();
   const std::vector<flex_type_enum>& ref_col_types =
-    this->m_sframe.column_types();
+    this->m_xframe.column_types();
   const std::vector<std::string>& other_col_names =
-    other_ts.m_sframe.column_names();
+    other_ts.m_xframe.column_names();
   std::unordered_set<std::string> ref_col_names_set(ref_col_names.begin(),
       ref_col_names.end());
 
-  const auto & other_size = other_ts.m_sframe.size();
-  const auto & this_size = this->m_sframe.size();
+  const auto & other_size = other_ts.m_xframe.size();
+  const auto & this_size = this->m_xframe.size();
 
   if(other_size == 0) {
     return *this;
@@ -760,52 +760,52 @@ gl_timeseries gl_timeseries::ts_union(const gl_timeseries & other_ts) {
       }
   }
 
-  // reorder columns of the sframe for other_ts if it is needed
-  gl_sframe other_sf = other_ts.m_sframe.select_columns(ref_col_names);
+  // reorder columns of the xframe for other_ts if it is needed
+  gl_xframe other_sf = other_ts.m_xframe.select_columns(ref_col_names);
 
   // check if column types match
   for(size_t j=0;j< ref_col_names.size();j++) {
       if(other_sf[ref_col_names[j]].dtype() !=
-          this->m_sframe[ref_col_names[j]].dtype()) {
+          this->m_xframe[ref_col_names[j]].dtype()) {
          log_and_throw("Type of the column '" + ref_col_names[j] +
              "' in two TimeSeries being combined.");
       }
   }
 
   const std::string& index_col_name = this->get_index_col_name();
-  const flexible_type& min_index_this = this->m_sframe[index_col_name][0];
+  const flexible_type& min_index_this = this->m_xframe[index_col_name][0];
   const flexible_type& max_index_this =
-    this->m_sframe[index_col_name][this_size-1];
+    this->m_xframe[index_col_name][this_size-1];
   const flexible_type& min_index_other = other_sf[index_col_name][0];
   const flexible_type& max_index_other = other_sf[index_col_name][other_size-1];
 
-  std::vector<gl_sframe> input_sframes = {this->m_sframe,other_sf};
+  std::vector<gl_xframe> input_xframes = {this->m_xframe,other_sf};
   // if two gl_timeseries do not overlap, then collapse to append() operation.
   gl_timeseries g_ts;
   if(max_index_this <= min_index_other) {
-    auto appended_sframe = input_sframes[0].append(input_sframes[1]);
-    appended_sframe.materialize();
-    g_ts.init(appended_sframe,this->get_index_col_name(),true);
+    auto appended_xframe = input_xframes[0].append(input_xframes[1]);
+    appended_xframe.materialize();
+    g_ts.init(appended_xframe,this->get_index_col_name(),true);
     return g_ts;
   }
   else if (max_index_other <= min_index_this) {
-    auto appended_sframe = input_sframes[1].append(input_sframes[0]);
-    appended_sframe.materialize();
-    g_ts.init(appended_sframe,this->get_index_col_name(),true);
+    auto appended_xframe = input_xframes[1].append(input_xframes[0]);
+    appended_xframe.materialize();
+    g_ts.init(appended_xframe,this->get_index_col_name(),true);
     return g_ts;
   }
 
-  std::vector<std::shared_ptr<gl_sframe_range>> sframe_range;
-  std::vector<std::shared_ptr<gl_sframe_range::iterator>> sframe_range_iter;
-  std::vector<flexible_type> values(input_sframes[0].num_columns(),
+  std::vector<std::shared_ptr<gl_xframe_range>> xframe_range;
+  std::vector<std::shared_ptr<gl_xframe_range::iterator>> xframe_range_iter;
+  std::vector<flexible_type> values(input_xframes[0].num_columns(),
       flex_undefined());
-  gl_sframe_writer writer(ref_col_names,ref_col_types, 1);
+  gl_xframe_writer writer(ref_col_names,ref_col_types, 1);
 
-  for(size_t i=0;i < input_sframes.size();i++) {
-    sframe_range.push_back(
-        std::make_shared<gl_sframe_range>(input_sframes[i].range_iterator()));
-    sframe_range_iter.push_back(
-        std::make_shared<gl_sframe_range::iterator>((*sframe_range[i]).begin()));
+  for(size_t i=0;i < input_xframes.size();i++) {
+    xframe_range.push_back(
+        std::make_shared<gl_xframe_range>(input_xframes[i].range_iterator()));
+    xframe_range_iter.push_back(
+        std::make_shared<gl_xframe_range::iterator>((*xframe_range[i]).begin()));
   }
 
   // This is the simple implementation for two-way union.
@@ -815,36 +815,36 @@ gl_timeseries gl_timeseries::ts_union(const gl_timeseries & other_ts) {
 
   while(true) {
       std::fill(values.begin(),values.end(),flex_undefined());
-      if((*sframe_range_iter[0]) == (*sframe_range[0]).end()) {
+      if((*xframe_range_iter[0]) == (*xframe_range[0]).end()) {
         first_ts_finished = true;
       }
-      if((*sframe_range_iter[1]) == (*sframe_range[1]).end()) {
+      if((*xframe_range_iter[1]) == (*xframe_range[1]).end()) {
         second_ts_finished = true;
       }
 
       if(first_ts_finished && second_ts_finished) break;
 
       if(second_ts_finished){
-        _write_remaining_of_sframe(values,1,sframe_range[0],sframe_range_iter[0],
+        _write_remaining_of_xframe(values,1,xframe_range[0],xframe_range_iter[0],
             writer);
         break;
       }
       if(first_ts_finished){
-        _write_remaining_of_sframe(values,1,sframe_range[1],sframe_range_iter[1],
+        _write_remaining_of_xframe(values,1,xframe_range[1],xframe_range_iter[1],
             writer);
         break;
       }
 
-      const auto & elem1 = *(*sframe_range_iter[0]);
-      const auto & elem2 = *(*sframe_range_iter[1]);
+      const auto & elem1 = *(*xframe_range_iter[0]);
+      const auto & elem2 = *(*xframe_range_iter[1]);
 
       if(elem1[0] <= elem2[0]) {
           for(size_t j=0;j< elem1.size();j++) values[j] = elem1[j];
-          ++(*sframe_range_iter[0]);
+          ++(*xframe_range_iter[0]);
       }
       else {
           for(size_t j=0;j< elem2.size();j++) values[j] = elem2[j];
-          ++(*sframe_range_iter[1]);
+          ++(*xframe_range_iter[1]);
       }
       writer.write(values,0);
   }
@@ -856,9 +856,9 @@ gl_timeseries gl_timeseries::ts_union(const gl_timeseries & other_ts) {
 gl_timeseries gl_timeseries::index_join(const gl_timeseries & other_ts,const
     std::string & how, const std::string & index_column_name) {
 
-  std::vector<std::shared_ptr<gl_sframe_range>> sframe_range;
-  std::vector<std::shared_ptr<gl_sframe_range::iterator>> sframe_range_iter;
-  std::vector<gl_sframe> input_sframes = {this->m_sframe,other_ts.m_sframe};
+  std::vector<std::shared_ptr<gl_xframe_range>> xframe_range;
+  std::vector<std::shared_ptr<gl_xframe_range::iterator>> xframe_range_iter;
+  std::vector<gl_xframe> input_xframes = {this->m_xframe,other_ts.m_xframe};
 
   std::vector<std::string> col_names;
   std::vector<flex_type_enum> col_types;
@@ -868,8 +868,8 @@ gl_timeseries gl_timeseries::index_join(const gl_timeseries & other_ts,const
   col_types.push_back(flex_type_enum::DATETIME);
   std::set<std::string> column_name_set;
 
-  for (size_t i=0;i < input_sframes.size();i++) {
-    std::vector<std::string> cur_col_names = input_sframes[i].column_names();
+  for (size_t i=0;i < input_xframes.size();i++) {
+    std::vector<std::string> cur_col_names = input_xframes[i].column_names();
     for(size_t j=1;j< (cur_col_names.size());j++) {
       // disambiguate column names in join
       if(column_name_set.find(cur_col_names[j]) != column_name_set.end()) {
@@ -880,13 +880,13 @@ gl_timeseries gl_timeseries::index_join(const gl_timeseries & other_ts,const
         col_names.push_back(cur_col_names[j]);
         column_name_set.insert(cur_col_names[j]);
       }
-      col_types.push_back(input_sframes[i][cur_col_names[j]].dtype());
+      col_types.push_back(input_xframes[i][cur_col_names[j]].dtype());
     }
-    num_cols_join_ts += input_sframes[i].num_columns() - 1;
+    num_cols_join_ts += input_xframes[i].num_columns() - 1;
   }
   std::vector<flexible_type> values(num_cols_join_ts,flex_undefined());
 
-  gl_sframe_writer writer(col_names,col_types, 1);
+  gl_xframe_writer writer(col_names,col_types, 1);
 
   //This enum keeps track of 'how' method and avoids string comparison later on.
   enum JOIN_TYPE { LEFT, INNER, OUTER, RIGHT};
@@ -896,11 +896,11 @@ gl_timeseries gl_timeseries::index_join(const gl_timeseries & other_ts,const
   else if(how == "right") jt = RIGHT;
   else jt = OUTER;
 
-  for(size_t i=0;i < input_sframes.size();i++) {
-    sframe_range.push_back(
-        std::make_shared<gl_sframe_range>(input_sframes[i].range_iterator()));
-    sframe_range_iter.push_back(
-        std::make_shared<gl_sframe_range::iterator>((*sframe_range[i]).begin()));
+  for(size_t i=0;i < input_xframes.size();i++) {
+    xframe_range.push_back(
+        std::make_shared<gl_xframe_range>(input_xframes[i].range_iterator()));
+    xframe_range_iter.push_back(
+        std::make_shared<gl_xframe_range::iterator>((*xframe_range[i]).begin()));
   }
 
   gl_timeseries g_ts;
@@ -911,10 +911,10 @@ gl_timeseries gl_timeseries::index_join(const gl_timeseries & other_ts,const
 
   while(true) {
       std::fill(values.begin(),values.end(),flex_undefined());
-      if((*sframe_range_iter[0]) == (*sframe_range[0]).end()) {
+      if((*xframe_range_iter[0]) == (*xframe_range[0]).end()) {
         first_ts_finished = true;
       }
-      if((*sframe_range_iter[1]) == (*sframe_range[1]).end()) {
+      if((*xframe_range_iter[1]) == (*xframe_range[1]).end()) {
         second_ts_finished = true;
       }
 
@@ -922,31 +922,31 @@ gl_timeseries gl_timeseries::index_join(const gl_timeseries & other_ts,const
 
       if(second_ts_finished){
         if(jt == OUTER || jt == LEFT) {
-          _write_remaining_of_sframe(values,1,sframe_range[0],
-              sframe_range_iter[0], writer);
+          _write_remaining_of_xframe(values,1,xframe_range[0],
+              xframe_range_iter[0], writer);
         }
         break;
       }
       if(first_ts_finished){
         if(jt == OUTER || jt == RIGHT) {
-          _write_remaining_of_sframe(values, input_sframes[0].num_columns(),
-              sframe_range[1],sframe_range_iter[1],writer);
+          _write_remaining_of_xframe(values, input_xframes[0].num_columns(),
+              xframe_range[1],xframe_range_iter[1],writer);
         }
         break;
       }
 
-      const auto & elem1 = *(*sframe_range_iter[0]);
-      const auto & elem2 = *(*sframe_range_iter[1]);
+      const auto & elem1 = *(*xframe_range_iter[0]);
+      const auto & elem2 = *(*xframe_range_iter[1]);
 
       bool equal = (elem1[0] == elem2[0]);
-      size_t offset = input_sframes[0].num_columns();
+      size_t offset = input_xframes[0].num_columns();
       bool should_output_tuple = false;
       if (equal) {
         for(size_t j=0;j< elem1.size();j++) values[j] = elem1[j];
-        ++(*sframe_range_iter[0]);
+        ++(*xframe_range_iter[0]);
 
         for(size_t j=1;j< elem2.size();j++) values[j+offset-1] = elem2[j];
-        ++(*sframe_range_iter[1]);
+        ++(*xframe_range_iter[1]);
         should_output_tuple = true;
       }
       else {
@@ -955,7 +955,7 @@ gl_timeseries gl_timeseries::index_join(const gl_timeseries & other_ts,const
             for(size_t j=0;j< elem1.size();j++) values[j] = elem1[j];
             should_output_tuple = true;
           }
-          ++(*sframe_range_iter[0]);
+          ++(*xframe_range_iter[0]);
         }
         else {
           if(jt == RIGHT || jt==OUTER) {
@@ -963,7 +963,7 @@ gl_timeseries gl_timeseries::index_join(const gl_timeseries & other_ts,const
             values[0] = elem2[0];
             should_output_tuple = true;
           }
-          ++(*sframe_range_iter[1]);
+          ++(*xframe_range_iter[1]);
         }
       }
 
@@ -986,7 +986,7 @@ gl_timeseries gl_timeseries::slice(const flexible_type &start_time, const
     log_and_throw("Parameter 'end_time' must be flex_date_time");
   }
 
-  auto index_col = m_sframe[m_index_col_name];
+  auto index_col = m_xframe[m_index_col_name];
   gl_sarray sel1;
   gl_sarray sel2;
   if(closed == "left") {
@@ -1005,7 +1005,7 @@ gl_timeseries gl_timeseries::slice(const flexible_type &start_time, const
     log_and_throw("Invalid value for parameter 'closed'");
   }
 
-  gl_sframe range_sf = m_sframe[sel1 && sel2];
+  gl_xframe range_sf = m_xframe[sel1 && sel2];
   gl_timeseries ret_ts;
   ret_ts.init(range_sf, m_index_col_name, true);
   return ret_ts;
@@ -1013,13 +1013,13 @@ gl_timeseries gl_timeseries::slice(const flexible_type &start_time, const
 
 gl_grouped_timeseries gl_timeseries::group(std::vector<std::string> key_columns) {
   gl_grouped_timeseries ret;
-  ret.group(this->get_sframe(), this->m_index_col_name, key_columns);
+  ret.group(this->get_xframe(), this->m_index_col_name, key_columns);
   return ret;
 }
 
 void gl_timeseries::add_column(const gl_sarray& data, const std::string& name) {
-   m_sframe.add_column(data,name);
-   std::vector<std::string> all_column_names = m_sframe.column_names();
+   m_xframe.add_column(data,name);
+   std::vector<std::string> all_column_names = m_xframe.column_names();
    all_column_names.erase(std::remove(all_column_names.begin(),
          all_column_names.end(), m_index_col_name), all_column_names.end());
    m_value_col_names = all_column_names;
@@ -1029,7 +1029,7 @@ void gl_timeseries::remove_column(const std::string& name) {
   if (name == m_index_col_name) {
     log_and_throw("Index column cannot be removed.");
   }
-  m_sframe.remove_column(name);
+  m_xframe.remove_column(name);
   m_value_col_names.erase(std::remove(m_value_col_names.begin(),
         m_value_col_names.end(),name), m_value_col_names.end());
 

@@ -9,7 +9,7 @@
 import unittest
 import pandas
 import array
-from .. import SFrame
+from .. import XFrame
 from pandas.util.testing import assert_frame_equal
 from sys import version_info
 
@@ -21,11 +21,11 @@ pytestmark = [pytest.mark.minimal]
 class DataFrameTest(unittest.TestCase):
     def test_empty(self):
         expected = pandas.DataFrame()
-        assert_frame_equal(SFrame(expected).to_dataframe(), expected)
+        assert_frame_equal(XFrame(expected).to_dataframe(), expected)
         expected["int"] = []
         expected["float"] = []
         expected["str"] = []
-        assert_frame_equal(SFrame(expected).to_dataframe(), expected)
+        assert_frame_equal(XFrame(expected).to_dataframe(), expected)
 
     def test_simple_dataframe(self):
         expected = pandas.DataFrame()
@@ -36,7 +36,7 @@ class DataFrameTest(unittest.TestCase):
             expected["unicode"] = [str(i) for i in range(10)]
         expected["array"] = [array.array("d", [i]) for i in range(10)]
         expected["ls"] = [[str(i)] for i in range(10)]
-        assert_frame_equal(SFrame(expected).to_dataframe(), expected)
+        assert_frame_equal(XFrame(expected).to_dataframe(), expected)
 
     def test_sparse_dataframe(self):
         expected = pandas.DataFrame()
@@ -47,4 +47,4 @@ class DataFrameTest(unittest.TestCase):
             array.array("d", [i]) if i % 5 == 0 else None for i in range(10)
         ]
         expected["sparse_list"] = [[str(i)] if i % 7 == 0 else None for i in range(10)]
-        assert_frame_equal(SFrame(expected).to_dataframe(), expected)
+        assert_frame_equal(XFrame(expected).to_dataframe(), expected)

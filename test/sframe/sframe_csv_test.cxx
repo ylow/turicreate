@@ -4,13 +4,13 @@
 #include <iostream>
 #include <typeinfo>
 #include <boost/filesystem.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
-#include <core/storage/sframe_data/csv_writer.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
+#include <core/storage/xframe_data/csv_writer.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/data/flexible_type/string_escape.hpp>
-#include <core/storage/sframe_data/parallel_csv_parser.hpp>
-#include <core/storage/sframe_data/csv_line_tokenizer.hpp>
+#include <core/storage/xframe_data/parallel_csv_parser.hpp>
+#include <core/storage/xframe_data/csv_line_tokenizer.hpp>
 #include <core/data/flexible_type/string_escape.hpp>
 #include <core/random/random.hpp>
 
@@ -808,7 +808,7 @@ struct test_equality_visitor {
   }
 };
 
-struct sframe_test  {
+struct xframe_test  {
  public:
    // helper for the test below.
    // Makes sure the parsed data matches up with the file, then 
@@ -889,11 +889,11 @@ struct sframe_test  {
       ret.types = {{"a", flex_type_enum::STRING}};
       return ret;
     }
-   sframe validate_file(const csv_test& data, 
+   xframe validate_file(const csv_test& data, 
                         std::string filename) {
      csv_line_tokenizer tokenizer = data.tokenizer;
      tokenizer.init();
-     sframe frame;
+     xframe frame;
      std::map<std::string, flex_type_enum> typelist(data.types.begin(), data.types.end());
   
      frame.init_from_csvs(filename,
@@ -1053,26 +1053,26 @@ struct sframe_test  {
    }
 };
 
-BOOST_FIXTURE_TEST_SUITE(_sframe_test, sframe_test)
+BOOST_FIXTURE_TEST_SUITE(_xframe_test, xframe_test)
 BOOST_AUTO_TEST_CASE(test_string_escaping) {
-  sframe_test::test_string_escaping();
+  xframe_test::test_string_escaping();
 }
 BOOST_AUTO_TEST_CASE(test_substitutions) {
-  sframe_test::test_substitutions();
+  xframe_test::test_substitutions();
 }
 BOOST_AUTO_TEST_CASE(test_csvs) {
-  sframe_test::test_csvs();
+  xframe_test::test_csvs();
 }
 BOOST_AUTO_TEST_CASE(test_quoted_csvs) {
-  sframe_test::test_quoted_csvs();
+  xframe_test::test_quoted_csvs();
 }
 BOOST_AUTO_TEST_CASE(test_json) {
-  sframe_test::test_json();
+  xframe_test::test_json();
 }
 BOOST_AUTO_TEST_CASE(test_alternate_line_endings) {
-  sframe_test::test_alternate_line_endings();
+  xframe_test::test_alternate_line_endings();
 }
 BOOST_AUTO_TEST_CASE(test_invalid_csv_cases) {
-  sframe_test::test_invalid_csv_cases();
+  xframe_test::test_invalid_csv_cases();
 }
 BOOST_AUTO_TEST_SUITE_END()

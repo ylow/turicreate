@@ -25,8 +25,8 @@
 #include <model_server/lib/unity_global.hpp>
 #include <perf/memory_info.hpp>
 #include <core/globals/globals.hpp>
-#include <core/storage/sframe_interface/unity_sarray.hpp>
-#include <core/storage/sframe_interface/unity_sframe.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
 #include <model_server/lib/sdk_registration_function_types.hpp>
 #include <model_server/lib/variant_deep_serialize.hpp>
 #include <core/storage/lazy_eval/lazy_eval_operation_dag.hpp>
@@ -48,7 +48,7 @@ namespace turi {
   std::string unity_global::get_turicreate_object_type(const std::string& url) {
     logstream(LOG_INFO) << "Getting turicreate object type stored at: " << sanitize_url(url) << std::endl;
 
-    // valid values are: model, sframe, sarray
+    // valid values are: model, xframe, sarray
     return dir_archive::get_directory_metadata(url, "contents");
   }
 
@@ -74,8 +74,8 @@ namespace turi {
        break;
      case 3:
        {
-         std::shared_ptr<unity_sframe> s =
-             std::static_pointer_cast<unity_sframe>(variant_get_ref<std::shared_ptr<unity_sframe_base>>(v));
+         std::shared_ptr<unity_xframe> s =
+             std::static_pointer_cast<unity_xframe>(variant_get_ref<std::shared_ptr<unity_xframe_base>>(v));
          oarc << *s;
          break;
        }
@@ -138,9 +138,9 @@ namespace turi {
        break;
      case 3:
        {
-         std::shared_ptr<unity_sframe> s(new unity_sframe());
+         std::shared_ptr<unity_xframe> s(new unity_xframe());
          iarc >> *s;
-         variant_set_value<std::shared_ptr<unity_sframe>>(v, s);
+         variant_set_value<std::shared_ptr<unity_xframe>>(v, s);
          break;
        }
      case 4:
@@ -264,7 +264,7 @@ namespace turi {
     logstream(LOG_INFO) << "Load model from data" << std::endl;
     try {
       iarchive iarc(data);
-      // include_data is false, because data (SFrame/SArray) can't be serialized
+      // include_data is false, because data (XFrame/SArray) can't be serialized
       // as data (bytes). Requires a dir_archive with real filesystem.
       return load_model_impl(iarc, false /* include_data */);
     } catch (std::ios_base::failure& e) {

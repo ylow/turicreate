@@ -97,7 +97,7 @@ A confusion matrix (or confusion table) shows a more detailed breakdown of
 correct and incorrect classifications for each class. Here is an example of how
 the confusion matrix can be computed.
 
-The confusion table is an SFrame consisting of three columns:
+The confusion table is an XFrame consisting of three columns:
 * **target_label**: The label of the ground truth.
 * **predicted_label**: The predicted label.
 * **count**: The number of times the `target_label` was predicted as the
@@ -420,7 +420,7 @@ Data:
 [100001 rows x 5 columns]
 ```
 
-The result of the **roc curve** is a multi-column **SFrame** with the following
+The result of the **roc curve** is a multi-column **XFrame** with the following
 columns:
 
 - **tpr**: True positive rate, the number of true positives divided by the number of positives.

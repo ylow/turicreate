@@ -7,19 +7,19 @@
 
 
 
-from ..data_structures.sframe import SFrame
+from ..data_structures.xframe import XFrame
 import unittest
 import array
 import datetime as dt
 from .._cython.cy_flexible_type import GMT
-from ..util import _assert_sframe_equal
+from ..util import _assert_xframe_equal
 
 import pytest
 
 pytestmark = [pytest.mark.minimal]
 
 
-class SFrameBuilderTest(unittest.TestCase):
+class XFrameBuilderTest(unittest.TestCase):
     def setUp(self):
         self.int_data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         self.float_data = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
@@ -40,64 +40,64 @@ class SFrameBuilderTest(unittest.TestCase):
             self.dict_data,
             self.datetime_data * 5,
         ]
-        self.sf_all_types = SFrame(
+        self.sf_all_types = XFrame(
             {"X" + str(i[0]): i[1] for i in zip(list(range(1, 8)), self.all_type_cols)}
         )
         self.all_types = [int, float, str, array.array, list, dict, dt.datetime]
 
     def test_basic(self):
-        from ..data_structures.sframe_builder import SFrameBuilder
+        from ..data_structures.xframe_builder import XFrameBuilder
 
         sf_data = list(zip(*self.all_type_cols))
 
-        sb = SFrameBuilder(self.all_types)
+        sb = XFrameBuilder(self.all_types)
         for i in sf_data:
             sb.append(i)
         sf = sb.close()
-        _assert_sframe_equal(sf, self.sf_all_types)
+        _assert_xframe_equal(sf, self.sf_all_types)
 
-        sb = SFrameBuilder(self.all_types)
+        sb = XFrameBuilder(self.all_types)
         sb.append_multiple(sf_data)
         sf = sb.close()
-        _assert_sframe_equal(sf, self.sf_all_types)
+        _assert_xframe_equal(sf, self.sf_all_types)
 
         ## mismatched input size
-        sb = SFrameBuilder(self.all_types)
+        sb = XFrameBuilder(self.all_types)
         with self.assertRaises(RuntimeError):
             sb.append(sf_data[0][:-2])
 
-        sb = SFrameBuilder(self.all_types)
+        sb = XFrameBuilder(self.all_types)
         with self.assertRaises(RuntimeError):
             extra_data = list(sf_data[0])
             extra_data.append(10)
             sb.append(extra_data)
 
-        sb = SFrameBuilder(self.all_types)
+        sb = XFrameBuilder(self.all_types)
         sf_data_extra = list(zip(*(self.all_type_cols + [self.int_data])))
         with self.assertRaises(RuntimeError):
             sb.append_multiple(sf_data_extra)
 
-        sb = SFrameBuilder(self.all_types)
+        sb = XFrameBuilder(self.all_types)
         sf_data_missing = sf_data[:-2]
         with self.assertRaises(RuntimeError):
             sb.append(sf_data_missing)
 
         ## type cannot be converted to target type
-        sb = SFrameBuilder(self.all_types)
+        sb = XFrameBuilder(self.all_types)
         # maks sure we replace the type int to str
         assert type(self.all_type_cols[0][0]) is int
         sf_data_wrong_type = list(zip(self.string_data, *self.all_type_cols[1:]))
         with self.assertRaises(TypeError):
             sb.append_multiple(sf_data_wrong_type[0])
 
-        sb = SFrameBuilder(self.all_types)
+        sb = XFrameBuilder(self.all_types)
         with self.assertRaises(TypeError):
             sb.append_multiple(sf_data_wrong_type)
 
     def test_history(self):
-        from ..data_structures.sframe_builder import SFrameBuilder
+        from ..data_structures.xframe_builder import XFrameBuilder
 
-        sb = SFrameBuilder([int, float], history_size=10)
+        sb = XFrameBuilder([int, float], history_size=10)
         sb.append_multiple(([i, i + 0.0] for i in range(8)))
         hist = sb.read_history(3)
         self.assertEqual(hist, [[5, 5.0], [6, 6.0], [7, 7.0]])
@@ -129,15 +129,15 @@ class SFrameBuilderTest(unittest.TestCase):
         for i in expected_data:
             cols[0].append(i[0])
             cols[1].append(i[1])
-        expected_sf = SFrame({"X1": cols[0], "X2": cols[1]})
+        expected_sf = XFrame({"X1": cols[0], "X2": cols[1]})
 
         sf = sb.close()
-        _assert_sframe_equal(sf, expected_sf)
+        _assert_xframe_equal(sf, expected_sf)
 
     def test_segments(self):
-        from ..data_structures.sframe_builder import SFrameBuilder
+        from ..data_structures.xframe_builder import XFrameBuilder
 
-        sb = SFrameBuilder([int], num_segments=4)
+        sb = XFrameBuilder([int], num_segments=4)
 
         sb.append_multiple(([i] for i in range(20, 30)), segment=2)
         sb.append_multiple(([i] for i in range(10, 20)), segment=1)
@@ -154,5 +154,5 @@ class SFrameBuilderTest(unittest.TestCase):
         self.assertSequenceEqual(hist, [[37], [38], [39]])
 
         sf = sb.close()
-        expected_sf = SFrame({"X1": list(range(40))})
-        _assert_sframe_equal(sf, expected_sf)
+        expected_sf = XFrame({"X1": list(range(40))})
+        _assert_xframe_equal(sf, expected_sf)

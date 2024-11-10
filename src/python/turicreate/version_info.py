@@ -11,7 +11,7 @@ TuriCreate version information
 
 
 # python egg version
-__version__ = "6.4.2"  # {{VERSION_STRING}}
+__version__ = "1.0.0"  # {{VERSION_STRING}}
 version = __version__
 build_number = "0"  # {{BUILD_NUMBER}}
 git_sha = "NA"  # {{GIT_SHA}}

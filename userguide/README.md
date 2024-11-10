@@ -13,32 +13,32 @@ your app.
 
 As you use Turi Create in your work, reference this guide to understand:
 
-* Data ingestion and cleaning with **SFrames** (and their data-type-specific equivalents)
+* Data ingestion and cleaning with **XFrames** (and their data-type-specific equivalents)
 * Basics of predictive model development: algorithm- and application-based toolkits
 * How to evaluate, visualize, and improve upon your model
 
 If you haven’t already installed Turi Create, you can find instructions
 [here](https://github.com/apple/turicreate).
 
-## SFrame
+## XFrame
 
-SFrame is a scalable, tabular, column-mutable dataframe object. The data
-in SFrame is stored column-wise, and is stored
+XFrame is a scalable, tabular, column-mutable dataframe object. The data
+in XFrame is stored column-wise, and is stored
 on persistent storage (e.g. disk) to avoid being constrained by memory
-size. Each column in an SFrame is a size-immutable SArray, but SFrames
+size. Each column in an XFrame is a size-immutable SArray, but XFrames
 are mutable in that columns can be added and subtracted with ease. An
-SFrame essentially acts as an ordered dict of SArrays.
+XFrame essentially acts as an ordered dict of SArrays.
 
-Currently, we support constructing an SFrame from the following data
-formats: .csv (comma separated value) file, SFrame directory archive (A
-directory where an Sframe was saved previously), general text file (with
+Currently, we support constructing an XFrame from the following data
+formats: .csv (comma separated value) file, XFrame directory archive (A
+directory where an XFrame was saved previously), general text file (with
 csv parsing options; see read_csv()), Python dictionary,
 pandas.DataFrame and JSON.
 
-An SFrame can be constructed with data from your local file system, a
+An XFrame can be constructed with data from your local file system, a
 network file system mounted locally, HDFS, Amazon S3, or HTTP(S).
 
-See [Working with data](sframe/README.md) for more guidance on
+See [Working with data](xframe/README.md) for more guidance on
 data structures and the [API
 docs](https://apple.github.io/turicreate/docs/api/turicreate.data_structures.html)
 for a more complete reference.

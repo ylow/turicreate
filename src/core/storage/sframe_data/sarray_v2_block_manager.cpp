@@ -9,11 +9,11 @@ extern "C" {
 #include <algorithm>
 #include <core/parallel/mutex.hpp>
 #include <boost/algorithm/string.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_manager.hpp>
-#include <core/storage/sframe_data/sarray_index_file.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
-#include <core/storage/sframe_data/sarray_v2_type_encoding.hpp>
-#include <core/storage/sframe_data/unfair_lock.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_manager.hpp>
+#include <core/storage/xframe_data/sarray_index_file.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
+#include <core/storage/xframe_data/sarray_v2_type_encoding.hpp>
+#include <core/storage/xframe_data/unfair_lock.hpp>
 
 namespace turi {
 namespace v2_block_impl {
@@ -30,7 +30,7 @@ block_manager& block_manager::get_instance() {
 }
 
 block_manager::block_manager() {
-  m_buffer_pool.init(SFRAME_BLOCK_MANAGER_BLOCK_BUFFER_COUNT);
+  m_buffer_pool.init(XFRAME_BLOCK_MANAGER_BLOCK_BUFFER_COUNT);
 }
 
 column_address block_manager::open_column(std::string column_file) {
@@ -144,8 +144,8 @@ block_manager::read_block(block_address addr, block_info** ret_info) {
   std::shared_ptr<general_ifstream> fin = get_segment_file_handle(seg);
   fin->seekg(info.offset, std::ios_base::beg);
   size_t iolockid = seg->io_parallelism_id;
-  bool use_io_lock = SFRAME_IO_READ_LOCK > 0 &&
-      (seg->file_size > SFRAME_IO_LOCK_FILE_SIZE_THRESHOLD);
+  bool use_io_lock = XFRAME_IO_READ_LOCK > 0 &&
+      (seg->file_size > XFRAME_IO_LOCK_FILE_SIZE_THRESHOLD);
   if (use_io_lock && iolockid != (size_t)(-1)) get_io_locks()[iolockid].lock();
   fin->read(ret->data(), info.length);
   if (use_io_lock && iolockid != (size_t)(-1)) get_io_locks()[iolockid].unlock();
@@ -199,7 +199,7 @@ bool block_manager::read_typed_block(block_address addr,
 /**************************************************************************/
 std::shared_ptr<general_ifstream> block_manager::get_new_file_handle(std::string s) {
   std::lock_guard<turi::mutex> guard(m_file_handles_lock);
-  if (m_file_handle_pool.size() >= SFRAME_FILE_HANDLE_POOL_SIZE) {
+  if (m_file_handle_pool.size() >= XFRAME_FILE_HANDLE_POOL_SIZE) {
     // reap invalidated weak_ptrs
     std::deque<std::weak_ptr<general_ifstream> > new_m_file_handle_pool;
     std::copy_if(m_file_handle_pool.begin(), m_file_handle_pool.end(),
@@ -210,7 +210,7 @@ std::shared_ptr<general_ifstream> block_manager::get_new_file_handle(std::string
     m_file_handle_pool = std::move(new_m_file_handle_pool);
   }
 
-  while(m_file_handle_pool.size() >= SFRAME_FILE_HANDLE_POOL_SIZE) {
+  while(m_file_handle_pool.size() >= XFRAME_FILE_HANDLE_POOL_SIZE) {
     // reap m_file_handle_pool
     // we have exceeded the pool size. release the oldest handle
     m_file_handle_pool.pop_front();

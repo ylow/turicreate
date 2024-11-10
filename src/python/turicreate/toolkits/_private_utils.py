@@ -20,7 +20,7 @@ def _validate_row_label(label, column_type_map):
         Name of the row label column.
 
     column_type_map : dict[str, type]
-        Dictionary mapping the name of each column in an SFrame to the type of
+        Dictionary mapping the name of each column in an XFrame to the type of
         the values in the column.
     """
     if not isinstance(label, str):
@@ -72,8 +72,8 @@ def _select_valid_features(dataset, features, valid_feature_types, target_column
 
     Parameters
     ----------
-    dataset: SFrame
-        The input SFrame containing columns of potential features.
+    dataset: XFrame
+        The input XFrame containing columns of potential features.
 
     features: list[str]
         List of feature column names.  If None, the candidate feature set is

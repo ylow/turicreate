@@ -22,10 +22,10 @@ using the python import statement. Note that turicreate must be imported first.
 # models implemented as extensions in C++
 
 import sys as _sys
-from . import SArray as _SArray, SFrame as _SFrame
+from . import SArray as _SArray, XFrame as _XFrame
 from ._connect.main import get_unity as _get_unity
 from .util import _make_internal_url
-from ._cython.cy_sframe import UnitySFrameProxy as _UnitySFrameProxy
+from ._cython.cy_xframe import UnityXFrameProxy as _UnityXFrameProxy
 from ._cython.cy_sarray import UnitySArrayProxy as _UnitySArrayProxy
 from ._cython.cy_model import UnityModel as _UnityModel
 from .toolkits._main import ToolkitError as _ToolkitError
@@ -42,8 +42,8 @@ else:
 
 
 # Now. a bit of magic hackery is going to happen to this module.
-# This module is going to be first imported as sframe.extensions
-# After which, inside turicreate/__init__.py, sys.modules['sframe.extensions']
+# This module is going to be first imported as xframe.extensions
+# After which, inside turicreate/__init__.py, sys.modules['xframe.extensions']
 # will be modified to become a class called _extension_wrapper which redirects
 # getattr calls into this module.
 #
@@ -84,11 +84,11 @@ class_uid_to_class = {}
 def _wrap_function_return(val):
     """
     Recursively walks each thing in val, opening lists and dictionaries,
-    UnitySFrameProxy to SFrame, and UnitySArrayProxy to SArray.
+    UnityXFrameProxy to XFrame, and UnitySArrayProxy to SArray.
     """
 
-    if type(val) is _UnitySFrameProxy:
-        return _SFrame(_proxy=val)
+    if type(val) is _UnityXFrameProxy:
+        return _XFrame(_proxy=val)
     elif type(val) is _UnitySArrayProxy:
         return _SArray(_proxy=val)
     elif type(val) is _UnityModel:

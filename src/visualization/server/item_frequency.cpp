@@ -82,13 +82,13 @@ static void add_item_and_count(std::stringstream& ss, const std::string& value, 
   ss << "%\"}";
 }
 
-std::string item_frequency_result::vega_column_data(bool sframe) const {
+std::string item_frequency_result::vega_column_data(bool xframe) const {
   std::stringstream ss;
   size_t x = 0;
 
   auto items_list = emit().get<flex_dict>();
   size_t size_list;
-  if(sframe) {
+  if(xframe) {
     size_list = std::min(10UL, items_list.size());
   }else{
     size_list = std::min(12UL, items_list.size());

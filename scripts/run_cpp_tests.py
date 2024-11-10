@@ -119,10 +119,10 @@ if __name__ == "__main__":
     expensive_tests = [
         "boosted_trees_classifier_tests.cxxtest",
         "worker_pool_test.cxxtest",
-        "sframe_test.cxxtest",
+        "xframe_test.cxxtest",
         "shuffle_test.cxxtest",
         "sarray_file_format_v2_test.cxxtest",
-        "parallel_sframe_iterator.cxxtest",
+        "parallel_xframe_iterator.cxxtest",
         "optimizations.cxxtest",
         "sorting_and_blocks.cxxtest",
         "test_brute_force_all_pairs.cxxtest",

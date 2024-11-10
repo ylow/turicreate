@@ -13,7 +13,7 @@
 #include <core/storage/fileio/general_fstream.hpp>
 #include <core/storage/fileio/s3_filesys.hpp>
 #include <core/storage/serialization/dir_archive.hpp>
-#include <core/storage/sframe_interface/unity_sframe.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
 #include <core/util/test_macros.hpp>
 #include <iostream>
 
@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
                  "AWS_SECRET_ACCESS_KEY environment variables.\n."
               << "./s3_filesys_test bucket key\n"
               << "Examples:\n./s3_filesys_test tc_qa "
-                 "integration/manual/sframes/cats-dogs-images/"
+                 "integration/manual/xframes/cats-dogs-images/"
               << std::endl;
     return 0;
   }
@@ -70,8 +70,8 @@ int main(int argc, char** argv) {
   turi::globals::initialize_globals_from_environment(".");
 
   try {
-    turi::unity_sframe sf;
-    sf.construct_from_sframe_index(url_read);
+    turi::unity_xframe sf;
+    sf.construct_from_xframe_index(url_read);
 
     auto sf_size = sf.size();
     sf.begin_iterator();

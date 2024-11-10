@@ -33,19 +33,19 @@ We illustrate usage of Turi Create K-means with the dataset from the [June
 scans](https://www.kaggle.com/c/mlsp-2014-mri). Download **Train.zip** from the data tab.[<sup>1</sup>](../datasets.md) The original data consists of
 two sets of features: functional network connectivity (FNC) features and
 source-based morphometry (SBM) features, which we incorporate into a single
-[`SFrame`](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.html)
-with [`SFrame.join`](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.join.html).
+[`XFrame`](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.html)
+with [`XFrame.join`](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.join.html).
 
 ```python
 import turicreate as tc
 
-sf_functional = tc.SFrame.read_csv('train_FNC.csv')
-sf_morphometry = tc.SFrame.read_csv('train_SBM.csv')
+sf_functional = tc.XFrame.read_csv('train_FNC.csv')
+sf_morphometry = tc.XFrame.read_csv('train_SBM.csv')
 
 sf = sf_functional.join(sf_morphometry, on="Id")
 sf = sf.remove_column('Id')
 
-sf.save('schizophrenia_clean.sframe')
+sf.save('schizophrenia_clean.xframe')
 ```
 
 The most basic usage of K-means clustering requires only a choice for the number
@@ -87,14 +87,14 @@ Batch size                      : 86
 Total training time (seconds)   : 0.2836
 
 Accessible fields               :
-   cluster_id                   : An SFrame containing the cluster assignments.
-   cluster_info                 : An SFrame containing the cluster centers.
+   cluster_id                   : An XFrame containing the cluster assignments.
+   cluster_info                 : An XFrame containing the cluster centers.
 ```
 
 The model summary shows the usual fields about model schema, training
 time, and training iterations. It also shows that the K-means results
-are returned in two SFrames contained in the model: `cluster_id` and
-`cluster_info`. The `cluster_info` SFrame indicates the final cluster
+are returned in two XFrames contained in the model: `cluster_id` and
+`cluster_info`. The `cluster_info` XFrame indicates the final cluster
 centers, one per row, in terms of the same features used to create the
 model.
 
@@ -116,7 +116,7 @@ kmeans_model.cluster_info.print_rows(num_columns=5, max_row_width=80,
 [6 rows x 413 columns]
 ```
 
-The last three columns of the `cluster_info` SFrame indicate metadata about the
+The last three columns of the `cluster_info` XFrame indicate metadata about the
 corresponding cluster: ID number, number of points in the cluster, and the
 within-cluster sum of squared distances to the center.
 
@@ -254,8 +254,8 @@ Batch size                      : 30
 Total training time (seconds)   : 0.3387
 
 Accessible fields               :
-   cluster_id                   : An SFrame containing the cluster assignments.
-   cluster_info                 : An SFrame containing the cluster centers.
+   cluster_id                   : An XFrame containing the cluster assignments.
+   cluster_info                 : An XFrame containing the cluster centers.
 ```
 
 The model summary shows the training method here is "minibatch" with our

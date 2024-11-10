@@ -27,9 +27,9 @@ static std::string to_string(const flexible_type& ft) {
   }
 }
 
-scatter_result::scatter_result(gl_sframe sf) : m_sf(sf) {}
+scatter_result::scatter_result(gl_xframe sf) : m_sf(sf) {}
 
-void scatter::init(gl_sframe sf){
+void scatter::init(gl_xframe sf){
   m_sf = sf;
 }
 
@@ -53,7 +53,7 @@ size_t scatter::get_batch_size() const{
   return m_sf.size();
 }
 
-std::string scatter_result::vega_column_data(bool sframe) const {
+std::string scatter_result::vega_column_data(bool xframe) const {
     std::stringstream ss;
     size_t x = 0;
     size_t size_list = m_sf.size();
@@ -105,7 +105,7 @@ std::shared_ptr<Plot> turi::visualization::plot_scatter(
 
   scatter sct;
 
-  gl_sframe temp_sf;
+  gl_xframe temp_sf;
 
   temp_sf["x"] = x;
   temp_sf["y"] = y;

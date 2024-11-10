@@ -24,7 +24,7 @@ data = tc.image_analysis.load_images('PetImages', with_path=True)
 data['label'] = data['path'].apply(lambda path: 'dog' if '/Dog' in path else 'cat')
 
 # Save the data for future use
-data.save('cats-dogs.sframe')
+data.save('cats-dogs.xframe')
 
 # Explore interactively
 data.explore()
@@ -39,7 +39,7 @@ explore the use of the image classifier on the Cats vs. Dogs dataset.
 import turicreate as tc
 
 # Load the data
-data =  tc.SFrame('cats-dogs.sframe')
+data =  tc.XFrame('cats-dogs.xframe')
 
 # Make a train-test split
 train_data, test_data = data.random_split(0.8)

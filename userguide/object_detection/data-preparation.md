@@ -1,9 +1,9 @@
 # IG02 Data Preparation
 
 In this section, we will show you how to download a publicly available dataset
-and load it into an SFrame. This will allow you to try out the Object Detection
+and load it into an XFrame. This will allow you to try out the Object Detection
 toolkit for yourself. To get this dataset into the format expected by our
-toolkit, we will rely on many useful SFrame functions.
+toolkit, we will rely on many useful XFrame functions.
 
 *Note: Please make sure that you have Turi Create 4.3 or above for these steps*
 
@@ -54,7 +54,7 @@ instance. Each image may have several masks to indicate the presence of
 multiple objects. Red pixels indicate object presence and green indicate
 presence but with [occlusion](https://en.wikipedia.org/wiki/Occultation). For
 object detection, we will convert this richly annotated data to bounding boxes.
-Here is a snippet to turn this into an SFrame:
+Here is a snippet to turn this into an XFrame:
 
 ```python
 import turicreate as tc
@@ -74,7 +74,7 @@ info = raw_sf['path'].apply(lambda path: os.path.basename(path).split('.')[:2])
 # Rename columns to 'name' and 'type'
 info = info.unpack().rename({'X.0': 'name', 'X.1': 'type'})
 
-# Add to our main SFrame
+# Add to our main XFrame
 raw_sf = raw_sf.add_columns(info)
 
 # Extract label (e.g. 'bike') from name (e.g. 'bike_003')
@@ -129,22 +129,22 @@ sf['annotations'] = sf['annotations'].fillna([])
 # Remove unnecessary columns
 del sf['type']
 
-# Save SFrame
-sf.save('ig02.sframe')
+# Save XFrame
+sf.save('ig02.xframe')
 ```
 There are many useful data preparation tips in these steps, so we encourage you
 to go through it in an interactive session or a notebook so that you can
 inspect the outcome of each command.
 
-After you have run this script, you should have `ig02.sframe` in your current
-directory. This SFrame can be used as described in the [Object detection user
+After you have run this script, you should have `ig02.xframe` in your current
+directory. This XFrame can be used as described in the [Object detection user
 guide](README.md).
 
 Alternately, if you don't have access to bitmasks and you're using an image 
 annotation tool like the one 
 [here](https://github.com/sgp715/simple_image_annotator), here is a code snippet
 (thanks to [@Kurry](https://github.com/Kurry)) 
-that would convert the CSV you get out of the annotator into an SFrame.
+that would convert the CSV you get out of the annotator into an XFrame.
 
 ```python
 import turicreate as tc
@@ -152,7 +152,7 @@ import os
 
 IMAGES_DIR = 'images' # Change if applicable
 csv_path = 'out.csv' # assumes CSV column format is image,id,name,xMin,xMax,yMin,yMax
-csv_sf = tc.SFrame.read_csv(csv_path)
+csv_sf = tc.XFrame.read_csv(csv_path)
 
 def row_to_bbox_coordinates(row):
     """
@@ -180,7 +180,7 @@ info = sf_images['path'].apply(lambda path: os.path.basename(path).split('/')[:1
 # Rename columns to 'name'
 info = info.unpack().rename({'X.0': 'name'})
 
-# Add to our main SFrame
+# Add to our main XFrame
 sf_images = sf_images.add_columns(info)
 
 # Original path no longer needed
@@ -202,8 +202,8 @@ sf = sf_images.join(sf_annotations, on='name', how='left')
 # lists instead using fillna.
 sf['annotations'] = sf['annotations'].fillna([])
 
-# Save SFrame
-sf.save('ig02.sframe')
+# Save XFrame
+sf.save('ig02.xframe')
 ```
 
 ## References

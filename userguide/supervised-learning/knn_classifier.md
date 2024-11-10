@@ -68,7 +68,7 @@ into training and testing subsets.
 ```python
 import turicreate as tc
 
-data =  tc.SFrame('ratings-data.csv')
+data =  tc.XFrame('ratings-data.csv')
 train_data, test_data = data.random_split(0.9)
 ```
 
@@ -118,13 +118,13 @@ print(predictions)
 |   5   |     0.4     |
 +-------+-------------+
 [21466 rows x 2 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 
 #### Advanced Usage
 
-The `classify` method returns an SFrame with both the predicted class and the
+The `classify` method returns an XFrame with both the predicted class and the
 probability score of that class, which is simply the fraction of the points'
 neighbors which belong to the most common class. As with multiclass logistic
 regression, the `predict_topk` method can be used to see the fraction of
@@ -151,7 +151,7 @@ print(topk)
 |   2    |   5   |     0.25    |
 +--------+-------+-------------+
 [14 rows x 3 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 

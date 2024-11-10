@@ -12,15 +12,15 @@
 #include <core/storage/query_engine/operators/operator_properties.hpp>
 #include <core/storage/query_engine/operators/project.hpp>
 #include <core/storage/query_engine/algorithm/groupby_aggregate.hpp>
-#include <core/storage/sframe_data/group_aggregate_value.hpp>
-#include <core/storage/sframe_data/groupby_aggregate_impl.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
-#include <core/storage/sframe_data/groupby_aggregate.hpp>
+#include <core/storage/xframe_data/group_aggregate_value.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_impl.hpp>
+#include <core/storage/xframe_data/xframe_config.hpp>
+#include <core/storage/xframe_data/groupby_aggregate.hpp>
 
 namespace turi {
 namespace query_eval {
 
-std::shared_ptr<sframe>
+std::shared_ptr<xframe>
     groupby_aggregate(
       const std::shared_ptr<planner_node>& source,
       const std::vector<std::string>& source_column_names,
@@ -61,7 +61,7 @@ std::shared_ptr<sframe>
   for (const auto& key: keys) {
     // check that the column name is valid
     if (!source_column_to_index.count(key)) {
-      log_and_throw("SFrame does not contain column " + key);
+      log_and_throw("XFrame does not contain column " + key);
     }
   }
 
@@ -72,7 +72,7 @@ std::shared_ptr<sframe>
       for(unsigned int index = 0; index < group.first.size(); index++) {
         auto& col_name = group.first[index];
         if (!source_column_to_index.count(col_name)) {
-          log_and_throw("SFrame does not contain column " + col_name);
+          log_and_throw("XFrame does not contain column " + col_name);
         }
         if(turi::registered_arg_functions.count(group.second->name()) != 0 && index > 0)
           continue;
@@ -111,7 +111,7 @@ std::shared_ptr<sframe>
   }
   // column name to column number of the frame_with_relevant_cols
   std::map<std::string, size_t> relevant_column_to_index;
-  // which columns from source SFrame to project over to this SFrame
+  // which columns from source XFrame to project over to this XFrame
   std::vector<size_t> relevant_source_indices(relevant_column_names.size());
   for (size_t i = 0;i < relevant_column_names.size(); ++i) {
     relevant_source_indices[i] = source_column_to_index.at(relevant_column_names[i]);
@@ -122,7 +122,7 @@ std::shared_ptr<sframe>
 
 
   // prepare the output frame
-  auto output = std::make_shared<sframe>();;
+  auto output = std::make_shared<xframe>();;
   std::vector<std::string> column_names;
   std::vector<flex_type_enum> column_types;
   // output frame has the key column name and types
@@ -183,9 +183,9 @@ std::shared_ptr<sframe>
 
 
   groupby_aggregate_impl::group_aggregate_container
-      container(SFRAME_GROUPBY_BUFFER_NUM_ROWS, nsegments);
+      container(XFRAME_GROUPBY_BUFFER_NUM_ROWS, nsegments);
 
-  // ok the input sframe (frame_with_relevant_cols) contains all the values
+  // ok the input xframe (frame_with_relevant_cols) contains all the values
   // we care about. However, the challenge here is to figure out how the keys
   // and values line up. By construction, all the key columns come first.
   // which is good. But group columns can be pretty much anywhere.
@@ -205,7 +205,7 @@ std::shared_ptr<sframe>
   timer ti;
   planner().materialize(frame_with_relevant_cols,
                         [&](size_t segmentid,
-                            const std::shared_ptr<sframe_rows>& rows)->bool {
+                            const std::shared_ptr<xframe_rows>& rows)->bool {
                           container.init_tls();
                           if (rows == nullptr) return true;
                           for (auto& row: *rows) {

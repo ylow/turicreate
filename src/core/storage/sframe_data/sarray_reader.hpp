@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_UNITY_SFRAME_SARRAY_READER_HPP
-#define TURI_UNITY_SFRAME_SARRAY_READER_HPP
+#ifndef TURI_UNITY_XFRAME_SARRAY_READER_HPP
+#define TURI_UNITY_XFRAME_SARRAY_READER_HPP
 #include <set>
 #include <iterator>
 #include <type_traits>
@@ -12,12 +12,12 @@
 #include <core/logging/assertions.hpp>
 #include <core/storage/serialization/iarchive.hpp>
 #include <core/parallel/pthread_tools.hpp>
-#include <core/storage/sframe_data/siterable.hpp>
+#include <core/storage/xframe_data/siterable.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/sarray_file_format_v2.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
+#include <core/storage/xframe_data/sarray_file_format_v2.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
 #include <core/storage/fileio/file_ownership_handle.hpp>
-#include <core/storage/sframe_data/sarray_reader_buffer.hpp>
+#include <core/storage/xframe_data/sarray_reader_buffer.hpp>
 namespace turi {
 
 template <typename T>
@@ -26,8 +26,8 @@ class sarray;
 
 
 /**
- * \ingroup sframe_physical
- * \addtogroup sframe_main Main SFrame Objects
+ * \ingroup xframe_physical
+ * \addtogroup xframe_main Main XFrame Objects
  * \{
  */
 
@@ -472,7 +472,7 @@ class sarray_reader: public siterable<sarray_iterator<T> > {
    */
   size_t read_rows(size_t row_start,
                    size_t row_end,
-                   sframe_rows& out_obj);
+                   xframe_rows& out_obj);
 
 
   /**
@@ -573,8 +573,8 @@ class sarray_reader: public siterable<sarray_iterator<T> > {
 template <typename T>
 inline size_t sarray_reader<T>::read_rows(size_t row_start,
                                           size_t row_end,
-                                          sframe_rows& out_obj) {
-  ASSERT_MSG(false, "read_rows() to sframe_rows not implemented for "
+                                          xframe_rows& out_obj) {
+  ASSERT_MSG(false, "read_rows() to xframe_rows not implemented for "
                     "non-flexible_type templatizations of sarray");
   return 0;
 }
@@ -583,7 +583,7 @@ inline size_t sarray_reader<T>::read_rows(size_t row_start,
 template <>
 inline size_t sarray_reader<flexible_type>::read_rows(size_t row_start,
                                                       size_t row_end,
-                                                      sframe_rows& out_obj) {
+                                                      xframe_rows& out_obj) {
   DASSERT_NE(reader, NULL);
   return reader->read_rows(row_start, row_end, out_obj);
 }

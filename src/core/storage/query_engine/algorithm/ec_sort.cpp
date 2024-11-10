@@ -8,24 +8,24 @@
 #include <map>
 #include <algorithm>
 #include <core/system/platform/timer//timer.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_manager.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
+#include <core/storage/xframe_data/xframe_config.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_manager.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <core/storage/query_engine/operators/project.hpp>
 #include <core/storage/query_engine/operators/union.hpp>
-#include <core/storage/query_engine/operators/sframe_source.hpp>
+#include <core/storage/query_engine/operators/xframe_source.hpp>
 #include <core/storage/query_engine/operators/range.hpp>
 #include <core/storage/query_engine/algorithm/sort.hpp>
 #include <core/storage/query_engine/algorithm/ec_permute.hpp>
 #include <core/storage/query_engine/planning/planner.hpp>
 namespace turi {
 namespace query_eval {
-using sframe_config::SFRAME_SORT_BUFFER_SIZE;
-std::shared_ptr<sframe> ec_sort(
-    std::shared_ptr<planner_node> sframe_planner_node,
+using xframe_config::XFRAME_SORT_BUFFER_SIZE;
+std::shared_ptr<xframe> ec_sort(
+    std::shared_ptr<planner_node> xframe_planner_node,
     const std::vector<std::string> column_names,
     const std::vector<size_t>& key_column_indices,
     const std::vector<bool>& sort_orders) {
@@ -46,22 +46,22 @@ std::shared_ptr<sframe> ec_sort(
   //      - value_column_types
   //
   size_t num_columns = column_names.size();
-  int64_t num_rows = infer_planner_node_length(sframe_planner_node);
+  int64_t num_rows = infer_planner_node_length(xframe_planner_node);
   if (num_rows == -1) {
-    planner().materialize(sframe_planner_node);
-    num_rows = infer_planner_node_length(sframe_planner_node);
+    planner().materialize(xframe_planner_node);
+    num_rows = infer_planner_node_length(xframe_planner_node);
   }
   ASSERT_GE(num_rows, 0);
   // fast path for few number of rows.
   // fast path for no value columns
   if (num_rows < 1000 ||
       key_column_indices.size() == column_names.size()) {
-    return sort(sframe_planner_node, column_names,
+    return sort(xframe_planner_node, column_names,
                 key_column_indices, sort_orders);
   }
 
   // key columns
-  auto key_columns = op_project::make_planner_node(sframe_planner_node, key_column_indices);
+  auto key_columns = op_project::make_planner_node(xframe_planner_node, key_column_indices);
   std::vector<std::string> key_column_names;
   std::for_each(key_column_indices.begin(), key_column_indices.end(),
                  [&](size_t i) {
@@ -78,7 +78,7 @@ std::shared_ptr<sframe> ec_sort(
     if (key_column_indices_set.count(i) == 0) value_column_indices.push_back(i);
   }
   auto value_columns =
-      op_project::make_planner_node(sframe_planner_node, value_column_indices);
+      op_project::make_planner_node(xframe_planner_node, value_column_indices);
   std::for_each(value_column_indices.begin(), value_column_indices.end(),
                  [&](size_t i) {
                    value_column_names.push_back(column_names[i]);
@@ -96,7 +96,7 @@ std::shared_ptr<sframe> ec_sort(
     // TODO: yes 20 is a magic number.
     // On my Mac laptop this seems to roughly be the change over point.
     if (value_column_types.size() < 20 && value_column_type_set.size() == 0) {
-      return sort(sframe_planner_node, column_names,
+      return sort(xframe_planner_node, column_names,
                   key_column_indices, sort_orders);
     }
   }
@@ -110,7 +110,7 @@ std::shared_ptr<sframe> ec_sort(
   // - Row numbers are added again, and its sorted again by the first set
   // of row numbers. This gives the forward map (i.e. y[i] = j implies
   // input row i is written to output row j)
-  // - (In SFrame pseudocode:
+  // - (In XFrame pseudocode:
   //
   //     B = A[['key']].add_row_number('r1').sort('key')
   //     inverse_map = B['r1'] # we don't need this
@@ -118,7 +118,7 @@ std::shared_ptr<sframe> ec_sort(
   //     foward_map = C['r2']
 
   std::shared_ptr<sarray<flexible_type> > forward_map;
-  sframe sorted_key_columns;
+  xframe sorted_key_columns;
   timer ti;
   ti.start();
   logstream(LOG_INFO) << "Creating forward map" << std::endl;
@@ -142,13 +142,13 @@ std::shared_ptr<sframe> ec_sort(
     logstream(LOG_INFO) << "sort finished in " << ti.current_time() << std::endl;
     ti.start();
     auto inverse_map = op_project::make_planner_node(
-        op_sframe_source::make_planner_node(*B), {0});
+        op_xframe_source::make_planner_node(*B), {0});
 
     // remember the sorted column names. We are going to need it
-    // when constructing the final SFrame
+    // when constructing the final XFrame
     sorted_key_columns = planner().materialize(
         op_project::make_planner_node(
-            op_sframe_source::make_planner_node(*B),
+            op_xframe_source::make_planner_node(*B),
             forward_map_sort1_column_indices));
     ASSERT_EQ(sorted_key_columns.num_columns(), num_key_columns);
 
@@ -159,38 +159,38 @@ std::shared_ptr<sframe> ec_sort(
     // now generate the forward map
     ti.start();
     auto materialized_inverse_map = planner().materialize(inverse_map).select_column(0);
-    sframe incremental_array = planner().materialize(op_range::make_planner_node(0, num_rows));
+    xframe incremental_array = planner().materialize(op_range::make_planner_node(0, num_rows));
 
-    forward_map = permute_sframe(incremental_array, materialized_inverse_map).select_column(0);
+    forward_map = permute_xframe(incremental_array, materialized_inverse_map).select_column(0);
     logstream(LOG_INFO) << "forward map generation finished in " << ti.current_time() << std::endl;
   }
 
 
-  // values_sframe: The raw sframe containing just the value columns
-  sframe values_sframe = planner().materialize(value_columns);
-  for (size_t i = 0;i < values_sframe.num_columns(); ++i) {
-    values_sframe.set_column_name(i, value_column_names[i]);
+  // values_xframe: The raw xframe containing just the value columns
+  xframe values_xframe = planner().materialize(value_columns);
+  for (size_t i = 0;i < values_xframe.num_columns(); ++i) {
+    values_xframe.set_column_name(i, value_column_names[i]);
   }
   // permute with the forward map
-  sframe sorted_values_sframe = permute_sframe(values_sframe, forward_map);
+  xframe sorted_values_xframe = permute_xframe(values_xframe, forward_map);
 
-  // generate the final sframe. combining the key and values sframes.
+  // generate the final xframe. combining the key and values xframes.
   // order the columns so that they are in the right order as the input.
-  std::vector<std::shared_ptr<sarray<flexible_type>>> final_sframe_columns(num_columns);
+  std::vector<std::shared_ptr<sarray<flexible_type>>> final_xframe_columns(num_columns);
   std::map<std::string, std::shared_ptr<sarray<flexible_type>>> final_name_to_column;
   for (size_t i = 0;i < sorted_key_columns.num_columns(); ++i) {
     final_name_to_column[key_column_names[i]] = sorted_key_columns.select_column(i);
   }
-  for (size_t i = 0;i < sorted_values_sframe.num_columns(); ++i) {
-    final_name_to_column[value_column_names[i]] = sorted_values_sframe.select_column(i);
+  for (size_t i = 0;i < sorted_values_xframe.num_columns(); ++i) {
+    final_name_to_column[value_column_names[i]] = sorted_values_xframe.select_column(i);
   }
 
   for (size_t i = 0;i  < num_columns; ++i) {
     ASSERT_TRUE(final_name_to_column.count(column_names[i]) > 0);
-    final_sframe_columns[i] = final_name_to_column[column_names[i]];
+    final_xframe_columns[i] = final_name_to_column[column_names[i]];
   }
-  sframe final_sframe(final_sframe_columns, column_names);
-  return std::make_shared<sframe>(final_sframe);
+  xframe final_xframe(final_xframe_columns, column_names);
+  return std::make_shared<xframe>(final_xframe);
 }
 
 } // namespace query_eval

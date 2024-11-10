@@ -4,13 +4,13 @@
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
 #include <core/logging/assertions.hpp>
-#include <core/storage/sframe_data/sframe_rows.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_types.hpp>
-#include <core/storage/sframe_data/sarray_v2_type_encoding.hpp>
+#include <core/storage/xframe_data/xframe_rows.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_types.hpp>
+#include <core/storage/xframe_data/sarray_v2_type_encoding.hpp>
 
 namespace turi {
 
-void sframe_rows::resize(size_t num_cols, ssize_t num_rows) {
+void xframe_rows::resize(size_t num_cols, ssize_t num_rows) {
   ensure_unique();
   if (m_decoded_columns.size() != num_cols) m_decoded_columns.resize(num_cols);
   for (auto& col: m_decoded_columns) {
@@ -26,11 +26,11 @@ void sframe_rows::resize(size_t num_cols, ssize_t num_rows) {
   }
 }
 
-void sframe_rows::clear() {
+void xframe_rows::clear() {
   m_decoded_columns.clear();
 }
 
-void sframe_rows::save(oarchive& oarc) const {
+void xframe_rows::save(oarchive& oarc) const {
   oarc << m_decoded_columns.size();
   oarchive temp_inmemory_arc;
   for (auto& i : m_decoded_columns) {
@@ -48,7 +48,7 @@ void sframe_rows::save(oarchive& oarc) const {
   free(temp_inmemory_arc.buf);
 }
 
-void sframe_rows::load(iarchive& iarc) {
+void xframe_rows::load(iarchive& iarc) {
   size_t ncols = 0;
   iarc >> ncols;
   resize(ncols);
@@ -64,12 +64,12 @@ void sframe_rows::load(iarchive& iarc) {
   if (buf != nullptr) free(buf);
 }
 
-void sframe_rows::add_decoded_column(
-    const sframe_rows::ptr_to_decoded_column_type& decoded_column) {
+void xframe_rows::add_decoded_column(
+    const xframe_rows::ptr_to_decoded_column_type& decoded_column) {
   m_decoded_columns.push_back(decoded_column);
 }
 
-void sframe_rows::ensure_unique() {
+void xframe_rows::ensure_unique() {
   if (m_is_unique) return;
   for (auto& col: m_decoded_columns) {
     if (!col.unique()) {
@@ -79,7 +79,7 @@ void sframe_rows::ensure_unique() {
   m_is_unique = true;
 }
 
-void sframe_rows::type_check_inplace(const std::vector<flex_type_enum>& typelist) {
+void xframe_rows::type_check_inplace(const std::vector<flex_type_enum>& typelist) {
   ASSERT_EQ(typelist.size(), num_columns());
   // one pass for column type check
   for (size_t c = 0; c < num_columns(); ++c) {
@@ -119,9 +119,9 @@ void sframe_rows::type_check_inplace(const std::vector<flex_type_enum>& typelist
   }
 }
 
-sframe_rows sframe_rows::type_check(const std::vector<flex_type_enum>& typelist) const {
+xframe_rows xframe_rows::type_check(const std::vector<flex_type_enum>& typelist) const {
   ASSERT_EQ(typelist.size(), num_columns());
-  sframe_rows other = *this;
+  xframe_rows other = *this;
   other.type_check_inplace(typelist);
   return other;
 }

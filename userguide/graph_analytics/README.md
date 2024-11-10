@@ -15,7 +15,7 @@ enables this depth of understanding by providing several methods:
 - [Triangle count](https://apple.github.io/turicreate/docs/api/generated/turicreate.triangle_counting.create.html#turicreate.triangle_counting.create)
 
 Each method takes an input graph and returns a model object, which contains the
-run time, an SFrame with the desired output for each vertex, and a new graph
+run time, an XFrame with the desired output for each vertex, and a new graph
 whose vertices contain the output as an attribute.
 
 
@@ -63,7 +63,7 @@ Graph:
 Result:
 +----------+-------------------------------------------------------+
 | graph    | SGraph. See m['graph']                                |
-| pagerank | SFrame with each vertex's pagerank. See m['pagerank'] |
+| pagerank | XFrame with each vertex's pagerank. See m['pagerank'] |
 | delta    | 3824.08346598                                         |
 +----------+-------------------------------------------------------+
 Setting:
@@ -85,7 +85,7 @@ Queryable Fields
 | graph             | A new SGraph with the pagerank as a vertex property       |
 | delta             | Change in pagerank for the last iteration in L1 norm      |
 | reset_probability | The probability of randomly jumps to any node in the graph|
-| pagerank          | An SFrame with each vertex's pagerank                     |
+| pagerank          | An XFrame with each vertex's pagerank                     |
 | num_iterations    | Number of iterations                                      |
 | threshold         | The convergence threshold in L1 norm                      |
 | max_iterations    | The maximum number of iterations to run                   |
@@ -103,7 +103,7 @@ print(pr['training_time'])
 7.234136
 ```
 
-The `pagerank` field contains an SFrame with the per-node pagerank score. For
+The `pagerank` field contains an XFrame with the per-node pagerank score. For
 this example of Wikipedia articles and hyperlinks, ABC takes the top spot by a
 large margin.
 
@@ -157,7 +157,7 @@ Result:
 +----------------+-------------------------------------------------------------------+
 | graph          | SGraph. See m['graph']                                            |
 | num_triangles  | 171968                                                            |
-| triangle_count | SFrame with each vertex's triangle count. See m['triangle_count'] |
+| triangle_count | XFrame with each vertex's triangle count. See m['triangle_count'] |
 +----------------+-------------------------------------------------------------------+
 Metric:
 +---------------+-----------+
@@ -169,7 +169,7 @@ Queriable Fields
 +----------------+------------------------------------------------------------+
 | graph          | A new SGraph with the triangle count as a vertex property. |
 | num_triangles  | Total number of triangles in the graph.                    |
-| triangle_count | An SFrame with the triangle count for each vertex.         |
+| triangle_count | An XFrame with the triangle count for each vertex.         |
 | training_time  | Total training time of the model                           |
 +----------------+------------------------------------------------------------+
 ```

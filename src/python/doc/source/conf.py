@@ -41,7 +41,7 @@ for m in [
     "linear_regression",
     "logistic_classifier",
     "load_sarray",
-    "load_sframe",
+    "load_xframe",
     "load_model",
     "nearest_neighbors",
     "nearest_neighbor_classifier",

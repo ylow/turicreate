@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_ENGINE_MATERIALIZE_OPTIONS_HPP
-#define TURI_SFRAME_QUERY_ENGINE_MATERIALIZE_OPTIONS_HPP
+#ifndef TURI_XFRAME_QUERY_ENGINE_MATERIALIZE_OPTIONS_HPP
+#define TURI_XFRAME_QUERY_ENGINE_MATERIALIZE_OPTIONS_HPP
 #include <memory>
 #include <cstddef>
 #include <functional>
@@ -12,11 +12,11 @@
 #include <string>
 
 namespace turi {
-class sframe_rows;
+class xframe_rows;
 namespace query_eval {
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup planning Planning, Optimization and Execution
  * \{
  */
@@ -31,24 +31,24 @@ struct materialize_options {
 
  /**
   *  The number of segments to break parallel processing into. Also
-  *  may affect the number of segments of the output SFrame.
+  *  may affect the number of segments of the output XFrame.
   */
   size_t num_segments = 0;
 
   /**
-   * If set, the final sframe output will be streamed into the callback
-   * function and an empty SFrame will be returned.
+   * If set, the final xframe output will be streamed into the callback
+   * function and an empty XFrame will be returned.
    *
    * The type of the callback function is
    * \code
-   *   std::function<bool(size_t, const std::shared_ptr<sframe_rows>&)>,
+   *   std::function<bool(size_t, const std::shared_ptr<xframe_rows>&)>,
    * \endcode
    *
    * where the first argument is the segment_id being processed, and
    * the rest is the data. If true is returned, then the processing
    * is stopped.
    */
-  std::function<bool(size_t, const std::shared_ptr<sframe_rows>&)> write_callback;
+  std::function<bool(size_t, const std::shared_ptr<xframe_rows>&)> write_callback;
 
   /**
    * Disables query optimizations.
@@ -80,16 +80,16 @@ struct materialize_options {
   bool partial_materialize = true;
 
   /**
-   * if set, these parameter defines the sframe output index file location
-   * of the final sframe. Also see \ref output_column_names
+   * if set, these parameter defines the xframe output index file location
+   * of the final xframe. Also see \ref output_column_names
    * This argument has no effect if \ref write_callback is set.
    */
   std::string output_index_file = "";
 
   /**
-   * if set, this parameter defines the column names of the output sframe.
+   * if set, this parameter defines the column names of the output xframe.
    * Otherwise X1,X2,X3... is used.
-   * of the final sframe. Also see \ref output_index_file.
+   * of the final xframe. Also see \ref output_index_file.
    * This argument has no effect if \ref write_callback is set.
    */
   std::vector<std::string> output_column_names;

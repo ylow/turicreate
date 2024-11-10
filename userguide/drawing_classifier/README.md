@@ -14,9 +14,9 @@ crowd-sourced dataset that provides around 50 million labeled drawings for
 345 classes.[<sup>1</sup>](../datasets.md)
 In this example, we use data for two of the 345 classes from "Quick,Draw!" -- 
 square and triangle. Go to [Data Preparation](data-preparation.md) to create the 
-`square_triangle.sframe` that we will use in the introductory example.
+`square_triangle.xframe` that we will use in the introductory example.
 
-The feature in the input SFrame to the Drawing Classifier can have the following
+The feature in the input XFrame to the Drawing Classifier can have the following
 two formats:
 
 1. Bitmap-based drawings (`dtype=turicreate.Image`): Each bitmap-based drawing
@@ -57,17 +57,17 @@ example_drawing = [
 In this example, our goal is to 
 **predict if the drawing is a square or a triangle**. 
 Go to [Data Preparation](data-preparation.md) to find out how to get 
-`bitmap_square_triangle.sframe` or `stroke_square_triangle.sframe`).
+`bitmap_square_triangle.xframe` or `stroke_square_triangle.xframe`).
 
 ```python
 import turicreate as tc
 
 # Try any one of the following
-SFRAME_PATH = "quickdraw/sframes/bitmap_square_triangle.sframe"
-SFRAME_PATH = "quickdraw/sframes/stroke_square_triangle.sframe"
+XFRAME_PATH = "quickdraw/xframes/bitmap_square_triangle.xframe"
+XFRAME_PATH = "quickdraw/xframes/stroke_square_triangle.xframe"
 
 # Load the data
-data =  tc.SFrame(SFRAME_PATH)
+data =  tc.XFrame(XFRAME_PATH)
 
 # Make a small train-test split since our toolkit is not very data-hungry 
 # for 2 classes

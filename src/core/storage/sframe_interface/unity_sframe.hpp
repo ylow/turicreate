@@ -3,25 +3,25 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_UNITY_SFRAME_HPP
-#define TURI_UNITY_SFRAME_HPP
+#ifndef TURI_UNITY_XFRAME_HPP
+#define TURI_UNITY_XFRAME_HPP
 
 #include <memory>
 #include <string>
 #include <vector>
-#include <model_server/lib/api/unity_sframe_interface.hpp>
-#include <core/storage/sframe_interface/unity_sarray.hpp>
-#include <core/storage/sframe_data/group_aggregate_value.hpp>
-#include <core/storage/sframe_data/sframe_rows.hpp>
+#include <model_server/lib/api/unity_xframe_interface.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_data/group_aggregate_value.hpp>
+#include <core/storage/xframe_data/xframe_rows.hpp>
 #include <visualization/server/plot.hpp>
 
 namespace turi {
 
 // forward declarations
-class sframe;
+class xframe;
 class dataframe;
-class sframe_reader;
-class sframe_iterator;
+class xframe_reader;
+class xframe_iterator;
 
 namespace query_eval {
 struct planner_node;
@@ -29,51 +29,51 @@ struct planner_node;
 
 
 /**
- * This is the SFrame object exposed to Python. It stores internally an
- * \ref sframe object which is a collection of named columns, each of flexible
- * type. The SFrame represents a complete immutable collection of columns.
+ * This is the XFrame object exposed to Python. It stores internally an
+ * \ref xframe object which is a collection of named columns, each of flexible
+ * type. The XFrame represents a complete immutable collection of columns.
  * Once created, it cannot be modified. However, shallow copies or sub-selection
  * of columns can be created cheaply.
  *
- * Internally it is simply a single shared_ptr to a \ref sframe object. The
- * sframe construction is delayed until one of the construct calls are made.
+ * Internally it is simply a single shared_ptr to a \ref xframe object. The
+ * xframe construction is delayed until one of the construct calls are made.
  *
  * \code
- * unity_sframe frame;
+ * unity_xframe frame;
  * // construct
  * frame.construct(...)
  * // frame is now immutable.
  * \endcode
  *
- * The SFrame may require temporary on disk storage which will be deleted
+ * The XFrame may require temporary on disk storage which will be deleted
  * on program termination. Temporary file names are obtained from
  * \ref turi::get_temp_name
  */
-class unity_sframe : public unity_sframe_base {
+class unity_xframe : public unity_xframe_base {
  public:
   /**
    * Default constructor. Does nothing
    */
-  unity_sframe();
+  unity_xframe();
 
   /**
    * Destructor. Calls clear().
    */
-  ~unity_sframe();
+  ~unity_xframe();
 
   /**
-   * Constructs an Sframe using a dataframe as input.
+   * Constructs an XFrame using a dataframe as input.
    * Dataframe must not contain NaN values.
    */
   void construct_from_dataframe(const dataframe_t& df) override;
 
   /**
-   * Constructs an Sframe using a sframe as input.
+   * Constructs an XFrame using a xframe as input.
    */
-  void construct_from_sframe(const sframe& sf);
+  void construct_from_xframe(const xframe& sf);
 
   /**
-   * Constructs an SFrame from an existing directory on disk saved with
+   * Constructs an XFrame from an existing directory on disk saved with
    * save_frame() or a on disk sarray prefix (saved with
    * save_frame_by_index_file()). This function will automatically detect if
    * the location is a directory, or a file. The files will not be deleted on
@@ -81,10 +81,10 @@ class unity_sframe : public unity_sframe_base {
    * cleared (\ref clear()). May throw an exception on failure. If an exception
    * occurs, the contents of SArray is empty.
    */
-  void construct_from_sframe_index(std::string index_file) override;
+  void construct_from_xframe_index(std::string index_file) override;
 
   /**
-   * Constructs an SFrame from one or more csv files.
+   * Constructs an XFrame from one or more csv files.
    * To keep the interface stable, the CSV parsing configuration read from a
    * map of string->flexible_type called parsing_config. The URL can be a single
    * filename or a directory name. When passing in a directory and the pattern
@@ -119,46 +119,46 @@ class unity_sframe : public unity_sframe_base {
                                    const std::vector<std::string>& column_names);
 
   /**
-   * Saves a copy of the current sframe into a directory.
-   * Does not modify the current sframe.
+   * Saves a copy of the current xframe into a directory.
+   * Does not modify the current xframe.
    */
   void save_frame(std::string target_directory) override;
 
   /**
-   * Performs an incomplete save of an existing SFrame into a directory.
-   * This saved SFrame may reference SFrames in other locations *in the same
+   * Performs an incomplete save of an existing XFrame into a directory.
+   * This saved XFrame may reference XFrames in other locations *in the same
    * filesystem* for certain columns/segments/etc.
    *
-   * Does not modify the current sframe.
+   * Does not modify the current xframe.
    */
   void save_frame_reference(std::string target_directory) override;
 
 
   /**
-   * Saves a copy of the current sframe into a target location defined by
-   * an index file. DOes not modify the current sframe.
+   * Saves a copy of the current xframe into a target location defined by
+   * an index file. DOes not modify the current xframe.
    */
   void save_frame_by_index_file(std::string index_file);
 
   /**
-   * Clears the contents of the SFrame.
+   * Clears the contents of the XFrame.
    */
   void clear() override;
 
   /**
-   * Returns the number of rows in the SFrame. Returns 0 if the SFrame is empty.
+   * Returns the number of rows in the XFrame. Returns 0 if the XFrame is empty.
    */
   size_t size() override;
 
   /**
-   * Returns the number of columns in the SFrame.
-   * Returns 0 if the sframe is empty.
+   * Returns the number of columns in the XFrame.
+   * Returns 0 if the xframe is empty.
    */
   size_t num_columns() override;
 
   /**
    * Returns an array containing the datatype of each column. The length
-   * of the return array is equal to num_columns(). If the sframe is empty,
+   * of the return array is equal to num_columns(). If the xframe is empty,
    * this returns an empty array.
    */
   std::vector<flex_type_enum> dtype() override;
@@ -175,17 +175,17 @@ class unity_sframe : public unity_sframe_base {
 
   /**
    * Returns an array containing the name of each column. The length
-   * of the return array is equal to num_columns(). If the sframe is empty,
+   * of the return array is equal to num_columns(). If the xframe is empty,
    * this returns an empty array.
    */
   std::vector<std::string> column_names() override;
 
   /**
-   * Returns some number of rows of the SFrame in a dataframe representation.
-   * if nrows exceeds the number of rows in the SFrame ( \ref size() ), this
+   * Returns some number of rows of the XFrame in a dataframe representation.
+   * if nrows exceeds the number of rows in the XFrame ( \ref size() ), this
    * returns only \ref size() rows.
    */
-  std::shared_ptr<unity_sframe_base> head(size_t nrows) override;
+  std::shared_ptr<unity_xframe_base> head(size_t nrows) override;
 
   /**
    *  Returns the index of the column `name`
@@ -198,7 +198,7 @@ class unity_sframe : public unity_sframe_base {
   const std::string& column_name(size_t index);
 
   /**
-   * Returns true if the column is present in the sframe, and false
+   * Returns true if the column is present in the xframe, and false
    * otherwise.
    */
   bool contains_column(const std::string &name);
@@ -209,11 +209,11 @@ class unity_sframe : public unity_sframe_base {
   dataframe_t _head(size_t nrows) override;
 
   /**
-   * Returns some number of rows from the end of the SFrame in a dataframe
-   * representation. If nrows exceeds the number of rows in the SFrame
+   * Returns some number of rows from the end of the XFrame in a dataframe
+   * representation. If nrows exceeds the number of rows in the XFrame
    * ( \ref size() ), this returns only \ref size() rows.
    */
-  std::shared_ptr<unity_sframe_base> tail(size_t nrows) override;
+  std::shared_ptr<unity_xframe_base> tail(size_t nrows) override;
 
   /**
    * Same as head, returning dataframe.
@@ -222,55 +222,55 @@ class unity_sframe : public unity_sframe_base {
 
   /**
    * Returns an SArray with the column that corresponds to 'name'.  Throws an
-   * exception if the name is not in the current SFrame.
+   * exception if the name is not in the current XFrame.
    */
   std::shared_ptr<unity_sarray_base> select_column(const std::string &name) override;
 
   /**
    * Returns an SArray with the column that corresponds to index idx.  Throws an
-   * exception if the name is not in the current SFrame.
+   * exception if the name is not in the current XFrame.
    */
   std::shared_ptr<unity_sarray_base> select_column(size_t idx);
 
   /**
-   * Returns a new SFrame which is filtered by a given logical column.
+   * Returns a new XFrame which is filtered by a given logical column.
    * The index array must be the same length as the current array. An output
    * array is returned containing only the elements in the current where are the
    * corresponding element in the index array evaluates to true.
    */
-  std::shared_ptr<unity_sframe_base> logical_filter(std::shared_ptr<unity_sarray_base> index) override;
+  std::shared_ptr<unity_xframe_base> logical_filter(std::shared_ptr<unity_sarray_base> index) override;
 
   /**
-   * Returns an lazy sframe with the columns that have the given names. Throws an
-   * exception if ANY of the names given are not in the current SFrame.
+   * Returns an lazy xframe with the columns that have the given names. Throws an
+   * exception if ANY of the names given are not in the current XFrame.
    */
-  std::shared_ptr<unity_sframe_base> select_columns(const std::vector<std::string> &names) override;
+  std::shared_ptr<unity_xframe_base> select_columns(const std::vector<std::string> &names) override;
 
   /**
-   * Returns an lazy sframe with the columns given by the indices.
+   * Returns an lazy xframe with the columns given by the indices.
    */
-  std::shared_ptr<unity_sframe_base> select_columns(const std::vector<size_t>& indices);
+  std::shared_ptr<unity_xframe_base> select_columns(const std::vector<size_t>& indices);
 
   /**
-   * Returns an lazy sframe which a the copy of the current one
+   * Returns an lazy xframe which a the copy of the current one
   */
-  std::shared_ptr<unity_sframe_base> copy();
+  std::shared_ptr<unity_xframe_base> copy();
 
   /**
-   * Mutates the current SFrame by adding the given column.
+   * Mutates the current XFrame by adding the given column.
    *
    * Throws an exception if:
-   *  - The given column has a different number of rows than the SFrame.
+   *  - The given column has a different number of rows than the XFrame.
    */
   void add_column(std::shared_ptr<unity_sarray_base >data, const std::string &name) override;
 
   /**
-   * Mutates the current SFrame by adding the given columns.
+   * Mutates the current XFrame by adding the given columns.
    *
    * Throws an exception if ANY given column cannot be added
    * (for one of the reasons that add_column can fail).
    *
-   * \note Currently leaves the SFrame in an unfinished state if one of the
+   * \note Currently leaves the XFrame in an unfinished state if one of the
    * columns fails...the columns before that were added successfully will
    * be there. This needs to be changed.
    */
@@ -278,7 +278,7 @@ class unity_sframe : public unity_sframe_base {
                    std::vector<std::string> name_vec) override;
 
   /**
-   * Returns a new sarray which is a transform of each row in the sframe
+   * Returns a new sarray which is a transform of each row in the xframe
    * using a Python lambda function pickled into a string.
    */
   std::shared_ptr<unity_sarray_base> transform(const std::string& lambda,
@@ -287,7 +287,7 @@ class unity_sframe : public unity_sframe_base {
                                                uint64_t seed) override;
 
   /**
-   * Returns a new sarray which is a transform of each row in the sframe
+   * Returns a new sarray which is a transform of each row in the xframe
    * using a Python lambda function pickled into a string.
    */
   std::shared_ptr<unity_sarray_base> transform_native(const function_closure_info& lambda,
@@ -296,19 +296,19 @@ class unity_sframe : public unity_sframe_base {
                                                       uint64_t seed) override;
 
   /**
-   * Returns a new sarray which is a transform of each row in the sframe
+   * Returns a new sarray which is a transform of each row in the xframe
    * using a Python lambda function pickled into a string.
    */
   std::shared_ptr<unity_sarray_base> transform_lambda(
-      std::function<flexible_type(const sframe_rows::row&)> lambda,
+      std::function<flexible_type(const xframe_rows::row&)> lambda,
       flex_type_enum type,
       uint64_t seed);
 
   /**
-   * Returns a new sarray which is a transform of each row in the sframe
+   * Returns a new sarray which is a transform of each row in the xframe
    * using a Python lambda function pickled into a string.
    */
-  std::shared_ptr<unity_sframe_base> flat_map(const std::string& lambda,
+  std::shared_ptr<unity_xframe_base> flat_map(const std::string& lambda,
                                               std::vector<std::string> output_column_names,
                                               std::vector<flex_type_enum> output_column_types,
                                               bool skip_undefined,
@@ -332,9 +332,9 @@ class unity_sframe : public unity_sframe_base {
   void swap_columns(size_t i, size_t j) override;
 
   /**
-   * Returns the underlying shared_ptr to the sframe object.
+   * Returns the underlying shared_ptr to the xframe object.
    */
-  std::shared_ptr<sframe> get_underlying_sframe();
+  std::shared_ptr<xframe> get_underlying_xframe();
 
   /**
    * Returns the underlying planner pointer
@@ -342,19 +342,19 @@ class unity_sframe : public unity_sframe_base {
   std::shared_ptr<query_eval::planner_node> get_planner_node();
 
   /**
-   * Sets the private shared pointer to an sframe.
+   * Sets the private shared pointer to an xframe.
    */
-  void set_sframe(const std::shared_ptr<sframe>& sf_ptr);
+  void set_xframe(const std::shared_ptr<xframe>& sf_ptr);
 
   /**
-   * Begin iteration through the SFrame.
+   * Begin iteration through the XFrame.
    *
    * Works together with \ref iterator_get_next(). The usage pattern
    * is as follows:
    * \code
-   * sframe.begin_iterator();
+   * xframe.begin_iterator();
    * while(1) {
-   *   auto ret = sframe.iterator_get_next(64);
+   *   auto ret = xframe.iterator_get_next(64);
    *   // do stuff
    *   if (ret.size() < 64) {
    *     // we are done
@@ -369,7 +369,7 @@ class unity_sframe : public unity_sframe_base {
   void begin_iterator() override;
 
   /**
-   * Obtains the next block of elements of size len from the SFrame.
+   * Obtains the next block of elements of size len from the XFrame.
    * Works together with \ref begin_iterator(). See the code example
    * in \ref begin_iterator() for details.
    *
@@ -383,7 +383,7 @@ class unity_sframe : public unity_sframe_base {
   std::vector< std::vector<flexible_type> > iterator_get_next(size_t len) override;
 
   /**
-   * Save the sframe to url in csv format.
+   * Save the xframe to url in csv format.
    * To keep the interface stable, the CSV parsing configuration read from a
    * map of string->flexible_type called writing_config.
    *
@@ -409,35 +409,35 @@ class unity_sframe : public unity_sframe_base {
                    std::map<std::string, flexible_type> writing_config) override;
 
   /**
-   * Randomly split the sframe into two parts, with ratio = percent, and  seed = random_seed.
+   * Randomly split the xframe into two parts, with ratio = percent, and  seed = random_seed.
    *
-   * Returns a list of size 2 of the unity_sframes resulting from the split.
+   * Returns a list of size 2 of the unity_xframes resulting from the split.
    */
-  std::list<std::shared_ptr<unity_sframe_base>> random_split(float percent, uint64_t random_seed, bool exact=false) override;
+  std::list<std::shared_ptr<unity_xframe_base>> random_split(float percent, uint64_t random_seed, bool exact=false) override;
 
   /**
-   * Randomly shuffles the sframe.
+   * Randomly shuffles the xframe.
    *
-   * Returns a list of size 2 of the unity_sframes resulting from the split.
+   * Returns a list of size 2 of the unity_xframes resulting from the split.
    */
-  std::shared_ptr<unity_sframe_base> shuffle() override;
+  std::shared_ptr<unity_xframe_base> shuffle() override;
 
   /**
-   * Sample the rows of sframe uniformly with ratio = percent, and seed = random_seed.
+   * Sample the rows of xframe uniformly with ratio = percent, and seed = random_seed.
    *
-   * Returns unity_sframe* containing the sampled rows.
+   * Returns unity_xframe* containing the sampled rows.
    */
-  std::shared_ptr<unity_sframe_base> sample(float percent, uint64_t random_seed, bool exact=false) override;
+  std::shared_ptr<unity_xframe_base> sample(float percent, uint64_t random_seed, bool exact=false) override;
 
   /**
-   * materialize the sframe, this is different from save() as this is a temporary persist of
-   * all sarrays underneath the sframe to speed up some computation (for example, lambda)
-   * this will NOT create a new uity_sframe.
+   * materialize the xframe, this is different from save() as this is a temporary persist of
+   * all sarrays underneath the xframe to speed up some computation (for example, lambda)
+   * this will NOT create a new uity_xframe.
   **/
   void materialize() override;
 
   /**
-   * Returns whether or not this sframe is materialized
+   * Returns whether or not this xframe is materialized
    **/
   bool is_materialized() override;
 
@@ -447,17 +447,17 @@ class unity_sframe : public unity_sframe_base {
   std::string query_plan_string() override;
 
   /**
-   * Return true if the sframe size is known.
+   * Return true if the xframe size is known.
    */
   bool has_size() override;
 
   /**
-   * Returns unity_sframe* where there is one row for each unique value of the
+   * Returns unity_xframe* where there is one row for each unique value of the
    * key_column.
    * group_operations is a collection of pairs of {column_name, operation_name}
    * where operation_name is a builtin operator.
    */
-  std::shared_ptr<unity_sframe_base> groupby_aggregate(
+  std::shared_ptr<unity_xframe_base> groupby_aggregate(
       const std::vector<std::string>& key_columns,
       const std::vector<std::vector<std::string>>& group_columns,
       const std::vector<std::string>& group_output_columns,
@@ -466,36 +466,36 @@ class unity_sframe : public unity_sframe_base {
   /**
    * \overload
    */
-  std::shared_ptr<unity_sframe_base> groupby_aggregate(
+  std::shared_ptr<unity_xframe_base> groupby_aggregate(
       const std::vector<std::string>& key_columns,
       const std::vector<std::vector<std::string>>& group_columns,
       const std::vector<std::string>& group_output_columns,
       const std::vector<std::shared_ptr<group_aggregate_value>>& group_operations);
 
   /**
-   * Returns a new SFrame which contains all rows combined from current SFrame and "other"
-   * The "other" SFrame has to have the same number of columns with the same column names
-   * and same column types as "this" SFrame
+   * Returns a new XFrame which contains all rows combined from current XFrame and "other"
+   * The "other" XFrame has to have the same number of columns with the same column names
+   * and same column types as "this" XFrame
    */
-  std::shared_ptr<unity_sframe_base> append(std::shared_ptr<unity_sframe_base> other) override;
+  std::shared_ptr<unity_xframe_base> append(std::shared_ptr<unity_xframe_base> other) override;
 
-  inline std::shared_ptr<unity_sframe_base> join(std::shared_ptr<unity_sframe_base >right,
+  inline std::shared_ptr<unity_xframe_base> join(std::shared_ptr<unity_xframe_base >right,
                           const std::string join_type,
                           const std::map<std::string,std::string>& join_keys) override
   { return join_with_custom_name(right, join_type, join_keys, {}); }
 
-  std::shared_ptr<unity_sframe_base> join_with_custom_name(std::shared_ptr<unity_sframe_base >right,
+  std::shared_ptr<unity_xframe_base> join_with_custom_name(std::shared_ptr<unity_xframe_base >right,
                           const std::string join_type,
                           const std::map<std::string,std::string>& join_keys,
                           const std::map<std::string,std::string>& alternative_names) override;
 
-  std::shared_ptr<unity_sframe_base> sort(const std::vector<std::string>& sort_keys,
+  std::shared_ptr<unity_xframe_base> sort(const std::vector<std::string>& sort_keys,
                           const std::vector<int>& sort_ascending) override;
 
   /**
-    * Pack a subset columns of current SFrame into one dictionary column, using
+    * Pack a subset columns of current XFrame into one dictionary column, using
     * column name as key in the dictionary, and value of the column as value
-    * in the dictionary, returns a new SFrame that includes other non-packed
+    * in the dictionary, returns a new XFrame that includes other non-packed
     * columns plus the newly generated dict column.
     * Missing value in the original column will not show up in the packed
     * dictionary value.
@@ -515,14 +515,14 @@ class unity_sframe : public unity_sframe_base {
       const flexible_type& fill_na) override;
 
   /**
-   * Convert a dictionary column of the SFrame to two columns with first column
+   * Convert a dictionary column of the XFrame to two columns with first column
    * as the key for the dictionary and second column as the value for the
-   * dictionary. Returns a new SFrame with the two newly created columns, plus
+   * dictionary. Returns a new XFrame with the two newly created columns, plus
    * all columns other than the stacked column. The values from those columns
    * are duplicated for all rows created from the same original row.
 
    * \param column_name: string
-      The column to stack. The name must come from current SFrame and must be of dict type
+      The column to stack. The name must come from current XFrame and must be of dict type
 
    * \param new_column_names: a list of str, optional
       Must be length of two. The two column names to stack the dict value to.
@@ -536,24 +536,24 @@ class unity_sframe : public unity_sframe_base {
       for missing dict value, one row will be created with the two new columns' value
       being missing value
 
-   * Retruns a new unity_sframe with stacked columns
+   * Retruns a new unity_xframe with stacked columns
   **/
-  std::shared_ptr<unity_sframe_base> stack(
+  std::shared_ptr<unity_xframe_base> stack(
       const std::string& column_name,
       const std::vector<std::string>& new_column_names,
       const std::vector<flex_type_enum>& new_column_types,
       bool drop_na) override;
 
    /**
-    * Extracts a range of rows from an SFrame as a new SFrame.
+    * Extracts a range of rows from an XFrame as a new XFrame.
     * This will extract rows beginning at start (inclusive) and ending at
     * end(exclusive) in steps of "step".
     * step must be at least 1.
     */
-  std::shared_ptr<unity_sframe_base> copy_range(size_t start, size_t step, size_t end) override;
+  std::shared_ptr<unity_xframe_base> copy_range(size_t start, size_t step, size_t end) override;
 
   /**
-   * Returns a new SFrame with missing values dropped.
+   * Returns a new XFrame with missing values dropped.
    *
    * Missing values are only searched for in the columns specified in the
    * 'column_names'.  If this vector is empty, all columns will be considered.
@@ -561,17 +561,17 @@ class unity_sframe : public unity_sframe_base {
    * missing value.  If false, the row is dropped if any of the specified
    * columns contain a missing value.
    *
-   * If 'split' is true, this function returns two SFrames, the first being the
-   * SFrame with missing values dropped, and the second consisting of all the
+   * If 'split' is true, this function returns two XFrames, the first being the
+   * XFrame with missing values dropped, and the second consisting of all the
    * rows removed.
    *
    * If 'recursive' is true, the `nan`element check will be perfromed in
    * a recursive manner to check each unit in a container-like flexible-typed
-   * cell in SFrame.
+   * cell in XFrame.
    *
-   * Throws if the column names are not in this SFrame, or if too many are given.
+   * Throws if the column names are not in this XFrame, or if too many are given.
    */
-  std::list<std::shared_ptr<unity_sframe_base>> drop_missing_values(
+  std::list<std::shared_ptr<unity_xframe_base>> drop_missing_values(
       const std::vector<std::string>& column_names, bool all, bool split,
       bool recursive) override;
 
@@ -589,10 +589,10 @@ class unity_sframe : public unity_sframe_base {
    * \param logical_filter_array is an sarray of the same size, and has only
    * zeros and ones as value.
    *
-   * Return a list of two sframes with all positive examples goes to the first
+   * Return a list of two xframes with all positive examples goes to the first
    * one and negative rows goes to the second one.
    */
-  std::list<std::shared_ptr<unity_sframe_base>> logical_filter_split(
+  std::list<std::shared_ptr<unity_xframe_base>> logical_filter_split(
     std::shared_ptr<unity_sarray_base> logical_filter_array);
 
   void explore(const std::string& path_to_client, const std::string& title) override;
@@ -608,7 +608,7 @@ class unity_sframe : public unity_sframe_base {
 
   std::vector<std::string> m_column_names;
 
-  std::shared_ptr<sframe> m_cached_sframe;
+  std::shared_ptr<xframe> m_cached_xframe;
 
   /**
    * Supports \ref begin_iterator() and \ref iterator_get_next().
@@ -618,22 +618,22 @@ class unity_sframe : public unity_sframe_base {
   size_t iterator_next_segment_id = 0;
 
   /**
-   * A copy of the current SFrame. This allows iteration, and other
+   * A copy of the current XFrame. This allows iteration, and other
    * SAarray operations to operate together safely in harmony without collisions.
    */
-  std::unique_ptr<sframe_reader> iterator_sframe_ptr;
+  std::unique_ptr<xframe_reader> iterator_xframe_ptr;
 
   /**
    * Supports \ref begin_iterator() and \ref iterator_get_next().
    * The begin iterator of the current segment I am reading.
    */
-  std::unique_ptr<sframe_iterator> iterator_current_segment_iter;
+  std::unique_ptr<xframe_iterator> iterator_current_segment_iter;
 
   /**
    * Supports \ref begin_iterator() and \ref iterator_get_next().
    * The end iterator of the current segment I am reading.
    */
-  std::unique_ptr<sframe_iterator> iterator_current_segment_enditer;
+  std::unique_ptr<xframe_iterator> iterator_current_segment_enditer;
 
 
  private:
@@ -656,10 +656,10 @@ class unity_sframe : public unity_sframe_base {
    *
    * \example
    *
-   * Given current sframe column names: a, b, c
+   * Given current xframe column names: a, b, c
    * Next 3 generated names are: X4, X5, X6
    *
-   * Given current sframe column names: X4, X5.1, X6.2
+   * Given current xframe column names: X4, X5.1, X6.2
    * Next 3 generated names are: X4.1, X5, X6.1
    */
   std::string generate_next_column_name();

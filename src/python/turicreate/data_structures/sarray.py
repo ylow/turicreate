@@ -93,7 +93,7 @@ class SArray(object):
     SArray is scaled to hold data that are much larger than the machine's main
     memory. It fully supports missing values and random access. The
     data backing an SArray is located on the same machine as the Turi
-    Server process. Each column in an :py:class:`~turicreate.SFrame` is an
+    Server process. Each column in an :py:class:`~turicreate.XFrame` is an
     SArray.
 
     Parameters
@@ -299,7 +299,7 @@ class SArray(object):
     >>> sa[2]
     3
     >>> sa[5]
-    IndexError: SFrame index out of range
+    IndexError: XFrame index out of range
 
     Negative indices can be used to access elements from the tail of the array
 
@@ -812,7 +812,7 @@ class SArray(object):
             created at the location which will contain the SArray.
 
         format : {'binary', 'text', 'csv'}, optional
-            Format in which to save the SFrame. Binary saved SArrays can be
+            Format in which to save the XFrame. Binary saved SArrays can be
             loaded much faster and without any format conversion losses.
             'text' and 'csv' are synonymous: Each SArray row will be written
             as a single line in an output text file. If not
@@ -820,7 +820,7 @@ class SArray(object):
             name ends with 'csv', 'txt' or '.csv.gz', then save as 'csv' format,
             otherwise save as 'binary' format.
         """
-        from .sframe import SFrame as _SFrame
+        from .xframe import XFrame as _XFrame
 
         if format is None:
             if filename.endswith((".csv", ".csv.gz", "txt")):
@@ -831,7 +831,7 @@ class SArray(object):
             with cython_context():
                 self.__proxy__.save(_make_internal_url(filename))
         elif format == "text" or format == "csv":
-            sf = _SFrame({"X1": self})
+            sf = _XFrame({"X1": self})
             with cython_context():
                 sf.__proxy__.save_as_csv(
                     _make_internal_url(filename), {"header": False}
@@ -1875,7 +1875,7 @@ class SArray(object):
 
         See Also
         --------
-        SFrame.apply
+        XFrame.apply
 
         Examples
         --------
@@ -2201,14 +2201,14 @@ class SArray(object):
         >>> turicreate.SArray([14, 62, 83, 72, 77, 96, 5, 25, 69, 66]).argmax()
 
         """
-        from .sframe import SFrame as _SFrame
+        from .xframe import XFrame as _XFrame
 
         if len(self) == 0:
             return None
         if not any([isinstance(self[0], i) for i in [int, float, int]]):
             raise TypeError("SArray must be of type 'int', 'long', or 'float'.")
 
-        sf = _SFrame(self).add_row_number()
+        sf = _XFrame(self).add_row_number()
         sf_out = sf.groupby(
             key_column_names=[],
             operations={"maximum_x1": _aggregate.ARGMAX("X1", "id")},
@@ -2236,14 +2236,14 @@ class SArray(object):
         >>> turicreate.SArray([14, 62, 83, 72, 77, 96, 5, 25, 69, 66]).argmin()
 
         """
-        from .sframe import SFrame as _SFrame
+        from .xframe import XFrame as _XFrame
 
         if len(self) == 0:
             return None
         if not any([isinstance(self[0], i) for i in [int, float, int]]):
             raise TypeError("SArray must be of type 'int', 'long', or 'float'.")
 
-        sf = _SFrame(self).add_row_number()
+        sf = _XFrame(self).add_row_number()
         sf_out = sf.groupby(
             key_column_names=[],
             operations={"minimum_x1": _aggregate.ARGMIN("X1", "id")},
@@ -2697,7 +2697,7 @@ class SArray(object):
 
         Notes
         -----
-        This is used internally by SFrame's topk function.
+        This is used internally by XFrame's topk function.
         """
         with cython_context():
             return SArray(_proxy=self.__proxy__.topk_index(topk, reverse))
@@ -2764,18 +2764,18 @@ class SArray(object):
 
     def value_counts(self):
         """
-        Return an SFrame containing counts of unique values. The resulting
-        SFrame will be sorted in descending frequency.
+        Return an XFrame containing counts of unique values. The resulting
+        XFrame will be sorted in descending frequency.
 
         Returns
         -------
-        out : SFrame
-            An SFrame containing 2 columns : 'value', and 'count'. The SFrame will
+        out : XFrame
+            An XFrame containing 2 columns : 'value', and 'count'. The XFrame will
             be sorted in descending order by the column 'count'.
 
         See Also
         --------
-        SFrame.summary
+        XFrame.summary
 
         Examples
         --------
@@ -2795,10 +2795,10 @@ class SArray(object):
             +-------+-------+
             [3 rows x 2 columns]
         """
-        from .sframe import SFrame as _SFrame
+        from .xframe import XFrame as _XFrame
 
         return (
-            _SFrame({"value": self})
+            _XFrame({"value": self})
             .groupby("value", {"count": _aggregate.COUNT})
             .sort("count", ascending=False)
         )
@@ -2821,7 +2821,7 @@ class SArray(object):
 
         See Also
         --------
-        SFrame.append
+        XFrame.append
 
         Examples
         --------
@@ -2864,11 +2864,11 @@ class SArray(object):
 
         See Also
         --------
-        SFrame.unique
+        XFrame.unique
         """
-        from .sframe import SFrame as _SFrame
+        from .xframe import XFrame as _XFrame
 
-        tmp_sf = _SFrame()
+        tmp_sf = _XFrame()
         tmp_sf.add_column(self, "X1", inplace=True)
 
         res = tmp_sf.groupby("X1", {})
@@ -2899,9 +2899,9 @@ class SArray(object):
 
         >>> sa.explore(title="My Plot Title")
         """
-        from .sframe import SFrame as _SFrame
+        from .xframe import XFrame as _XFrame
 
-        _SFrame({"SArray": self}).explore()
+        _XFrame({"SArray": self}).explore()
 
     def show(self, title=LABEL_DEFAULT, xlabel=LABEL_DEFAULT, ylabel=LABEL_DEFAULT):
         """
@@ -3054,9 +3054,9 @@ class SArray(object):
         >>> print(shuffled_sa)
         ['z', 'd', 'Y', 'c', 'a', 'x', 'b']
         """
-        from .sframe import SFrame
+        from .xframe import XFrame
 
-        sf = SFrame({'content': self})
+        sf = XFrame({'content': self})
         sf = sf.shuffle()
         return sf['content']
 
@@ -3092,9 +3092,9 @@ class SArray(object):
         >>> print(len(sa_train), len(sa_test))
         922 102
         """
-        from .sframe import SFrame
+        from .xframe import XFrame
 
-        temporary_sf = SFrame()
+        temporary_sf = XFrame()
         temporary_sf["X1"] = self
         (train, test) = temporary_sf.random_split(fraction, seed)
         return (train["X1"], test["X1"])
@@ -3102,8 +3102,8 @@ class SArray(object):
     def split_datetime(self, column_name_prefix="X", limit=None, timezone=False):
         """
         Splits an SArray of datetime type to multiple columns, return a
-        new SFrame that contains expanded columns. A SArray of datetime will be
-        split by default into an SFrame of 6 columns, one for each
+        new XFrame that contains expanded columns. A SArray of datetime will be
+        split by default into an XFrame of 6 columns, one for each
         year/month/day/hour/minute/second element.
 
         **Column Naming**
@@ -3149,8 +3149,8 @@ class SArray(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame that contains all expanded columns
+        out : XFrame
+            A new XFrame that contains all expanded columns
 
         Examples
         --------
@@ -3193,7 +3193,7 @@ class SArray(object):
             +----------+---------+
             [2 rows x 2 columns]
         """
-        from .sframe import SFrame as _SFrame
+        from .xframe import XFrame as _XFrame
 
         if self.dtype != datetime.datetime:
             raise TypeError("Only column of datetime type is supported.")
@@ -3232,13 +3232,13 @@ class SArray(object):
             column_types += [float]
 
         with cython_context():
-            return _SFrame(
+            return _XFrame(
                 _proxy=self.__proxy__.expand(column_name_prefix, limit, column_types)
             )
 
     def stack(self, new_column_name=None, drop_na=False, new_column_type=None):
         """
-        Convert a "wide" SArray to one or two "tall" columns in an SFrame by
+        Convert a "wide" SArray to one or two "tall" columns in an XFrame by
         stacking all values.
 
         The stack works only for columns of dict, list, or array type.  If the
@@ -3250,7 +3250,7 @@ class SArray(object):
         result of stacking. With each row holds one element of the array or list
         value, and the rest columns from the same original row repeated.
 
-        The returned SFrame includes the newly created column(s).
+        The returned XFrame includes the newly created column(s).
 
         Parameters
         --------------
@@ -3270,12 +3270,12 @@ class SArray(object):
             new_column_type must be a single type, or a list of one type. If
             original column is of dict type, new_column_type must be a list of
             two types. If not provided, the types are automatically inferred
-            from the first 100 values of the SFrame.
+            from the first 100 values of the XFrame.
 
         Returns
         -------
-        out : SFrame
-            A new SFrame that contains the newly stacked column(s).
+        out : XFrame
+            A new XFrame that contains the newly stacked column(s).
 
         Examples
         ---------
@@ -3307,9 +3307,9 @@ class SArray(object):
         Observe that since topic 4 had no words, an empty row is inserted.
         To drop that row, set drop_na=True in the parameters to stack.
         """
-        from .sframe import SFrame as _SFrame
+        from .xframe import XFrame as _XFrame
 
-        return _SFrame({"SArray": self}).stack(
+        return _XFrame({"SArray": self}).stack(
             "SArray",
             new_column_name=new_column_name,
             drop_na=drop_na,
@@ -3320,12 +3320,12 @@ class SArray(object):
         self, column_name_prefix="X", column_types=None, na_value=None, limit=None
     ):
         """
-        Convert an SArray of list, array, or dict type to an SFrame with
+        Convert an SArray of list, array, or dict type to an XFrame with
         multiple columns.
 
         `unpack` expands an SArray using the values of each list/array/dict as
-        elements in a new SFrame of multiple columns. For example, an SArray of
-        lists each of length 4 will be expanded into an SFrame of 4 columns,
+        elements in a new XFrame of multiple columns. For example, an SArray of
+        lists each of length 4 will be expanded into an XFrame of 4 columns,
         one for each list element. An SArray of lists/arrays of varying size
         will be expand to a number of columns equal to the longest list/array.
         An SArray of dictionaries will be expanded into as many columns as
@@ -3342,7 +3342,7 @@ class SArray(object):
         given value are also replaced with missing values. In an SArray of
         array.array type, NaN is interpreted as a missing value.
 
-        :py:func:`turicreate.SFrame.pack_columns()` is the reverse effect of unpack
+        :py:func:`turicreate.XFrame.pack_columns()` is the reverse effect of unpack
 
         Parameters
         ----------
@@ -3365,8 +3365,8 @@ class SArray(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame that contains all unpacked columns
+        out : XFrame
+            A new XFrame that contains all unpacked columns
 
         Examples
         --------
@@ -3444,7 +3444,7 @@ class SArray(object):
         [3 rows x 3 columns]
         <BLANKLINE>
         """
-        from .sframe import SFrame as _SFrame
+        from .xframe import XFrame as _XFrame
 
         if self.dtype not in [dict, array.array, list]:
             raise TypeError("Only SArray of dict/list/array type supports unpack")
@@ -3523,13 +3523,13 @@ class SArray(object):
         with cython_context():
             if self.dtype == dict and column_types is None:
                 limit = limit if limit is not None else []
-                return _SFrame(
+                return _XFrame(
                     _proxy=self.__proxy__.unpack_dict(
                         column_name_prefix.encode("utf-8"), limit, na_value
                     )
                 )
             else:
-                return _SFrame(
+                return _XFrame(
                     _proxy=self.__proxy__.unpack(
                         column_name_prefix.encode("utf-8"),
                         limit,
@@ -3563,13 +3563,13 @@ class SArray(object):
         Rows: 3
         [1, 2, 3]
         """
-        from .sframe import SFrame as _SFrame
+        from .xframe import XFrame as _XFrame
 
         if self.dtype not in (int, float, str, datetime.datetime):
             raise TypeError(
                 "Only sarray with type (int, float, str, datetime.datetime) can be sorted"
             )
-        sf = _SFrame()
+        sf = _XFrame()
         sf["a"] = self
         return sf.sort("a", ascending)["a"]
 
@@ -4506,7 +4506,7 @@ class SArray(object):
         ['horse', 'cow']
         """
 
-        from .sframe import SFrame as _SFrame
+        from .xframe import XFrame as _XFrame
 
         column_name = "sarray"
 
@@ -4518,13 +4518,13 @@ class SArray(object):
                 values = [values]
             values = SArray(values)
 
-        # Convert values to SFrame
-        value_sf = _SFrame()
+        # Convert values to XFrame
+        value_sf = _XFrame()
         value_sf.add_column(values, column_name, inplace=True)
         given_type = value_sf.column_types()[0]  # value column type
 
         existing_type = self.dtype
-        sarray_sf = _SFrame()
+        sarray_sf = _XFrame()
         sarray_sf.add_column(self, column_name, inplace=True)
 
         if given_type != existing_type:
@@ -4538,7 +4538,7 @@ class SArray(object):
             if exclude:
                 id_name = "id"
                 value_sf = value_sf.add_row_number(id_name)
-                tmp = _SFrame(
+                tmp = _XFrame(
                     _proxy=sarray_sf.__proxy__.join(
                         value_sf.__proxy__, "left", {column_name: column_name}
                     )
@@ -4546,7 +4546,7 @@ class SArray(object):
                 ret_sf = tmp[tmp[id_name] == None]
                 return ret_sf[column_name]
             else:
-                ret_sf = _SFrame(
+                ret_sf = _XFrame(
                     _proxy=sarray_sf.__proxy__.join(
                         value_sf.__proxy__, "inner", {column_name: column_name}
                     )

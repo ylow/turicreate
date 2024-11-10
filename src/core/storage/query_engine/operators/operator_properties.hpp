@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_ENGINE_INFER_OPERATOR_FIELD_H_
-#define TURI_SFRAME_QUERY_ENGINE_INFER_OPERATOR_FIELD_H_
+#ifndef TURI_XFRAME_QUERY_ENGINE_INFER_OPERATOR_FIELD_H_
+#define TURI_XFRAME_QUERY_ENGINE_INFER_OPERATOR_FIELD_H_
 
 #include <core/logging/assertions.hpp>
 #include <memory>
@@ -29,7 +29,7 @@ enum class planner_node_type : int {
     PROJECT_NODE,
     RANGE_NODE,
     SARRAY_SOURCE_NODE,
-    SFRAME_SOURCE_NODE,
+    XFRAME_SOURCE_NODE,
     TRANSFORM_NODE,
     LAMBDA_TRANSFORM_NODE,
     GENERALIZED_TRANSFORM_NODE,

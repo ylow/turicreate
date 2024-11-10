@@ -11,7 +11,7 @@ The code below use the ESC-10 dataset from the [Introductory Example](./README.m
 ```python
 import turicreate as tc
 
-data = tc.load_sframe('./ESC-10')
+data = tc.load_xframe('./ESC-10')
 
 # Calculate the deep features just once.
 data['deep_features'] = tc.sound_classifier.get_deep_features(data['audio'])
@@ -46,7 +46,7 @@ The code below tries several different neural network configurations and reports
 ```python
 import turicreate as tc
 
-data = tc.load_sframe('./ESC-10')
+data = tc.load_xframe('./ESC-10')
 
 # Calculate the deep features just once.
 data['deep_features'] = tc.sound_classifier.get_deep_features(data['audio'])

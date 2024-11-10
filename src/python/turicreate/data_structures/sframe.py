@@ -4,10 +4,10 @@
 # Use of this source code is governed by a BSD-3-clause license that can
 # be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
 """
-This module defines the SFrame class which provides the
+This module defines the XFrame class which provides the
 ability to create, access and manipulate a remote scalable dataframe object.
 
-SFrame acts similarly to pandas.DataFrame, but the data is completely immutable
+XFrame acts similarly to pandas.DataFrame, but the data is completely immutable
 and is stored column wise.
 """
 
@@ -16,7 +16,7 @@ and is stored column wise.
 from .._connect import main as glconnect
 from .._cython.cy_flexible_type import infer_type_of_list
 from .._cython.context import debug_trace as cython_context
-from .._cython.cy_sframe import UnitySFrameProxy
+from .._cython.cy_xframe import UnityXFrameProxy
 from ..util import _is_non_string_iterable, _make_internal_url
 from ..util import _infer_dbapi2_types
 from ..util import _get_module_from_object, _pytype_to_printf
@@ -46,16 +46,16 @@ try:
 except:
     pass
 
-__all__ = ["SFrame"]
+__all__ = ["XFrame"]
 __LOGGER__ = _logging.getLogger(__name__)
 
 FOOTER_STRS = [
-    "Note: Only the head of the SFrame is printed.",
+    "Note: Only the head of the XFrame is printed.",
     "You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.",
 ]
 
 LAZY_FOOTER_STRS = [
-    "Note: Only the head of the SFrame is printed. This SFrame is lazily evaluated.",
+    "Note: Only the head of the XFrame is printed. This XFrame is lazily evaluated.",
     "You can use sf.materialize() to force materialization.",
 ]
 
@@ -63,13 +63,13 @@ if sys.version_info.major > 2:
     long = int
 
 
-def load_sframe(filename):
+def load_xframe(filename):
     """
-    Load an SFrame. The filename extension is used to determine the format
-    automatically. This function is particularly useful for SFrames previously
-    saved in binary format. For CSV imports the ``SFrame.read_csv`` function
-    provides greater control. If the SFrame is in binary format, ``filename`` is
-    actually a directory, created when the SFrame is saved.
+    Load an XFrame. The filename extension is used to determine the format
+    automatically. This function is particularly useful for XFrames previously
+    saved in binary format. For CSV imports the ``XFrame.read_csv`` function
+    provides greater control. If the XFrame is in binary format, ``filename`` is
+    actually a directory, created when the XFrame is saved.
 
     Parameters
     ----------
@@ -78,19 +78,19 @@ def load_sframe(filename):
 
     Returns
     -------
-    out : SFrame
+    out : XFrame
 
     See Also
     --------
-    SFrame.save, SFrame.read_csv
+    XFrame.save, XFrame.read_csv
 
     Examples
     --------
-    >>> sf = turicreate.SFrame({'id':[1,2,3], 'val':['A','B','C']})
-    >>> sf.save('my_sframe')        # 'my_sframe' is a directory
-    >>> sf_loaded = turicreate.load_sframe('my_sframe')
+    >>> sf = turicreate.XFrame({'id':[1,2,3], 'val':['A','B','C']})
+    >>> sf.save('my_xframe')        # 'my_xframe' is a directory
+    >>> sf_loaded = turicreate.load_xframe('my_xframe')
     """
-    sf = SFrame(data=filename)
+    sf = XFrame(data=filename)
     return sf
 
 
@@ -188,21 +188,21 @@ def _force_cast_sql_types(data, result_types, force_cast_cols):
     return ret_data
 
 
-class SFrame(object):
+class XFrame(object):
     """
-    SFrame means scalable data frame. A tabular, column-mutable dataframe object that can
-    scale to big data. The data in SFrame is stored column-wise, and is
+    XFrame means scalable data frame. A tabular, column-mutable dataframe object that can
+    scale to big data. The data in XFrame is stored column-wise, and is
     stored on persistent storage (e.g. disk) to avoid being constrained by
-    memory size.  Each column in an SFrame is a size-immutable
-    :class:`~turicreate.SArray`, but SFrames are mutable in that columns can be
-    added and subtracted with ease.  An SFrame essentially acts as an ordered
+    memory size.  Each column in an XFrame is a size-immutable
+    :class:`~turicreate.SArray`, but XFrames are mutable in that columns can be
+    added and subtracted with ease.  An XFrame essentially acts as an ordered
     dict of SArrays.
 
-    Currently, we support constructing an SFrame from the following data
+    Currently, we support constructing an XFrame from the following data
     formats:
 
     * csv file (comma separated value)
-    * sframe directory archive (A directory where an sframe was saved
+    * xframe directory archive (A directory where an xframe was saved
       previously)
     * general text file (with csv parsing options, See :py:meth:`read_csv()`)
     * a Python dictionary
@@ -226,7 +226,7 @@ class SFrame(object):
     data : array | pandas.DataFrame | string | dict, optional
         The actual interpretation of this field is dependent on the ``format``
         parameter. If ``data`` is an array or Pandas DataFrame, the contents are
-        stored in the SFrame. If ``data`` is a string, it is interpreted as a
+        stored in the XFrame. If ``data`` is a string, it is interpreted as a
         file. Files can be read from local file system or urls (local://,
         hdfs://, s3://, http://).
 
@@ -245,15 +245,15 @@ class SFrame(object):
         - "dataframe"
         - "csv"
         - "tsv"
-        - "sframe".
+        - "xframe".
 
     See Also
     --------
     read_csv:
-        Create a new SFrame from a csv file. Preferred for text and CSV formats,
+        Create a new XFrame from a csv file. Preferred for text and CSV formats,
         because it has a lot more options for controlling the parser.
 
-    save : Save an SFrame for later use.
+    save : Save an XFrame for later use.
 
     Notes
     -----
@@ -271,37 +271,37 @@ class SFrame(object):
     --------
 
     >>> import turicreate
-    >>> from turicreate import SFrame
+    >>> from turicreate import XFrame
 
     **Construction**
 
-    Construct an SFrame from a dataframe and transfers the dataframe object
+    Construct an XFrame from a dataframe and transfers the dataframe object
     across the network.
 
     >>> df = pandas.DataFrame()
-    >>> sf = SFrame(data=df)
+    >>> sf = XFrame(data=df)
 
-    Construct an SFrame from a local csv file (only works for local server).
+    Construct an XFrame from a local csv file (only works for local server).
 
-    >>> sf = SFrame(data='~/mydata/foo.csv')
+    >>> sf = XFrame(data='~/mydata/foo.csv')
 
-    Construct an SFrame from a csv file on Amazon S3. This requires the
+    Construct an XFrame from a csv file on Amazon S3. This requires the
     environment variables: *AWS_ACCESS_KEY_ID* and *AWS_SECRET_ACCESS_KEY* to be
     set before the python session started.
 
-    >>> sf = SFrame(data='s3://mybucket/foo.csv')
+    >>> sf = XFrame(data='s3://mybucket/foo.csv')
 
     Read from HDFS using a specific java installation (environment variable
     only applies when using Linux)
 
     >>> import os
     >>> os.environ['TURI_JAVA_HOME'] = '/my/path/to/java'
-    >>> from turicreate import SFrame
-    >>> sf = SFrame("hdfs://mycluster.example.com:8020/user/myname/coolfile.txt")
+    >>> from turicreate import XFrame
+    >>> sf = XFrame("hdfs://mycluster.example.com:8020/user/myname/coolfile.txt")
 
-    An SFrame can be constructed from a dictionary of values or SArrays:
+    An XFrame can be constructed from a dictionary of values or SArrays:
 
-    >>> sf = tc.SFrame({'id':[1,2,3],'val':['A','B','C']})
+    >>> sf = tc.XFrame({'id':[1,2,3],'val':['A','B','C']})
     >>> sf
     Columns:
         id  int
@@ -317,14 +317,14 @@ class SFrame(object):
 
     >>> ids = SArray([1,2,3])
     >>> vals = SArray(['A','B','C'])
-    >>> sf = SFrame({'id':ids,'val':vals})
+    >>> sf = XFrame({'id':ids,'val':vals})
 
     It can also be constructed from an array of SArrays in which case column
     names are automatically assigned.
 
     >>> ids = SArray([1,2,3])
     >>> vals = SArray(['A','B','C'])
-    >>> sf = SFrame([ids, vals])
+    >>> sf = XFrame([ids, vals])
     >>> sf
     Columns:
         X1 int
@@ -336,10 +336,10 @@ class SFrame(object):
     1  2   B
     2  3   C
 
-    If the SFrame is constructed from a list of values, an SFrame of a single
+    If the XFrame is constructed from a list of values, an XFrame of a single
     column is constructed.
 
-    >>> sf = SFrame([1,2,3])
+    >>> sf = XFrame([1,2,3])
     >>> sf
     Columns:
         X1 int
@@ -352,7 +352,7 @@ class SFrame(object):
 
     **Parsing**
 
-    The :py:func:`turicreate.SFrame.read_csv()` is quite powerful and, can be
+    The :py:func:`turicreate.XFrame.read_csv()` is quite powerful and, can be
     used to import a variety of row-based formats.
 
     First, some simple cases:
@@ -368,7 +368,7 @@ class SFrame(object):
     10122,2,4
     10114,1,5
     10125,1,1
-    >>> tc.SFrame.read_csv('ratings.csv')
+    >>> tc.XFrame.read_csv('ratings.csv')
     Columns:
       user_id   int
       movie_id  int
@@ -405,7 +405,7 @@ class SFrame(object):
     10122 2 4
     10114 1 5
     10125 1 1
-    >>> tc.SFrame.read_csv('ratings.csv', delimiter=' ')
+    >>> tc.XFrame.read_csv('ratings.csv', delimiter=' ')
 
     By default, "NA" or a missing element are interpreted as missing values.
 
@@ -415,7 +415,7 @@ class SFrame(object):
     harry,5,
     jack,2,2
     bill,,
-    >>> tc.SFrame.read_csv('ratings2.csv')
+    >>> tc.XFrame.read_csv('ratings2.csv')
     Columns:
       user  str
       movie int
@@ -440,7 +440,7 @@ class SFrame(object):
     "Restaurant 1", [1 4 9 10], {"funny":5, "cool":2}
     "Restaurant 2", [], {"happy":2, "sad":2}
     "Restaurant 3", [2, 11, 12], {}
-    >>> tc.SFrame.read_csv('ratings3.csv')
+    >>> tc.XFrame.read_csv('ratings3.csv')
     Columns:
     business    str
     categories  array
@@ -471,7 +471,7 @@ class SFrame(object):
     [{a:b}]
     ["c",d, e]
     [[a]]
-    >>> tc.SFrame.read_csv('interesting_lists.csv')
+    >>> tc.XFrame.read_csv('interesting_lists.csv')
     Columns:
       list  list
     Rows: 7
@@ -500,7 +500,7 @@ class SFrame(object):
     {:}
     {recursive1:[{a:b}]}
     {:[{:[a]}]}
-    >>> tc.SFrame.read_csv('interesting_dicts.csv')
+    >>> tc.XFrame.read_csv('interesting_dicts.csv')
     Columns:
       dict  dict
     Rows: 7
@@ -520,17 +520,17 @@ class SFrame(object):
 
     **Saving**
 
-    Save and load the sframe in native format.
+    Save and load the xframe in native format.
 
-    >>> sf.save('mysframedir')
-    >>> sf2 = turicreate.load_sframe('mysframedir')
+    >>> sf.save('myxframedir')
+    >>> sf2 = turicreate.load_xframe('myxframedir')
 
     **Column Manipulation**
 
-    An SFrame is composed of a collection of columns of SArrays, and individual
-    SArrays can be extracted easily. For instance given an SFrame:
+    An XFrame is composed of a collection of columns of SArrays, and individual
+    SArrays can be extracted easily. For instance given an XFrame:
 
-    >>> sf = SFrame({'id':[1,2,3],'val':['A','B','C']})
+    >>> sf = XFrame({'id':[1,2,3],'val':['A','B','C']})
     >>> sf
     Columns:
         id  int
@@ -555,7 +555,7 @@ class SFrame(object):
 
     Multiple columns can be selected by passing a list of column names:
 
-    >>> sf = SFrame({'id':[1,2,3],'val':['A','B','C'],'val2':[5,6,7]})
+    >>> sf = XFrame({'id':[1,2,3],'val':['A','B','C'],'val2':[5,6,7]})
     >>> sf
     Columns:
         id   int
@@ -610,7 +610,7 @@ class SFrame(object):
 
     The same mechanism can be used to re-order columns:
 
-    >>> sf = SFrame({'id':[1,2,3],'val':['A','B','C']})
+    >>> sf = XFrame({'id':[1,2,3],'val':['A','B','C']})
     >>> sf
     Columns:
         id  int
@@ -635,17 +635,17 @@ class SFrame(object):
 
     **Element Access and Slicing**
 
-    SFrames can be accessed by integer keys just like a regular python list.
-    Such operations may not be fast on large datasets so looping over an SFrame
+    XFrames can be accessed by integer keys just like a regular python list.
+    Such operations may not be fast on large datasets so looping over an XFrame
     should be avoided.
 
-    >>> sf = SFrame({'id':[1,2,3],'val':['A','B','C']})
+    >>> sf = XFrame({'id':[1,2,3],'val':['A','B','C']})
     >>> sf[0]
     {'id': 1, 'val': 'A'}
     >>> sf[2]
     {'id': 3, 'val': 'C'}
     >>> sf[5]
-    IndexError: SFrame index out of range
+    IndexError: XFrame index out of range
 
     Negative indices can be used to access elements from the tail of the array
 
@@ -654,26 +654,26 @@ class SFrame(object):
     >>> sf[-2] # returns the second to last element
     {'id': 2, 'val': 'B'}
 
-    The SFrame also supports the full range of python slicing operators:
+    The XFrame also supports the full range of python slicing operators:
 
-    >>> sf[1000:] # Returns an SFrame containing rows 1000 to the end
-    >>> sf[:1000] # Returns an SFrame containing rows 0 to row 999 inclusive
-    >>> sf[0:1000:2] # Returns an SFrame containing rows 0 to row 1000 in steps of 2
-    >>> sf[-100:] # Returns an SFrame containing last 100 rows
-    >>> sf[-100:len(sf):2] # Returns an SFrame containing last 100 rows in steps of 2
+    >>> sf[1000:] # Returns an XFrame containing rows 1000 to the end
+    >>> sf[:1000] # Returns an XFrame containing rows 0 to row 999 inclusive
+    >>> sf[0:1000:2] # Returns an XFrame containing rows 0 to row 1000 in steps of 2
+    >>> sf[-100:] # Returns an XFrame containing last 100 rows
+    >>> sf[-100:len(sf):2] # Returns an XFrame containing last 100 rows in steps of 2
 
     **Logical Filter**
 
-    An SFrame can be filtered using
+    An XFrame can be filtered using
 
-    >>> sframe[binary_filter]
+    >>> xframe[binary_filter]
 
-    where sframe is an SFrame and binary_filter is an SArray of the same length.
-    The result is a new SFrame which contains only rows of the SFrame where its
+    where xframe is an XFrame and binary_filter is an SArray of the same length.
+    The result is a new XFrame which contains only rows of the XFrame where its
     matching row in the binary_filter is non zero.
 
     This permits the use of boolean operators that can be used to perform
-    logical filtering operations. For instance, given an SFrame
+    logical filtering operations. For instance, given an XFrame
 
     >>> sf
     Columns:
@@ -716,10 +716,10 @@ class SFrame(object):
 
     >>> sf[sf.apply(lambda x: math.log(x['id']) <= 1)]
 
-            Create an SFrame from a Python dictionary.
+            Create an XFrame from a Python dictionary.
 
-    >>> from turicreate import SFrame
-    >>> sf = SFrame({'id':[1,2,3], 'val':['A','B','C']})
+    >>> from turicreate import XFrame
+    >>> sf = XFrame({'id':[1,2,3], 'val':['A','B','C']})
     >>> sf
     Columns:
         id  int
@@ -736,14 +736,14 @@ class SFrame(object):
 
     def __init__(self, data=None, format="auto", _proxy=None):
         """__init__(data=list(), format='auto')
-        Construct a new SFrame from a url or a pandas.DataFrame.
+        Construct a new XFrame from a url or a pandas.DataFrame.
         """
         # emit metrics for num_rows, num_columns, and type (local://, s3, hdfs, http)
 
         if _proxy:
             self.__proxy__ = _proxy
         else:
-            self.__proxy__ = UnitySFrameProxy()
+            self.__proxy__ = UnityXFrameProxy()
             _format = None
             if six.PY2 and isinstance(data, str):
                 data = data.encode("utf-8")
@@ -761,16 +761,16 @@ class SFrame(object):
                     elif data.endswith((".txt", ".txt.gz")):
                         print(
                             "Assuming file is csv. For other delimiters, "
-                            + "please use `SFrame.read_csv`."
+                            + "please use `XFrame.read_csv`."
                         )
                         _format = "csv"
                     else:
-                        _format = "sframe"
+                        _format = "xframe"
                 elif type(data) == SArray:
                     _format = "sarray"
 
-                elif isinstance(data, SFrame):
-                    _format = "sframe_obj"
+                elif isinstance(data, XFrame):
+                    _format = "xframe_obj"
 
                 elif isinstance(data, dict):
                     _format = "dict"
@@ -788,7 +788,7 @@ class SFrame(object):
                 if _format == "dataframe":
                     for c in data.columns.values:
                         self.add_column(SArray(data[c].values), str(c), inplace=True)
-                elif _format == "sframe_obj":
+                elif _format == "xframe_obj":
                     for col in data.column_names():
                         self.__proxy__.add_column(data[col].__proxy__, col)
                 elif _format == "sarray":
@@ -801,7 +801,7 @@ class SFrame(object):
                                 self.add_column(arr, inplace=True)
                         elif SArray in unique_types:
                             raise ValueError(
-                                "Cannot create SFrame from mix of regular values and SArrays"
+                                "Cannot create XFrame from mix of regular values and SArrays"
                             )
                         else:
                             self.__proxy__.add_column(SArray(data).__proxy__, "")
@@ -829,15 +829,15 @@ class SFrame(object):
                         self.__proxy__.add_column(data[key].__proxy__, key)
                 elif _format == "csv":
                     url = data
-                    tmpsf = SFrame.read_csv(url, delimiter=",", header=True)
+                    tmpsf = XFrame.read_csv(url, delimiter=",", header=True)
                     self.__proxy__ = tmpsf.__proxy__
                 elif _format == "tsv":
                     url = data
-                    tmpsf = SFrame.read_csv(url, delimiter="\t", header=True)
+                    tmpsf = XFrame.read_csv(url, delimiter="\t", header=True)
                     self.__proxy__ = tmpsf.__proxy__
-                elif _format == "sframe":
+                elif _format == "xframe":
                     url = _make_internal_url(data)
-                    self.__proxy__.load_from_sframe_index(url)
+                    self.__proxy__.load_from_xframe_index(url)
                 elif _format == "empty":
                     pass
                 else:
@@ -920,8 +920,8 @@ class SFrame(object):
         **kwargs
     ):
         """
-        Constructs an SFrame from a CSV file or a path to multiple CSVs, and
-        returns a pair containing the SFrame and optionally
+        Constructs an XFrame from a CSV file or a path to multiple CSVs, and
+        returns a pair containing the XFrame and optionally
         (if store_errors=True) a dict of filenames to SArrays
         indicating for each file, what are the incorrectly parsed lines
         encountered.
@@ -980,7 +980,7 @@ class SFrame(object):
         if nrows is not None:
             parsing_config["row_limit"] = nrows
 
-        proxy = UnitySFrameProxy()
+        proxy = UnityXFrameProxy()
         internal_url = _make_internal_url(url)
 
         # Attempt to automatically detect the column types. Either produce a
@@ -989,7 +989,7 @@ class SFrame(object):
         if column_type_hints is None:
             try:
                 # Get the first nrows_to_infer rows (using all the desired arguments).
-                first_rows = SFrame.read_csv(
+                first_rows = XFrame.read_csv(
                     url,
                     nrows=nrows_to_infer,
                     column_type_hints=type(None),
@@ -1009,7 +1009,7 @@ class SFrame(object):
                     false_values=false_values,
                     _only_raw_string_substitutions=_only_raw_string_substitutions,
                 )
-                column_type_hints = SFrame._infer_column_types_from_lines(first_rows)
+                column_type_hints = XFrame._infer_column_types_from_lines(first_rows)
                 typelist = "[" + ",".join(t.__name__ for t in column_type_hints) + "]"
                 if verbose:
                     print("------------------------------------------------------")
@@ -1048,7 +1048,7 @@ class SFrame(object):
             # we need to fill in a potentially incomplete dictionary
             try:
                 # Get the first nrows_to_infer rows (using all the desired arguments).
-                first_rows = SFrame.read_csv(
+                first_rows = XFrame.read_csv(
                     url,
                     nrows=nrows_to_infer,
                     column_type_hints=type(None),
@@ -1068,7 +1068,7 @@ class SFrame(object):
                     false_values=false_values,
                     _only_raw_string_substitutions=_only_raw_string_substitutions,
                 )
-                inferred_types = SFrame._infer_column_types_from_lines(first_rows)
+                inferred_types = XFrame._infer_column_types_from_lines(first_rows)
                 # make a dict of column_name to type
                 inferred_types = dict(
                     list(zip(first_rows.column_names(), inferred_types))
@@ -1148,8 +1148,8 @@ class SFrame(object):
         **kwargs
     ):
         """
-        Constructs an SFrame from a CSV file or a path to multiple CSVs, and
-        returns a pair containing the SFrame and a dict of filenames to SArrays
+        Constructs an XFrame from a CSV file or a path to multiple CSVs, and
+        returns a pair containing the XFrame and a dict of filenames to SArrays
         indicating for each file, what are the incorrectly parsed lines
         encountered.
 
@@ -1235,18 +1235,18 @@ class SFrame(object):
         Returns
         -------
         out : tuple
-            The first element is the SFrame with good data. The second element
+            The first element is the XFrame with good data. The second element
             is a dictionary of filenames to SArrays indicating for each file,
             what are the incorrectly parsed lines encountered.
 
         See Also
         --------
-        read_csv, SFrame
+        read_csv, XFrame
 
         Examples
         --------
         >>> bad_url = 'https://static.turi.com/datasets/bad_csv_example.csv'
-        >>> (sf, bad_lines) = turicreate.SFrame.read_csv_with_errors(bad_url)
+        >>> (sf, bad_lines) = turicreate.XFrame.read_csv_with_errors(bad_url)
         >>> sf
         +---------+----------+--------+
         | user_id | movie_id | rating |
@@ -1318,7 +1318,7 @@ class SFrame(object):
         **kwargs
     ):
         """
-        Constructs an SFrame from a CSV file or a path to multiple CSVs.
+        Constructs an XFrame from a CSV file or a path to multiple CSVs.
 
         Parameters
         ----------
@@ -1410,11 +1410,11 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
+        out : XFrame
 
         See Also
         --------
-        read_csv_with_errors, SFrame
+        read_csv_with_errors, XFrame
 
         Examples
         --------
@@ -1423,7 +1423,7 @@ class SFrame(object):
         determine types:
 
         >>> url = 'https://static.turi.com/datasets/rating_data_example.csv'
-        >>> sf = turicreate.SFrame.read_csv(url)
+        >>> sf = turicreate.XFrame.read_csv(url)
         >>> sf
         Columns:
           user_id int
@@ -1444,7 +1444,7 @@ class SFrame(object):
 
         Read only the first 100 lines of the csv file:
 
-        >>> sf = turicreate.SFrame.read_csv(url, nrows=100)
+        >>> sf = turicreate.XFrame.read_csv(url, nrows=100)
         >>> sf
         Columns:
           user_id int
@@ -1465,7 +1465,7 @@ class SFrame(object):
 
         Read all columns as str type
 
-        >>> sf = turicreate.SFrame.read_csv(url, column_type_hints=str)
+        >>> sf = turicreate.XFrame.read_csv(url, column_type_hints=str)
         >>> sf
         Columns:
           user_id  str
@@ -1486,7 +1486,7 @@ class SFrame(object):
 
         Specify types for a subset of columns and leave the rest to be str.
 
-        >>> sf = turicreate.SFrame.read_csv(url,
+        >>> sf = turicreate.XFrame.read_csv(url,
         ...                               column_type_hints={
         ...                               'user_id':int, 'rating':float
         ...                               })
@@ -1510,7 +1510,7 @@ class SFrame(object):
 
         Not treat first line as header:
 
-        >>> sf = turicreate.SFrame.read_csv(url, header=False)
+        >>> sf = turicreate.XFrame.read_csv(url, header=False)
         >>> sf
         Columns:
           X1  str
@@ -1532,7 +1532,7 @@ class SFrame(object):
 
         Treat '3' as missing value:
 
-        >>> sf = turicreate.SFrame.read_csv(url, na_values=['3'], column_type_hints=str)
+        >>> sf = turicreate.XFrame.read_csv(url, na_values=['3'], column_type_hints=str)
         >>> sf
         Columns:
           user_id str
@@ -1554,7 +1554,7 @@ class SFrame(object):
         Throw error on parse failure:
 
         >>> bad_url = 'https://static.turi.com/datasets/bad_csv_example.csv'
-        >>> sf = turicreate.SFrame.read_csv(bad_url, error_bad_lines=True)
+        >>> sf = turicreate.XFrame.read_csv(bad_url, error_bad_lines=True)
         RuntimeError: Runtime Exception. Unable to parse line "x,y,z,a,b,c"
         Set error_bad_lines=False to skip bad lines
         """
@@ -1587,7 +1587,7 @@ class SFrame(object):
     @classmethod
     def read_json(cls, url, orient="records"):
         """
-        Reads a JSON file representing a table into an SFrame.
+        Reads a JSON file representing a table into an XFrame.
 
         Parameters
         ----------
@@ -1611,7 +1611,7 @@ class SFrame(object):
 
         >>> !cat input.json
         [{'a':1,'b':1}, {'a':2,'b':2}, {'a':3,'b':3}]
-        >>> SFrame.read_json('input.json', orient='records')
+        >>> XFrame.read_json('input.json', orient='records')
         Columns:
                 a	int
                 b	int
@@ -1633,7 +1633,7 @@ class SFrame(object):
         {'a':1,'b':1}
         {'a':2,'b':2}
         {'a':3,'b':3}
-        >>> g = SFrame.read_json('input.json', orient='lines')
+        >>> g = XFrame.read_json('input.json', orient='lines')
         Columns:
                 a	int
                 b	int
@@ -1654,7 +1654,7 @@ class SFrame(object):
         ['d','e','f']
         ['g','h','i']
         [1,2,3]
-        >>> g = SFrame.read_json('input.json', orient='lines')
+        >>> g = XFrame.read_json('input.json', orient='lines')
         Columns:
                 X1	list
         Rows: 3
@@ -1671,12 +1671,12 @@ class SFrame(object):
         if orient == "records":
             g = SArray.read_json(url)
             if len(g) == 0:
-                return SFrame()
+                return XFrame()
             if g.dtype != dict:
                 raise RuntimeError(
                     "Invalid input JSON format. Expected list of dictionaries"
                 )
-            g = SFrame({"X1": g})
+            g = XFrame({"X1": g})
             return g.unpack("X1", "")
         elif orient == "lines":
             g = cls.read_csv(
@@ -1688,7 +1688,7 @@ class SFrame(object):
                 _only_raw_string_substitutions=True,
             )
             if g.num_rows() == 0:
-                return SFrame()
+                return XFrame()
             if g.num_columns() != 1:
                 raise RuntimeError("Input JSON not of expected format")
             if g["X1"].dtype == dict:
@@ -1710,7 +1710,7 @@ class SFrame(object):
         cursor_arraysize=128,
     ):
         """
-        Convert the result of a SQL database query to an SFrame.
+        Convert the result of a SQL database query to an XFrame.
 
         Parameters
         ----------
@@ -1722,7 +1722,7 @@ class SFrame(object):
           The query to be sent to the database through the given connection.
           No checks are performed on the `sql_statement`. Any side effects from
           the query will be reflected on the database.  If no result rows are
-          returned, an empty SFrame is created.
+          returned, an empty XFrame is created.
 
         params : iterable | dict, optional
           Parameters to substitute for any parameter markers in the
@@ -1731,7 +1731,7 @@ class SFrame(object):
 
         type_inference_rows : int, optional
           The maximum number of rows to use for determining the column types of
-          the SFrame. These rows are held in Python until all column types are
+          the XFrame. These rows are held in Python until all column types are
           determined or the maximum is reached.
 
         dbapi_module : module | package, optional
@@ -1741,11 +1741,11 @@ class SFrame(object):
           this will need to be specified.
 
         column_type_hints : dict | list | type, optional
-          Specifies the types of the output SFrame. If a dict is given, it must
+          Specifies the types of the output XFrame. If a dict is given, it must
           have result column names as keys, but need not have all of the result
           column names. If a list is given, the length of the list must match
           the number of result columns. If a single type is given, all columns
-          in the output SFrame will be this type. If the result type is
+          in the output XFrame will be this type. If the result type is
           incompatible with the types given in this argument, a casting error
           will occur.
 
@@ -1754,7 +1754,7 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
+        out : XFrame
 
         Examples
         --------
@@ -1762,7 +1762,7 @@ class SFrame(object):
 
         >>> conn = sqlite3.connect('example.db')
 
-        >>> turicreate.SFrame.from_sql(conn, "SELECT * FROM foo")
+        >>> turicreate.XFrame.from_sql(conn, "SELECT * FROM foo")
         Columns:
                 a       int
                 b       int
@@ -1780,41 +1780,41 @@ class SFrame(object):
         # Much of the heavy-lifting of this is done by the DBAPI2 module, which
         # holds the burden of the actual mapping from the database-specific
         # type to a suitable Python type. The problem is that the type that the
-        # module chooses may not be supported by SFrame, and SFrame needs a
+        # module chooses may not be supported by XFrame, and XFrame needs a
         # list of types to be created, so we must resort to guessing the type
         # of a column if the query result returns lots of NULL values. The goal
         # of these steps is to fail as little as possible first, and then
         # preserve data as much as we can.
         #
-        # Here is how the type for an SFrame column is chosen:
+        # Here is how the type for an XFrame column is chosen:
         #
         # 1. The column_type_hints parameter is checked.
         #
         #    Each column specified in the parameter will be forced to the
         #    hinted type via a Python-side cast before it is given to the
-        #    SFrame. Only int, float, and str are allowed to be hints.
+        #    XFrame. Only int, float, and str are allowed to be hints.
         #
         # 2. The types returned from the cursor are checked.
         #
         #    The first non-None result for each column is taken to be the type
-        #    of that column. The type is checked for whether SFrame supports
+        #    of that column. The type is checked for whether XFrame supports
         #    it, or whether it can convert to a supported type. If the type is
         #    supported, no Python-side cast takes place. If unsupported, the
-        #    SFrame column is set to str and the values are casted in Python to
-        #    str before being added to the SFrame.
+        #    XFrame column is set to str and the values are casted in Python to
+        #    str before being added to the XFrame.
         #
         # 3. DB type codes provided by module are checked
         #
         #    This case happens for any column that only had None values in the
         #    first `type_inference_rows` rows. In this case we check the
         #    type_code in the cursor description for the columns missing types.
-        #    These types often do not match up with an SFrame-supported Python
+        #    These types often do not match up with an XFrame-supported Python
         #    type, so the utility of this step is limited. It can only result
         #    in labeling datetime.datetime, float, or str. If a suitable
         #    mapping isn't found, we fall back to str.
         mod_info = _get_global_dbapi_info(dbapi_module, conn)
 
-        from .sframe_builder import SFrameBuilder
+        from .xframe_builder import XFrameBuilder
 
         c = conn.cursor()
         try:
@@ -1862,7 +1862,7 @@ class SFrame(object):
                 cols_to_force_cast.update(list(range(len(result_desc))))
 
         # Since we will be casting whatever we receive to the types given
-        # before submitting the values to the SFrame, we need to make sure that
+        # before submitting the values to the XFrame, we need to make sure that
         # these are types that a "cast" makes sense, and we're not calling a
         # constructor that expects certain input (e.g.  datetime.datetime),
         # since we could get lots of different input
@@ -1908,7 +1908,7 @@ class SFrame(object):
                     result_types[cnt] = inferred_types[cnt]
                 cnt += 1
 
-        sb = SFrameBuilder(result_types, column_names=result_names)
+        sb = XFrameBuilder(result_types, column_names=result_names)
         unsupported_cols = [
             i for i, v in enumerate(sb.column_types()) if v is type(None)
         ]
@@ -1916,7 +1916,7 @@ class SFrame(object):
             cols_to_force_cast.update(unsupported_cols)
             for i in unsupported_cols:
                 result_types[i] = str
-            sb = SFrameBuilder(result_types, column_names=result_names)
+            sb = XFrameBuilder(result_types, column_names=result_names)
 
         temp_vals = _convert_rows_to_builtin_seq(temp_vals)
         sb.append_multiple(
@@ -1948,7 +1948,7 @@ class SFrame(object):
         use_exact_column_names=True,
     ):
         """
-        Convert an SFrame to a single table in a SQL database.
+        Convert an XFrame to a single table in a SQL database.
 
         This function does not attempt to create the table or check if a table
         named `table_name` exists in the database. It simply assumes that
@@ -1964,7 +1964,7 @@ class SFrame(object):
           the 'connect' method of a DBAPI2-compliant package can be used.
 
         table_name : str
-          The name of the table to append the data in this SFrame.
+          The name of the table to append the data in this XFrame.
 
         dbapi_module : module | package, optional
           The top-level DBAPI2 module/package that constructed the given
@@ -1980,10 +1980,10 @@ class SFrame(object):
           False by default.
 
         use_exact_column_names : bool, optional
-          Specify the column names of the SFrame when inserting its contents
+          Specify the column names of the XFrame when inserting its contents
           into the DB. If the specified table does not have the exact same
-          column names as the SFrame, inserting the data will fail. If False,
-          the columns in the SFrame are inserted in order without care of the
+          column names as the XFrame, inserting the data will fail. If False,
+          the columns in the XFrame are inserted in order without care of the
           schema of the DB table. True by default.
         """
         mod_info = _get_global_dbapi_info(dbapi_module, conn)
@@ -2099,7 +2099,7 @@ class SFrame(object):
         max_rows_to_display=60,
     ):
         """
-        Returns a list of pretty print tables representing the current SFrame.
+        Returns a list of pretty print tables representing the current XFrame.
         If the number of columns is larger than max_columns, the last pretty
         table will contain an extra column of "...".
         Parameters
@@ -2254,7 +2254,7 @@ class SFrame(object):
         output_file=None,
     ):
         """
-        Print the first M rows and N columns of the SFrame in human readable
+        Print the first M rows and N columns of the XFrame in human readable
         format.
 
         Parameters
@@ -2304,7 +2304,7 @@ class SFrame(object):
 
     def drop_duplicates(self, subset):
         """
-        Returns an SFrame with duplicate rows removed.
+        Returns an XFrame with duplicate rows removed.
 
         Parameters
         ----------
@@ -2314,7 +2314,7 @@ class SFrame(object):
         Examples
         --------
         >>> import turicreate as tc
-        >>> sf = tc.SFrame({'A': ['a', 'b', 'a', 'C'], 'B': ['b', 'a', 'b', 'D'], 'C': [1, 2, 1, 8]})
+        >>> sf = tc.XFrame({'A': ['a', 'b', 'a', 'C'], 'B': ['b', 'a', 'b', 'D'], 'C': [1, 2, 1, 8]})
         >>> sf.drop_duplicates(subset=["A","B"])
         Columns:
 	        A	str
@@ -2343,7 +2343,7 @@ class SFrame(object):
                 },
             )
         else:
-            raise TypeError("Not all subset columns in SFrame")
+            raise TypeError("Not all subset columns in XFrame")
 
     def __str_impl__(self, num_rows=10, footer=True):
         """
@@ -2415,26 +2415,26 @@ class SFrame(object):
 
     def __len__(self):
         """
-        Returns the number of rows of the sframe.
+        Returns the number of rows of the xframe.
         """
         return self.num_rows()
 
     def __copy__(self):
         """
-        Returns a shallow copy of the sframe.
+        Returns a shallow copy of the xframe.
         """
         return self.select_columns(self.column_names())
 
     def __deepcopy__(self, memo):
         """
-        Returns a deep copy of the sframe. As the data in an SFrame is
+        Returns a deep copy of the xframe. As the data in an XFrame is
         immutable, this is identical to __copy__.
         """
         return self.__copy__()
 
     def copy(self):
         """
-        Returns a shallow copy of the sframe.
+        Returns a shallow copy of the xframe.
         """
         return self.__copy__()
 
@@ -2447,7 +2447,7 @@ class SFrame(object):
     def _row_selector(self, other):
         """
         Where other is an SArray of identical length as the current Frame,
-        this returns a selection of a subset of rows in the current SFrame
+        this returns a selection of a subset of rows in the current XFrame
         where the corresponding row in the selector is non-zero.
         """
         if type(other) is SArray:
@@ -2456,7 +2456,7 @@ class SFrame(object):
                     "Cannot perform logical indexing on arrays of different length."
                 )
             with cython_context():
-                return SFrame(_proxy=self.__proxy__.logical_filter(other.__proxy__))
+                return XFrame(_proxy=self.__proxy__.logical_filter(other.__proxy__))
 
     @property
     def dtype(self):
@@ -2466,7 +2466,7 @@ class SFrame(object):
         Returns
         -------
         out : list[type]
-            Column types of the SFrame.
+            Column types of the XFrame.
 
         See Also
         --------
@@ -2476,12 +2476,12 @@ class SFrame(object):
 
     def num_rows(self):
         """
-        The number of rows in this SFrame.
+        The number of rows in this XFrame.
 
         Returns
         -------
         out : int
-            Number of rows in the SFrame.
+            Number of rows in the XFrame.
 
         See Also
         --------
@@ -2491,12 +2491,12 @@ class SFrame(object):
 
     def num_columns(self):
         """
-        The number of columns in this SFrame.
+        The number of columns in this XFrame.
 
         Returns
         -------
         out : int
-            Number of columns in the SFrame.
+            Number of columns in the XFrame.
 
         See Also
         --------
@@ -2506,12 +2506,12 @@ class SFrame(object):
 
     def column_names(self):
         """
-        The name of each column in the SFrame.
+        The name of each column in the XFrame.
 
         Returns
         -------
         out : list[string]
-            Column names of the SFrame.
+            Column names of the XFrame.
 
         See Also
         --------
@@ -2521,12 +2521,12 @@ class SFrame(object):
 
     def column_types(self):
         """
-        The type of each column in the SFrame.
+        The type of each column in the XFrame.
 
         Returns
         -------
         out : list[type]
-            Column types of the SFrame.
+            Column types of the XFrame.
 
         See Also
         --------
@@ -2536,7 +2536,7 @@ class SFrame(object):
 
     def head(self, n=10):
         """
-        The first n rows of the SFrame.
+        The first n rows of the XFrame.
 
         Parameters
         ----------
@@ -2545,18 +2545,18 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame which contains the first n rows of the current SFrame
+        out : XFrame
+            A new XFrame which contains the first n rows of the current XFrame
 
         See Also
         --------
         tail, print_rows
         """
-        return SFrame(_proxy=self.__proxy__.head(n))
+        return XFrame(_proxy=self.__proxy__.head(n))
 
     def to_dataframe(self):
         """
-        Convert this SFrame to pandas.DataFrame.
+        Convert this XFrame to pandas.DataFrame.
 
         This operation will construct a pandas.DataFrame in memory. Care must
         be taken when size of the returned object is big.
@@ -2564,7 +2564,7 @@ class SFrame(object):
         Returns
         -------
         out : pandas.DataFrame
-            The dataframe which contains all rows of SFrame
+            The dataframe which contains all rows of XFrame
         """
 
         assert HAS_PANDAS, "pandas is not installed."
@@ -2581,7 +2581,7 @@ class SFrame(object):
 
     def to_numpy(self):
         """
-        Converts this SFrame to a numpy array
+        Converts this XFrame to a numpy array
 
         This operation will construct a numpy array in memory. Care must
         be taken when size of the returned object is big.
@@ -2589,7 +2589,7 @@ class SFrame(object):
         Returns
         -------
         out : numpy.ndarray
-            A Numpy Array containing all the values of the SFrame
+            A Numpy Array containing all the values of the XFrame
 
         """
         assert HAS_NUMPY, "numpy is not installed."
@@ -2599,7 +2599,7 @@ class SFrame(object):
 
     def tail(self, n=10):
         """
-        The last n rows of the SFrame.
+        The last n rows of the XFrame.
 
         Parameters
         ----------
@@ -2608,29 +2608,29 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame which contains the last n rows of the current SFrame
+        out : XFrame
+            A new XFrame which contains the last n rows of the current XFrame
 
         See Also
         --------
         head, print_rows
         """
-        return SFrame(_proxy=self.__proxy__.tail(n))
+        return XFrame(_proxy=self.__proxy__.tail(n))
 
     def apply(self, fn, dtype=None):
         """
         Transform each row to an :class:`~turicreate.SArray` according to a
         specified function. Returns a new SArray of ``dtype`` where each element
         in this SArray is transformed by `fn(x)` where `x` is a single row in
-        the sframe represented as a dictionary.  The ``fn`` should return
+        the xframe represented as a dictionary.  The ``fn`` should return
         exactly one value which can be cast into type ``dtype``. If ``dtype`` is
-        not specified, the first 100 rows of the SFrame are used to make a guess
+        not specified, the first 100 rows of the XFrame are used to make a guess
         of the target data type.
 
         Parameters
         ----------
         fn : function
-            The function to transform each row of the SFrame. The return
+            The function to transform each row of the XFrame. The return
             type should be convertible to `dtype` if `dtype` is not None.
             This can also be a toolkit extension function which is compiled
             as a native shared library using SDK.
@@ -2650,7 +2650,7 @@ class SFrame(object):
         --------
         Concatenate strings from several columns:
 
-        >>> sf = turicreate.SFrame({'user_id': [1, 2, 3], 'movie_id': [3, 3, 6],
+        >>> sf = turicreate.XFrame({'user_id': [1, 2, 3], 'movie_id': [3, 3, 6],
                                   'rating': [4, 5, 1]})
         >>> sf.apply(lambda x: str(x['user_id']) + str(x['movie_id']) + str(x['rating']))
         dtype: str
@@ -2685,33 +2685,33 @@ class SFrame(object):
 
     def flat_map(self, column_names, fn, column_types="auto", seed=None):
         """
-        Map each row of the SFrame to multiple rows in a new SFrame via a
+        Map each row of the XFrame to multiple rows in a new XFrame via a
         function.
 
         The output of `fn` must have type List[List[...]].  Each inner list
         will be a single row in the new output, and the collection of these
-        rows within the outer list make up the data for the output SFrame.
+        rows within the outer list make up the data for the output XFrame.
         All rows must have the same length and the same order of types to
         make sure the result columns are homogeneously typed.  For example, if
         the first element emitted into in the outer list by `fn` is
         [43, 2.3, 'string'], then all other elements emitted into the outer
         list must be a list with three elements, where the first is an int,
         second is a float, and third is a string.  If column_types is not
-        specified, the first 10 rows of the SFrame are used to determine the
-        column types of the returned sframe.
+        specified, the first 10 rows of the XFrame are used to determine the
+        column types of the returned xframe.
 
         Parameters
         ----------
         column_names : list[str]
-            The column names for the returned SFrame.
+            The column names for the returned XFrame.
 
         fn : function
-            The function that maps each of the sframe row into multiple rows,
+            The function that maps each of the xframe row into multiple rows,
             returning List[List[...]].  All outputted rows must have the same
             length and order of types.
 
         column_types : list[type], optional
-            The column types of the output SFrame. Default value will be
+            The column types of the output XFrame. Default value will be
             automatically inferred by running `fn` on the first 10 rows of the
             input. If the types cannot be inferred from the first 10 rows, an
             error is raised.
@@ -2721,15 +2721,15 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame containing the results of the flat_map of the
-            original SFrame.
+        out : XFrame
+            A new XFrame containing the results of the flat_map of the
+            original XFrame.
 
         Examples
         ---------
         Repeat each row according to the value in the 'number' column.
 
-        >>> sf = turicreate.SFrame({'letter': ['a', 'b', 'c'],
+        >>> sf = turicreate.XFrame({'letter': ['a', 'b', 'c'],
         ...                       'number': [1, 2, 3]})
         >>> sf.flat_map(['number', 'letter'],
         ...             lambda x: [list(x.values()) for i in range(x['number'])])
@@ -2772,7 +2772,7 @@ class SFrame(object):
             if len(types) == 0:
                 raise TypeError(
                     "Could not infer output column types from the first ten rows "
-                    + "of the SFrame. Please use the 'column_types' parameter to "
+                    + "of the XFrame. Please use the 'column_types' parameter to "
                     + "set the types."
                 )
 
@@ -2786,13 +2786,13 @@ class SFrame(object):
             column_names
         ), "Number of output columns must match the size of column names"
         with cython_context():
-            return SFrame(
+            return XFrame(
                 _proxy=self.__proxy__.flat_map(fn, column_names, column_types, seed)
             )
 
     def sample(self, fraction, seed=None, exact=False):
         """
-        Sample a fraction of the current SFrame's rows.
+        Sample a fraction of the current XFrame's rows.
 
         Parameters
         ----------
@@ -2810,17 +2810,17 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame containing sampled rows of the current SFrame.
+        out : XFrame
+            A new XFrame containing sampled rows of the current XFrame.
 
         Examples
         --------
-        Suppose we have an SFrame with 6,145 rows.
+        Suppose we have an XFrame with 6,145 rows.
 
         >>> import random
-        >>> sf = SFrame({'id': range(0, 6145)})
+        >>> sf = XFrame({'id': range(0, 6145)})
 
-        Retrieve about 30% of the SFrame rows with repeatable results by
+        Retrieve about 30% of the XFrame rows with repeatable results by
         setting the random seed.
 
         >>> len(sf.sample(.3, seed=5))
@@ -2836,20 +2836,20 @@ class SFrame(object):
             return self
         else:
             with cython_context():
-                return SFrame(_proxy=self.__proxy__.sample(fraction, seed, exact))
+                return XFrame(_proxy=self.__proxy__.sample(fraction, seed, exact))
 
     def shuffle(self):
         """
-        Randomly shuffles the rows of the SFrame.
+        Randomly shuffles the rows of the XFrame.
 
         Returns
         -------
-        out : [SFrame]
-            An SFrame with all the same rows but with the rows in a random order.
+        out : [XFrame]
+            An XFrame with all the same rows but with the rows in a random order.
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({"nums": [1, 2, 3, 4],
+        >>> sf = turicreate.XFrame({"nums": [1, 2, 3, 4],
                                     "letters": ["a", "b", "c", "d"]})
         >>> shuffled_sf = sf.shuffle()
         >>> print(shuffled_sf)
@@ -2863,15 +2863,15 @@ class SFrame(object):
         +---------+------+
         [4 rows x 2 columns]
         """
-        return SFrame(_proxy=self.__proxy__.shuffle())
+        return XFrame(_proxy=self.__proxy__.shuffle())
 
     def random_split(self, fraction, seed=None, exact=False):
         """
-        Randomly split the rows of an SFrame into two SFrames. The first SFrame
+        Randomly split the rows of an XFrame into two XFrames. The first XFrame
         contains *M* rows, sampled uniformly (without replacement) from the
-        original SFrame. *M* is approximately the fraction times the original
-        number of rows. The second SFrame contains the remaining rows of the
-        original SFrame.
+        original XFrame. *M* is approximately the fraction times the original
+        number of rows. The second XFrame contains the remaining rows of the
+        original XFrame.
 
         An exact fraction partition can be optionally obtained by setting
         exact=True.
@@ -2892,15 +2892,15 @@ class SFrame(object):
 
         Returns
         -------
-        out : tuple [SFrame]
-            Two new SFrames.
+        out : tuple [XFrame]
+            Two new XFrames.
 
         Examples
         --------
-        Suppose we have an SFrame with 1,024 rows and we want to randomly split
+        Suppose we have an XFrame with 1,024 rows and we want to randomly split
         it into training and testing datasets with about a 90%/10% split.
 
-        >>> sf = turicreate.SFrame({'id': range(1024)})
+        >>> sf = turicreate.XFrame({'id': range(1024)})
         >>> sf_train, sf_test = sf.random_split(.9, seed=5)
         >>> print(len(sf_train), len(sf_test))
         922 102
@@ -2909,7 +2909,7 @@ class SFrame(object):
             raise ValueError("Invalid sampling rate: " + str(fraction))
 
         if self.num_rows() == 0 or self.num_columns() == 0:
-            return (SFrame(), SFrame())
+            return (XFrame(), XFrame())
 
         if seed is None:
             # Include the nanosecond component as well.
@@ -2924,8 +2924,8 @@ class SFrame(object):
         with cython_context():
             proxy_pair = self.__proxy__.random_split(fraction, seed, exact)
             return (
-                SFrame(data=[], _proxy=proxy_pair[0]),
-                SFrame(data=[], _proxy=proxy_pair[1]),
+                XFrame(data=[], _proxy=proxy_pair[0]),
+                XFrame(data=[], _proxy=proxy_pair[1]),
             )
 
     def topk(self, column_name, k=10, reverse=False):
@@ -2948,8 +2948,8 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            an SFrame containing the top k rows sorted by column_name.
+        out : XFrame
+            an XFrame containing the top k rows sorted by column_name.
 
         See Also
         --------
@@ -2957,7 +2957,7 @@ class SFrame(object):
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'id': range(1000)})
+        >>> sf = turicreate.XFrame({'id': range(1000)})
         >>> sf['value'] = -sf['id']
         >>> sf.topk('id', k=3)
         +--------+--------+
@@ -2987,17 +2987,17 @@ class SFrame(object):
 
     def save(self, filename, format=None):
         """
-        Save the SFrame to a file system for later use.
+        Save the XFrame to a file system for later use.
 
         Parameters
         ----------
         filename : string
-            The location to save the SFrame. Either a local directory or a
+            The location to save the XFrame. Either a local directory or a
             remote URL. If the format is 'binary', a directory will be created
-            at the location which will contain the sframe.
+            at the location which will contain the xframe.
 
         format : {'binary', 'csv', 'json'}, optional
-            Format in which to save the SFrame. Binary saved SFrames can be
+            Format in which to save the XFrame. Binary saved XFrames can be
             loaded much faster and without any format conversion losses. If not
             given, will try to infer the format from filename given. If file
             name ends with 'csv' or '.csv.gz', then save as 'csv' format,
@@ -3006,14 +3006,14 @@ class SFrame(object):
 
         See Also
         --------
-        load_sframe, SFrame
+        load_xframe, XFrame
 
         Examples
         --------
-        >>> # Save the sframe into binary format
-        >>> sf.save('data/training_data_sframe')
+        >>> # Save the xframe into binary format
+        >>> sf.save('data/training_data_xframe')
 
-        >>> # Save the sframe into csv format
+        >>> # Save the xframe into csv format
         >>> sf.save('data/training_data.csv', format='csv')
         """
 
@@ -3035,7 +3035,7 @@ class SFrame(object):
                     )
                 )
 
-        # Save the SFrame
+        # Save the XFrame
         url = _make_internal_url(filename)
 
         with cython_context():
@@ -3067,7 +3067,7 @@ class SFrame(object):
         **kwargs
     ):
         """
-        Writes an SFrame to a CSV file.
+        Writes an XFrame to a CSV file.
 
         Parameters
         ----------
@@ -3154,7 +3154,7 @@ class SFrame(object):
 
     def export_json(self, filename, orient="records"):
         """
-        Writes an SFrame to a JSON file.
+        Writes an XFrame to a JSON file.
 
         Parameters
         ----------
@@ -3236,26 +3236,26 @@ class SFrame(object):
 
     def _save_reference(self, filename):
         """
-        Performs an incomplete save of an existing SFrame into a directory.
-        This saved SFrame may reference SFrames in other locations in the same
+        Performs an incomplete save of an existing XFrame into a directory.
+        This saved XFrame may reference XFrames in other locations in the same
         filesystem for certain resources.
 
         Parameters
         ----------
         filename : string
-            The location to save the SFrame. Either a local directory or a
+            The location to save the XFrame. Either a local directory or a
             remote URL.
 
         See Also
         --------
-        load_sframe, SFrame
+        load_xframe, XFrame
 
         Examples
         --------
-        >>> # Save the sframe into binary format
-        >>> sf.save_reference('data/training_data_sframe')
+        >>> # Save the xframe into binary format
+        >>> sf.save_reference('data/training_data_xframe')
         """
-        ## Save the SFrame
+        ## Save the XFrame
         url = _make_internal_url(filename)
 
         with cython_context():
@@ -3283,7 +3283,7 @@ class SFrame(object):
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'user_id': [1,2,3],
+        >>> sf = turicreate.XFrame({'user_id': [1,2,3],
         ...                       'user_name': ['alice', 'bob', 'charlie']})
         >>> # This line is equivalent to `sa = sf['user_name']`
         >>> sa = sf.select_column('user_name')
@@ -3313,9 +3313,9 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame that is made up of the columns referred to in
-            ``column_names`` from the current SFrame.
+        out : XFrame
+            A new XFrame that is made up of the columns referred to in
+            ``column_names`` from the current XFrame.
 
         See Also
         --------
@@ -3323,7 +3323,7 @@ class SFrame(object):
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'user_id': [1,2,3],
+        >>> sf = turicreate.XFrame({'user_id': [1,2,3],
         ...                       'user_name': ['alice', 'bob', 'charlie'],
         ...                       'zipcode': [98101, 98102, 98103]
         ...                      })
@@ -3385,21 +3385,21 @@ class SFrame(object):
         selected_columns = selected_columns
 
         with cython_context():
-            return SFrame(
+            return XFrame(
                 data=[], _proxy=self.__proxy__.select_columns(selected_columns)
             )
 
     def add_column(self, data, column_name="", inplace=False):
         """
-        Returns an SFrame with a new column. The number of elements in the data
-        given must match the length of every other column of the SFrame.
+        Returns an XFrame with a new column. The number of elements in the data
+        given must match the length of every other column of the XFrame.
         If no name is given, a default name is chosen.
 
         If inplace == False (default) this operation does not modify the
-        current SFrame, returning a new SFrame.
+        current XFrame, returning a new XFrame.
 
         If inplace == True, this operation modifies the current
-        SFrame, returning self.
+        XFrame, returning self.
 
         Parameters
         ----------
@@ -3411,12 +3411,12 @@ class SFrame(object):
             chosen.
 
         inplace : bool, optional. Defaults to False.
-            Whether the SFrame is modified in place.
+            Whether the XFrame is modified in place.
 
         Returns
         -------
-        out : SFrame
-            The current SFrame.
+        out : XFrame
+            The current XFrame.
 
         See Also
         --------
@@ -3424,7 +3424,7 @@ class SFrame(object):
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'id': [1, 2, 3], 'val': ['A', 'B', 'C']})
+        >>> sf = turicreate.XFrame({'id': [1, 2, 3], 'val': ['A', 'B', 'C']})
         >>> sa = turicreate.SArray(['cat', 'dog', 'fossa'])
         >>> # This line is equivalent to `sf['species'] = sa`
         >>> res = sf.add_column(sa, 'species')
@@ -3465,32 +3465,32 @@ class SFrame(object):
 
     def add_columns(self, data, column_names=None, inplace=False):
         """
-        Returns an SFrame with multiple columns added. The number of
+        Returns an XFrame with multiple columns added. The number of
         elements in all columns must match the length of every other column of
-        the SFrame.
+        the XFrame.
 
         If inplace == False (default) this operation does not modify the
-        current SFrame, returning a new SFrame.
+        current XFrame, returning a new XFrame.
 
         If inplace == True, this operation modifies the current
-        SFrame, returning self.
+        XFrame, returning self.
 
         Parameters
         ----------
-        data : list[SArray] or SFrame
+        data : list[SArray] or XFrame
             The columns to add.
 
         column_names: list of string, optional
             A list of column names. All names must be specified. ``column_names`` is
-            ignored if data is an SFrame.
+            ignored if data is an XFrame.
 
         inplace : bool, optional. Defaults to False.
-            Whether the SFrame is modified in place.
+            Whether the XFrame is modified in place.
 
         Returns
         -------
-        out : SFrame
-            The current SFrame.
+        out : XFrame
+            The current XFrame.
 
         See Also
         --------
@@ -3498,8 +3498,8 @@ class SFrame(object):
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'id': [1, 2, 3], 'val': ['A', 'B', 'C']})
-        >>> sf2 = turicreate.SFrame({'species': ['cat', 'dog', 'fossa'],
+        >>> sf = turicreate.XFrame({'id': [1, 2, 3], 'val': ['A', 'B', 'C']})
+        >>> sf2 = turicreate.XFrame({'species': ['cat', 'dog', 'fossa'],
         ...                        'age': [3, 5, 9]})
         >>> res = sf.add_columns(sf2)
         >>> res
@@ -3513,7 +3513,7 @@ class SFrame(object):
         [3 rows x 4 columns]
         """
         datalist = data
-        if isinstance(data, SFrame):
+        if isinstance(data, XFrame):
             other = data
             datalist = [other.select_column(name) for name in other.column_names()]
             column_names = other.column_names()
@@ -3522,7 +3522,7 @@ class SFrame(object):
             for name in column_names:
                 if name in my_columns:
                     raise ValueError(
-                        "Column '" + name + "' already exists in current SFrame"
+                        "Column '" + name + "' already exists in current XFrame"
                     )
         else:
             if not _is_non_string_iterable(datalist):
@@ -3548,13 +3548,13 @@ class SFrame(object):
 
     def remove_column(self, column_name, inplace=False):
         """
-        Returns an SFrame with a column removed.
+        Returns an XFrame with a column removed.
 
         If inplace == False (default) this operation does not modify the
-        current SFrame, returning a new SFrame.
+        current XFrame, returning a new XFrame.
 
         If inplace == True, this operation modifies the current
-        SFrame, returning self.
+        XFrame, returning self.
 
         Parameters
         ----------
@@ -3562,16 +3562,16 @@ class SFrame(object):
             The name of the column to remove.
 
         inplace : bool, optional. Defaults to False.
-            Whether the SFrame is modified in place.
+            Whether the XFrame is modified in place.
 
         Returns
         -------
-        out : SFrame
-            The SFrame with given column removed.
+        out : XFrame
+            The XFrame with given column removed.
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'id': [1, 2, 3], 'val': ['A', 'B', 'C']})
+        >>> sf = turicreate.XFrame({'id': [1, 2, 3], 'val': ['A', 'B', 'C']})
         >>> # This is equivalent to `del sf['val']`
         >>> res = sf.remove_column('val')
         >>> res
@@ -3602,13 +3602,13 @@ class SFrame(object):
 
     def remove_columns(self, column_names, inplace=False):
         """
-        Returns an SFrame with one or more columns removed.
+        Returns an XFrame with one or more columns removed.
 
         If inplace == False (default) this operation does not modify the
-        current SFrame, returning a new SFrame.
+        current XFrame, returning a new XFrame.
 
         If inplace == True, this operation modifies the current
-        SFrame, returning self.
+        XFrame, returning self.
 
         Parameters
         ----------
@@ -3616,16 +3616,16 @@ class SFrame(object):
             A list or iterable of column names.
 
         inplace : bool, optional. Defaults to False.
-            Whether the SFrame is modified in place.
+            Whether the XFrame is modified in place.
 
         Returns
         -------
-        out : SFrame
-            The SFrame with given columns removed.
+        out : XFrame
+            The XFrame with given columns removed.
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'id': [1, 2, 3], 'val1': ['A', 'B', 'C'], 'val2' : [10, 11, 12]})
+        >>> sf = turicreate.XFrame({'id': [1, 2, 3], 'val1': ['A', 'B', 'C'], 'val2' : [10, 11, 12]})
         >>> res = sf.remove_columns(['val1', 'val2'])
         >>> res
         +----+
@@ -3661,13 +3661,13 @@ class SFrame(object):
 
     def swap_columns(self, column_name_1, column_name_2, inplace=False):
         """
-        Returns an SFrame with two column positions swapped.
+        Returns an XFrame with two column positions swapped.
 
         If inplace == False (default) this operation does not modify the
-        current SFrame, returning a new SFrame.
+        current XFrame, returning a new XFrame.
 
         If inplace == True, this operation modifies the current
-        SFrame, returning self.
+        XFrame, returning self.
 
         Parameters
         ----------
@@ -3678,16 +3678,16 @@ class SFrame(object):
             Name of other column to swap
 
         inplace : bool, optional. Defaults to False.
-            Whether the SFrame is modified in place.
+            Whether the XFrame is modified in place.
 
         Returns
         -------
-        out : SFrame
-            The SFrame with swapped columns.
+        out : XFrame
+            The XFrame with swapped columns.
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'id': [1, 2, 3], 'val': ['A', 'B', 'C']})
+        >>> sf = turicreate.XFrame({'id': [1, 2, 3], 'val': ['A', 'B', 'C']})
         >>> res = sf.swap_columns('id', 'val')
         >>> res
         +-----+-----+
@@ -3716,16 +3716,16 @@ class SFrame(object):
 
     def rename(self, names, inplace=False):
         """
-        Returns an SFrame with columns renamed. ``names`` is expected to be a
+        Returns an XFrame with columns renamed. ``names`` is expected to be a
         dict specifying the old and new names. This changes the names of the
         columns given as the keys and replaces them with the names given as the
         values.
 
         If inplace == False (default) this operation does not modify the
-        current SFrame, returning a new SFrame.
+        current XFrame, returning a new XFrame.
 
         If inplace == True, this operation modifies the current
-        SFrame, returning self.
+        XFrame, returning self.
 
         Parameters
         ----------
@@ -3733,12 +3733,12 @@ class SFrame(object):
             Dictionary of [old_name, new_name]
 
         inplace : bool, optional. Defaults to False.
-            Whether the SFrame is modified in place.
+            Whether the XFrame is modified in place.
 
         Returns
         -------
-        out : SFrame
-            The current SFrame.
+        out : XFrame
+            The current XFrame.
 
         See Also
         --------
@@ -3746,7 +3746,7 @@ class SFrame(object):
 
         Examples
         --------
-        >>> sf = SFrame({'X1': ['Alice','Bob'],
+        >>> sf = XFrame({'X1': ['Alice','Bob'],
         ...              'X2': ['123 Fake Street','456 Fake Street']})
         >>> res = sf.rename({'X1': 'name', 'X2':'address'})
         >>> res
@@ -3763,7 +3763,7 @@ class SFrame(object):
         all_columns = set(self.column_names())
         for k in names:
             if not k in all_columns:
-                raise ValueError("Cannot find column %s in the SFrame" % k)
+                raise ValueError("Cannot find column %s in the XFrame" % k)
 
         if inplace:
             ret = self
@@ -3790,13 +3790,13 @@ class SFrame(object):
                 selects all columns with names or type in the list
             * SArray
                 Performs a logical filter.  Expects given SArray to be the same
-                length as all columns in current SFrame.  Every row
+                length as all columns in current XFrame.  Every row
                 corresponding with an entry in the given SArray that is
                 equivalent to False is filtered from the result.
             * int
-                Returns a single row of the SFrame (the `key`th one) as a dictionary.
+                Returns a single row of the XFrame (the `key`th one) as a dictionary.
             * slice
-                Returns an SFrame including only the sliced rows.
+                Returns an XFrame including only the sliced rows.
         """
         if type(key) is SArray:
             return self._row_selector(key)
@@ -3814,7 +3814,7 @@ class SFrame(object):
             if key < 0:
                 key = sf_len + key
             if key >= sf_len:
-                raise IndexError("SFrame index out of range")
+                raise IndexError("XFrame index out of range")
 
             if not hasattr(self, "_cache") or self._cache is None:
                 self._cache = {}
@@ -3845,7 +3845,7 @@ class SFrame(object):
             lb = block_num * block_size
             ub = min(sf_len, lb + block_size)
 
-            val_list = list(SFrame(_proxy=self.__proxy__.copy_range(lb, 1, ub)))
+            val_list = list(XFrame(_proxy=self.__proxy__.copy_range(lb, 1, ub)))
             self._cache["getitem_cache"] = (lb, ub, val_list)
             return val_list[int(key - lb)]
 
@@ -3864,14 +3864,14 @@ class SFrame(object):
                 start = len(self) + start
             if stop < 0:
                 stop = len(self) + stop
-            return SFrame(_proxy=self.__proxy__.copy_range(start, step, stop))
+            return XFrame(_proxy=self.__proxy__.copy_range(start, step, stop))
         else:
             raise TypeError("Invalid index type: must be SArray, list, int, or str")
 
     def __setitem__(self, key, value):
         """
         A wrapper around add_column(s).  Key can be either a list or a str.  If
-        value is an SArray, it is added to the SFrame as a column.  If it is a
+        value is an SArray, it is added to the XFrame as a column.  If it is a
         constant value (int, str, or float), then a column is created where
         every entry is equal to the constant value.  Existing columns can also
         be replaced using this wrapper.
@@ -3929,27 +3929,27 @@ class SFrame(object):
 
     def materialize(self):
         """
-        For an SFrame that is lazily evaluated, force the persistence of the
-        SFrame to disk, committing all lazy evaluated operations.
+        For an XFrame that is lazily evaluated, force the persistence of the
+        XFrame to disk, committing all lazy evaluated operations.
         """
         with cython_context():
             self.__proxy__.materialize()
 
     def is_materialized(self):
         """
-        Returns whether or not the SFrame has been materialized.
+        Returns whether or not the XFrame has been materialized.
         """
         return self.__is_materialized__()
 
     def __is_materialized__(self):
         """
-        Returns whether or not the SFrame has been materialized.
+        Returns whether or not the XFrame has been materialized.
         """
         return self.__proxy__.is_materialized()
 
     def __has_size__(self):
         """
-        Returns whether or not the size of the SFrame is known.
+        Returns whether or not the size of the XFrame is known.
         """
         return self.__proxy__.has_size()
 
@@ -3961,7 +3961,7 @@ class SFrame(object):
 
     def __iter__(self):
         """
-        Provides an iterator to the rows of the SFrame.
+        Provides an iterator to the rows of the XFrame.
         """
 
         def generator():
@@ -3982,25 +3982,25 @@ class SFrame(object):
 
     def append(self, other):
         """
-        Add the rows of an SFrame to the end of this SFrame.
+        Add the rows of an XFrame to the end of this XFrame.
 
-        Both SFrames must have the same set of columns with the same column
+        Both XFrames must have the same set of columns with the same column
         names and column types.
 
         Parameters
         ----------
-        other : SFrame
-            Another SFrame whose rows are appended to the current SFrame.
+        other : XFrame
+            Another XFrame whose rows are appended to the current XFrame.
 
         Returns
         -------
-        out : SFrame
-            The result SFrame from the append operation.
+        out : XFrame
+            The result XFrame from the append operation.
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'id': [4, 6, 8], 'val': ['D', 'F', 'H']})
-        >>> sf2 = turicreate.SFrame({'id': [1, 2, 3], 'val': ['A', 'B', 'C']})
+        >>> sf = turicreate.XFrame({'id': [4, 6, 8], 'val': ['D', 'F', 'H']})
+        >>> sf2 = turicreate.XFrame({'id': [1, 2, 3], 'val': ['A', 'B', 'C']})
         >>> sf = sf.append(sf2)
         >>> sf
         +----+-----+
@@ -4015,11 +4015,11 @@ class SFrame(object):
         +----+-----+
         [6 rows x 2 columns]
         """
-        if type(other) is not SFrame:
-            raise RuntimeError("SFrame append can only work with SFrame")
+        if type(other) is not XFrame:
+            raise RuntimeError("XFrame append can only work with XFrame")
 
         with cython_context():
-            return SFrame(_proxy=self.__proxy__.append(other.__proxy__))
+            return XFrame(_proxy=self.__proxy__.append(other.__proxy__))
 
     def groupby(self, key_column_names, operations, *args):
         """
@@ -4051,8 +4051,8 @@ class SFrame(object):
 
         Returns
         -------
-        out_sf : SFrame
-            A new SFrame, with a column for each groupby column and each
+        out_sf : XFrame
+            A new XFrame, with a column for each groupby column and each
             aggregation operation.
 
         See Also
@@ -4073,11 +4073,11 @@ class SFrame(object):
 
         Examples
         --------
-        Suppose we have an SFrame with movie ratings by many users.
+        Suppose we have an XFrame with movie ratings by many users.
 
         >>> import turicreate.aggregate as agg
         >>> url = 'https://static.turi.com/datasets/rating_data_example.csv'
-        >>> sf = turicreate.SFrame.read_csv(url)
+        >>> sf = turicreate.XFrame.read_csv(url)
         >>> sf
         +---------+----------+--------+
         | user_id | movie_id | rating |
@@ -4308,7 +4308,7 @@ class SFrame(object):
             if not isinstance(column, str):
                 raise TypeError("Column name must be a string")
             if column not in my_column_names:
-                raise KeyError("Column \"" + column + "\" does not exist in SFrame")
+                raise KeyError("Column \"" + column + "\" does not exist in XFrame")
             if self[column].dtype == dict:
                 raise TypeError("Cannot group on a dictionary column.")
             key_columns_array.append(column)
@@ -4439,10 +4439,10 @@ class SFrame(object):
             if op is not aggregate.COUNT()[0]:
                 for col in cols:
                     if col not in my_column_names:
-                        raise KeyError("Column " + col + " does not exist in SFrame")
+                        raise KeyError("Column " + col + " does not exist in XFrame")
 
         with cython_context():
-            return SFrame(
+            return XFrame(
                 _proxy=self.__proxy__.groupby_aggregate(
                     key_columns_array, group_columns, group_output_columns, group_ops
                 )
@@ -4450,13 +4450,13 @@ class SFrame(object):
 
     def join(self, right, on=None, how="inner", alter_name=None):
         """
-        Merge two SFrames. Merges the current (left) SFrame with the given
-        (right) SFrame using a SQL-style equi-join operation by columns.
+        Merge two XFrames. Merges the current (left) XFrame with the given
+        (right) XFrame using a SQL-style equi-join operation by columns.
 
         Parameters
         ----------
-        right : SFrame
-            The SFrame to join.
+        right : XFrame
+            The XFrame to join.
 
         on : None | str | list | dict, optional
             The column name(s) representing the set of join keys.  Each row that
@@ -4466,15 +4466,15 @@ class SFrame(object):
               name as the set of join keys.
 
             * If a str is given, this is interpreted as a join using one column,
-              where both SFrames have the same column name.
+              where both XFrames have the same column name.
 
             * If a list is given, this is interpreted as a join using one or
               more column names, where each column name given exists in both
-              SFrames.
+              XFrames.
 
             * If a dict is given, each dict key is taken as a column name in the
-              left SFrame, and each dict value is taken as the column name in
-              right SFrame that will be joined together. e.g.
+              left XFrame, and each dict value is taken as the column name in
+              right XFrame that will be joined together. e.g.
               {'left_col_name':'right_col_name'}.
 
         how : {'left', 'right', 'outer', 'inner'}, optional
@@ -4482,43 +4482,43 @@ class SFrame(object):
 
             * inner: Equivalent to a SQL inner join.  Result consists of the
               rows from the two frames whose join key values match exactly,
-              merged together into one SFrame.
+              merged together into one XFrame.
 
             * left: Equivalent to a SQL left outer join. Result is the union
               between the result of an inner join and the rest of the rows from
-              the left SFrame, merged with missing values.
+              the left XFrame, merged with missing values.
 
             * right: Equivalent to a SQL right outer join.  Result is the union
               between the result of an inner join and the rest of the rows from
-              the right SFrame, merged with missing values.
+              the right XFrame, merged with missing values.
 
             * outer: Equivalent to a SQL full outer join. Result is
               the union between the result of a left outer join and a right
               outer join.
 
         alter_name : None | dict
-            user provided names to resolve column name conflict when merging two sframe.
+            user provided names to resolve column name conflict when merging two xframe.
 
             * 'None', then default conflict resolution will be used. For example, if 'X' is
-            defined in the sframe on the left side of join, and there's an column also called
-            'X' in the sframe on the right, 'X.1' will be used as the new column name when
-            appending the column 'X' from the right sframe, in order to avoid column name collision.
+            defined in the xframe on the left side of join, and there's an column also called
+            'X' in the xframe on the right, 'X.1' will be used as the new column name when
+            appending the column 'X' from the right xframe, in order to avoid column name collision.
 
             * if a dict is given, the dict key should be obtained from column names from the right
-            sframe. The dict value should be user preferred column name to resolve the name collision
+            xframe. The dict value should be user preferred column name to resolve the name collision
             instead of resolving by the default behavior. In general, dict key should not be any value
-            from the right sframe column names. If dict value will cause potential name confict
+            from the right xframe column names. If dict value will cause potential name confict
             after an attempt to resolve, exception will be thrown.
 
         Returns
         -------
-        out : SFrame
+        out : XFrame
 
         Examples
         --------
-        >>> animals = turicreate.SFrame({'id': [1, 2, 3, 4],
+        >>> animals = turicreate.XFrame({'id': [1, 2, 3, 4],
         ...                           'name': ['dog', 'cat', 'sheep', 'cow']})
-        >>> sounds = turicreate.SFrame({'id': [1, 3, 4, 5],
+        >>> sounds = turicreate.XFrame({'id': [1, 3, 4, 5],
         ...                          'sound': ['woof', 'baa', 'moo', 'oink']})
         >>> animals.join(sounds, how='inner')
         +----+-------+-------+
@@ -4566,14 +4566,14 @@ class SFrame(object):
         """
         available_join_types = ["left", "right", "outer", "inner"]
 
-        if not isinstance(right, SFrame):
-            raise TypeError("Can only join two SFrames")
+        if not isinstance(right, XFrame):
+            raise TypeError("Can only join two XFrames")
 
         if how not in available_join_types:
             raise ValueError("Invalid join type")
 
         if (self.num_columns() <= 0) or (right.num_columns() <= 0):
-            raise ValueError("Cannot join an SFrame with no columns.")
+            raise ValueError("Cannot join an XFrame with no columns.")
 
         join_keys = dict()
         if on is None:
@@ -4596,7 +4596,7 @@ class SFrame(object):
 
         with cython_context():
             if alter_name is None:
-                return SFrame(
+                return XFrame(
                     _proxy=self.__proxy__.join(right.__proxy__, how, join_keys)
                 )
             if type(alter_name) is dict:
@@ -4609,7 +4609,7 @@ class SFrame(object):
                         raise ValueError("Key %s should not be equal to value" % k)
                     if v in left_names or v in right_names:
                         raise ValueError("Value %s will cause further collision" % v)
-                return SFrame(
+                return XFrame(
                     _proxy=self.__proxy__.join_with_custom_name(
                         right.__proxy__, how, join_keys, alter_name
                     )
@@ -4617,8 +4617,8 @@ class SFrame(object):
 
     def filter_by(self, values, column_name, exclude=False):
         """
-        Filter an SFrame by values inside an iterable object. Result is an
-        SFrame that only includes (or excludes) the rows that have a column
+        Filter an XFrame by values inside an iterable object. Result is an
+        XFrame that only includes (or excludes) the rows that have a column
         with the given ``column_name`` which holds one of the values in the
         given ``values`` :class:`~turicreate.SArray`. If ``values`` is not an
         SArray, we attempt to convert it to one before filtering.
@@ -4627,25 +4627,25 @@ class SFrame(object):
         ----------
         values : SArray | list | numpy.ndarray | pandas.Series | str | map
         | generator | filter | None | range
-            The values to use to filter the SFrame.  The resulting SFrame will
+            The values to use to filter the XFrame.  The resulting XFrame will
             only include rows that have one of these values in the given
             column.
 
         column_name : str
-            The column of the SFrame to match with the given `values`.
+            The column of the XFrame to match with the given `values`.
 
         exclude : bool
-            If True, the result SFrame will contain all rows EXCEPT those that
+            If True, the result XFrame will contain all rows EXCEPT those that
             have one of ``values`` in ``column_name``.
 
         Returns
         -------
-        out : SFrame
-            The filtered SFrame.
+        out : XFrame
+            The filtered XFrame.
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'id': [1, 2, 3, 4],
+        >>> sf = turicreate.XFrame({'id': [1, 2, 3, 4],
         ...                      'animal_type': ['dog', 'cat', 'cow', 'horse'],
         ...                      'name': ['bob', 'jim', 'jimbob', 'bobjim']})
         >>> household_pets = ['cat', 'hamster', 'dog', 'fish', 'bird', 'snake']
@@ -4700,7 +4700,7 @@ class SFrame(object):
 
         existing_columns = self.column_names()
         if column_name not in existing_columns:
-            raise KeyError("Column '" + column_name + "' not in SFrame.")
+            raise KeyError("Column '" + column_name + "' not in XFrame.")
 
         existing_type = self[column_name].dtype
 
@@ -4726,7 +4726,7 @@ class SFrame(object):
             else:
                 values = SArray(values)
 
-        value_sf = SFrame()
+        value_sf = XFrame()
         value_sf.add_column(values, column_name, inplace=True)
 
         given_type = value_sf.column_types()[0]
@@ -4735,7 +4735,7 @@ class SFrame(object):
                 (
                     "Type of given values ({0}) does not match type of column '"
                     + column_name
-                    + "' ({1}) in SFrame."
+                    + "' ({1}) in XFrame."
                 ).format(given_type, existing_type)
             )
 
@@ -4752,7 +4752,7 @@ class SFrame(object):
                     id_name += "1"
                 value_sf = value_sf.add_row_number(id_name)
 
-                tmp = SFrame(
+                tmp = XFrame(
                     _proxy=self.__proxy__.join(
                         value_sf.__proxy__, "left", {column_name: column_name}
                     )
@@ -4761,7 +4761,7 @@ class SFrame(object):
                 del ret_sf[id_name]
                 return ret_sf
             else:
-                return SFrame(
+                return XFrame(
                     _proxy=self.__proxy__.join(
                         value_sf.__proxy__, "inner", {column_name: column_name}
                     )
@@ -4769,7 +4769,7 @@ class SFrame(object):
 
     def explore(self, title=None):
         """
-        Explore the SFrame in an interactive GUI. Opens a new app window.
+        Explore the XFrame in an interactive GUI. Opens a new app window.
 
         Parameters
         ----------
@@ -4783,7 +4783,7 @@ class SFrame(object):
 
         Examples
         --------
-        Suppose 'sf' is an SFrame, we can view it using:
+        Suppose 'sf' is an XFrame, we can view it using:
 
         >>> sf.explore()
 
@@ -4847,7 +4847,7 @@ class SFrame(object):
 
     def show(self):
         """
-        Visualize a summary of each column in an SFrame. Opens a new app window.
+        Visualize a summary of each column in an XFrame. Opens a new app window.
 
         Notes
         -----
@@ -4861,7 +4861,7 @@ class SFrame(object):
 
         Examples
         --------
-        Suppose 'sf' is an SFrame, we can view it using:
+        Suppose 'sf' is an XFrame, we can view it using:
 
         >>> sf.show()
         """
@@ -4873,16 +4873,16 @@ class SFrame(object):
     def plot(self):
         """
         Create a Plot object that contains a summary of each column
-        in an SFrame.
+        in an XFrame.
 
         Returns
         -------
         out : Plot
-        A :class: Plot object that is the columnwise summary of the sframe.
+        A :class: Plot object that is the columnwise summary of the xframe.
 
         Examples
         --------
-        Suppose 'sf' is an SFrame, we can make a plot object as:
+        Suppose 'sf' is an XFrame, we can make a plot object as:
 
         >>> plt = sf.plot()
 
@@ -4902,8 +4902,8 @@ class SFrame(object):
         new_column_name=None,
     ):
         """
-        Pack columns of the current SFrame into one single column. The result
-        is a new SFrame with the unaffected columns from the original SFrame
+        Pack columns of the current XFrame into one single column. The result
+        is a new XFrame with the unaffected columns from the original XFrame
         plus the newly created column.
 
         The list of columns that are packed is chosen through either the
@@ -4926,7 +4926,7 @@ class SFrame(object):
         ----------
         column_names : list[str], optional
             A list of column names to be packed.  If omitted and
-            `column_name_prefix` is not specified, all columns from current SFrame
+            `column_name_prefix` is not specified, all columns from current XFrame
             are packed.  This parameter is mutually exclusive with the
             `column_name_prefix` parameter.
 
@@ -4954,8 +4954,8 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            An SFrame that contains columns that are not packed, plus the newly
+        out : XFrame
+            An XFrame that contains columns that are not packed, plus the newly
             packed column.
 
         See Also
@@ -4972,10 +4972,10 @@ class SFrame(object):
 
         Examples
         --------
-        Suppose 'sf' is an an SFrame that maintains business category
+        Suppose 'sf' is an an XFrame that maintains business category
         information:
 
-        >>> sf = turicreate.SFrame({'business': range(1, 5),
+        >>> sf = turicreate.XFrame({'business': range(1, 5),
         ...                       'category.retail': [1, None, 1, None],
         ...                       'category.food': [1, 1, None, None],
         ...                       'category.service': [None, 1, 1, None],
@@ -5094,7 +5094,7 @@ class SFrame(object):
             for column in column_names:
                 if column not in column_name_set:
                     raise ValueError(
-                        "Current SFrame has no column called '" + str(column) + "'."
+                        "Current XFrame has no column called '" + str(column) + "'."
                     )
 
             # check duplicate names
@@ -5148,7 +5148,7 @@ class SFrame(object):
                 raise TypeError("'new_column_name' has to be a string")
             if new_column_name in rest_columns:
                 raise KeyError(
-                    "Current SFrame already contains a column name " + new_column_name
+                    "Current XFrame already contains a column name " + new_column_name
                 )
         else:
             new_column_name = ""
@@ -5169,8 +5169,8 @@ class SFrame(object):
         self, column_name, column_name_prefix=None, limit=None, timezone=False
     ):
         """
-        Splits a datetime column of SFrame to multiple columns, with each value in a
-        separate column. Returns a new SFrame with the expanded column replaced with
+        Splits a datetime column of XFrame to multiple columns, with each value in a
+        separate column. Returns a new XFrame with the expanded column replaced with
         a list of new columns. The expanded column must be of datetime type.
 
         For more details regarding name generation and
@@ -5198,8 +5198,8 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame that contains rest of columns from original SFrame with
+        out : XFrame
+            A new XFrame that contains rest of columns from original XFrame with
             the given column replaced with a collection of expanded columns.
 
         Examples
@@ -5234,7 +5234,7 @@ class SFrame(object):
         """
         if column_name not in self.column_names():
             raise KeyError(
-                "column '" + column_name + "' does not exist in current SFrame"
+                "column '" + column_name + "' does not exist in current XFrame"
             )
 
         if column_name_prefix is None:
@@ -5242,7 +5242,7 @@ class SFrame(object):
 
         new_sf = self[column_name].split_datetime(column_name_prefix, limit, timezone)
 
-        # construct return SFrame, check if there is conflict
+        # construct return XFrame, check if there is conflict
         rest_columns = [name for name in self.column_names() if name != column_name]
         new_names = new_sf.column_names()
         while set(new_names).intersection(rest_columns):
@@ -5262,8 +5262,8 @@ class SFrame(object):
         limit=None,
     ):
         """
-        Expand one column of this SFrame to multiple columns with each value in
-        a separate column. Returns a new SFrame with the unpacked column
+        Expand one column of this XFrame to multiple columns with each value in
+        a separate column. Returns a new XFrame with the unpacked column
         replaced with a list of new columns.  The column must be of
         list/array/dict type.
 
@@ -5303,8 +5303,8 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame that contains rest of columns from original SFrame with
+        out : XFrame
+            A new XFrame that contains rest of columns from original XFrame with
             the given column replaced with a collection of unpacked columns.
 
         See Also
@@ -5313,7 +5313,7 @@ class SFrame(object):
 
         Examples
         ---------
-        >>> sf = turicreate.SFrame({'id': [1,2,3],
+        >>> sf = turicreate.XFrame({'id': [1,2,3],
         ...                      'wc': [{'a': 1}, {'b': 2}, {'a': 1, 'b': 2}]})
         +----+------------------+
         | id |        wc        |
@@ -5361,7 +5361,7 @@ class SFrame(object):
         To unpack an array column:
 
         >>> import array
-        >>> sf = turicreate.SFrame({'id': [1,2,3],
+        >>> sf = turicreate.XFrame({'id': [1,2,3],
         ...                       'friends': [array.array('d', [1.0, 2.0, 3.0]),
         ...                                   array.array('d', [2.0, 3.0, 4.0]),
         ...                                   array.array('d', [3.0, 4.0, 5.0])]})
@@ -5385,7 +5385,7 @@ class SFrame(object):
         +----+-----------+-----------+-----------+
         [3 rows x 4 columns]
 
-        >>> sf = turicreate.SFrame([{'a':1,'b':2,'c':3},{'a':4,'b':5,'c':6}])
+        >>> sf = turicreate.XFrame([{'a':1,'b':2,'c':3},{'a':4,'b':5,'c':6}])
         >>> sf.unpack()
         +---+---+---+
         | a | b | c |
@@ -5400,7 +5400,7 @@ class SFrame(object):
         """
         if column_name is None:
             if self.num_columns() == 0:
-                raise RuntimeError("No column exists in the current SFrame")
+                raise RuntimeError("No column exists in the current XFrame")
 
             for t in range(self.num_columns()):
                 column_type = self.column_types()[t]
@@ -5421,7 +5421,7 @@ class SFrame(object):
                 column_name_prefix = ""
         elif column_name not in self.column_names():
             raise KeyError(
-                "Column '" + column_name + "' does not exist in current SFrame"
+                "Column '" + column_name + "' does not exist in current XFrame"
             )
 
         if column_name_prefix is None:
@@ -5431,7 +5431,7 @@ class SFrame(object):
             column_name_prefix, column_types, na_value, limit
         )
 
-        # construct return SFrame, check if there is conflict
+        # construct return XFrame, check if there is conflict
         rest_columns = [name for name in self.column_names() if name != column_name]
         new_names = new_sf.column_names()
         while set(new_names).intersection(rest_columns):
@@ -5446,7 +5446,7 @@ class SFrame(object):
         self, column_name, new_column_name=None, drop_na=False, new_column_type=None
     ):
         """
-        Convert a "wide" column of an SFrame to one or two "tall" columns by
+        Convert a "wide" column of an XFrame to one or two "tall" columns by
         stacking all values.
 
         The stack works only for columns of dict, list, or array type.  If the
@@ -5458,7 +5458,7 @@ class SFrame(object):
         result of stacking. With each row holds one element of the array or list
         value, and the rest columns from the same original row repeated.
 
-        The returned SFrame includes the newly created column(s) and all
+        The returned XFrame includes the newly created column(s) and all
         columns other than the one that is stacked.
 
         Parameters
@@ -5482,13 +5482,13 @@ class SFrame(object):
             new_column_type must be a single type, or a list of one type. If
             original column is of dict type, new_column_type must be a list of
             two types. If not provided, the types are automatically inferred
-            from the first 100 values of the SFrame.
+            from the first 100 values of the XFrame.
 
         Returns
         -------
-        out : SFrame
-            A new SFrame that contains newly stacked column(s) plus columns in
-            original SFrame other than the stacked column.
+        out : XFrame
+            A new XFrame that contains newly stacked column(s) plus columns in
+            original XFrame other than the stacked column.
 
         See Also
         --------
@@ -5496,9 +5496,9 @@ class SFrame(object):
 
         Examples
         ---------
-        Suppose 'sf' is an SFrame that contains a column of dict type:
+        Suppose 'sf' is an XFrame that contains a column of dict type:
 
-        >>> sf = turicreate.SFrame({'topic':[1,2,3,4],
+        >>> sf = turicreate.XFrame({'topic':[1,2,3,4],
         ...                       'words': [{'a':3, 'cat':2},
         ...                                 {'a':1, 'the':2},
         ...                                 {'the':1, 'dog':3},
@@ -5534,11 +5534,11 @@ class SFrame(object):
         Observe that since topic 4 had no words, an empty row is inserted.
         To drop that row, set drop_na=True in the parameters to stack.
 
-        Suppose 'sf' is an SFrame that contains a user and his/her friends,
+        Suppose 'sf' is an XFrame that contains a user and his/her friends,
         where 'friends' columns is an array type. Stack on 'friends' column
         would create a user/friend list for each user/friend pair:
 
-        >>> sf = turicreate.SFrame({'topic':[1,2,3],
+        >>> sf = turicreate.XFrame({'topic':[1,2,3],
         ...                       'friends':[[2,3,4], [5,6],
         ...                                  [4,5,10,None]]
         ...                      })
@@ -5573,7 +5573,7 @@ class SFrame(object):
         column_name = str(column_name)
         if column_name not in self.column_names():
             raise ValueError(
-                "Cannot find column '" + str(column_name) + "' in the SFrame."
+                "Cannot find column '" + str(column_name) + "' in the XFrame."
             )
 
         stack_column_type = self[column_name].dtype
@@ -5648,7 +5648,7 @@ class SFrame(object):
                 new_column_type = [infer_type_of_list(values)]
 
         with cython_context():
-            return SFrame(
+            return XFrame(
                 _proxy=self.__proxy__.stack(
                     column_name, new_column_name, new_column_type, drop_na
                 )
@@ -5676,8 +5676,8 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame containing the grouped columns as well as the new
+        out : XFrame
+            A new XFrame containing the grouped columns as well as the new
             column.
 
         See Also
@@ -5689,8 +5689,8 @@ class SFrame(object):
 
         Notes
         -----
-        - There is no guarantee the resulting SFrame maintains the same order as
-          the original SFrame.
+        - There is no guarantee the resulting XFrame maintains the same order as
+          the original XFrame.
 
         - Missing values are maintained during unstack.
 
@@ -5699,7 +5699,7 @@ class SFrame(object):
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'count':[4, 2, 1, 1, 2, None],
+        >>> sf = turicreate.XFrame({'count':[4, 2, 1, 1, 2, None],
         ...                       'topic':['cat', 'cat', 'dog', 'elephant', 'elephant', 'fish'],
         ...                       'word':['a', 'c', 'c', 'a', 'b', None]})
         >>> sf.unstack(column_names=['word', 'count'], new_column_name='words')
@@ -5713,7 +5713,7 @@ class SFrame(object):
         +----------+------------------+
         [4 rows x 2 columns]
 
-        >>> sf = turicreate.SFrame({'friend': [2, 3, 4, 5, 6, 4, 5, 2, 3],
+        >>> sf = turicreate.XFrame({'friend': [2, 3, 4, 5, 6, 4, 5, 2, 3],
         ...                      'user': [1, 1, 1, 2, 2, 2, 3, 4, 4]})
         >>> sf.unstack('friend', new_column_name='new name')
         +------+-----------+
@@ -5758,18 +5758,18 @@ class SFrame(object):
 
     def unique(self):
         """
-        Remove duplicate rows of the SFrame. Will not necessarily preserve the
-        order of the given SFrame in the new SFrame.
+        Remove duplicate rows of the XFrame. Will not necessarily preserve the
+        order of the given XFrame in the new XFrame.
 
         Returns
         -------
-        out : SFrame
-            A new SFrame that contains the unique rows of the current SFrame.
+        out : XFrame
+            A new XFrame that contains the unique rows of the current XFrame.
 
         Raises
         ------
         TypeError
-          If any column in the SFrame is a dictionary type.
+          If any column in the XFrame is a dictionary type.
 
         See Also
         --------
@@ -5777,7 +5777,7 @@ class SFrame(object):
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'id':[1,2,3,3,4], 'value':[1,2,3,3,4]})
+        >>> sf = turicreate.XFrame({'id':[1,2,3,3,4], 'value':[1,2,3,3,4]})
         >>> sf
         +----+-------+
         | id | value |
@@ -5805,7 +5805,7 @@ class SFrame(object):
 
     def sort(self, key_column_names, ascending=True):
         """
-        Sort current SFrame by the given columns, using the given sort order.
+        Sort current XFrame by the given columns, using the given sort order.
         Only columns that are type of str, int and float can be sorted.
 
         Parameters
@@ -5824,8 +5824,8 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame that is sorted according to given sort criteria
+        out : XFrame
+            A new XFrame that is sorted according to given sort criteria
 
         See Also
         --------
@@ -5833,10 +5833,10 @@ class SFrame(object):
 
         Examples
         --------
-        Suppose 'sf' is an sframe that has three columns 'a', 'b', 'c'.
+        Suppose 'sf' is an xframe that has three columns 'a', 'b', 'c'.
         To sort by column 'a', ascending
 
-        >>> sf = turicreate.SFrame({'a':[1,3,2,1],
+        >>> sf = turicreate.XFrame({'a':[1,3,2,1],
         ...                       'b':['a','c','b','b'],
         ...                       'c':['x','y','z','y']})
         >>> sf
@@ -5939,18 +5939,18 @@ class SFrame(object):
                     "Only string parameter can be passed in as column names"
                 )
             if column not in my_column_names:
-                raise ValueError("SFrame has no column named: '" + str(column) + "'")
+                raise ValueError("XFrame has no column named: '" + str(column) + "'")
             if self[column].dtype not in (str, int, float, datetime.datetime):
                 raise TypeError("Only columns of type (str, int, float) can be sorted")
 
         with cython_context():
-            return SFrame(
+            return XFrame(
                 _proxy=self.__proxy__.sort(sort_column_names, sort_column_orders)
             )
 
     def dropna(self, columns=None, how="any", recursive=False):
         """
-        Remove missing values from an SFrame. A missing value is either ``None``
+        Remove missing values from an XFrame. A missing value is either ``None``
         or ``NaN``.  If ``how`` is 'any', a row will be removed if any of the
         columns in the ``columns`` parameter contains at least one missing
         value.  If ``how`` is 'all', a row will be removed if all of the columns
@@ -5972,23 +5972,23 @@ class SFrame(object):
 
         recursive: bool
             By default is False. If this flag is set to True, then `nan` check will
-            be performed on each element of a sframe cell in a DFS manner if the cell
+            be performed on each element of a xframe cell in a DFS manner if the cell
             has a nested structure, such as dict, list.
 
         Returns
         -------
-        out : SFrame
-            SFrame with missing values removed (according to the given rules).
+        out : XFrame
+            XFrame with missing values removed (according to the given rules).
 
         See Also
         --------
-        dropna_split :  Drops missing rows from the SFrame and returns them.
+        dropna_split :  Drops missing rows from the XFrame and returns them.
 
         Examples
         --------
         Drop all missing values.
 
-        >>> sf = turicreate.SFrame({'a': [1, None, None], 'b': ['a', 'b', None]})
+        >>> sf = turicreate.XFrame({'a': [1, None, None], 'b': ['a', 'b', None]})
         >>> sf.dropna()
         +---+---+
         | a | b |
@@ -6023,12 +6023,12 @@ class SFrame(object):
         # NA values being dropped would not be the expected behavior. This
         # is a NOOP, so let's not bother the server
         if type(columns) is list and len(columns) == 0:
-            return SFrame(_proxy=self.__proxy__)
+            return XFrame(_proxy=self.__proxy__)
 
         (columns, all_behavior) = self.__dropna_errchk(columns, how)
 
         with cython_context():
-            return SFrame(
+            return XFrame(
                 _proxy=self.__proxy__.drop_missing_values(
                     columns, all_behavior, False, recursive
                 )
@@ -6036,10 +6036,10 @@ class SFrame(object):
 
     def dropna_split(self, columns=None, how="any", recursive=False):
         """
-        Split rows with missing values from this SFrame. This function has the
-        same functionality as :py:func:`~turicreate.SFrame.dropna`, but returns a
-        tuple of two SFrames.  The first item is the expected output from
-        :py:func:`~turicreate.SFrame.dropna`, and the second item contains all the
+        Split rows with missing values from this XFrame. This function has the
+        same functionality as :py:func:`~turicreate.XFrame.dropna`, but returns a
+        tuple of two XFrames.  The first item is the expected output from
+        :py:func:`~turicreate.XFrame.dropna`, and the second item contains all the
         rows filtered out by the `dropna` algorithm.
 
         Parameters
@@ -6055,15 +6055,15 @@ class SFrame(object):
 
         recursive: bool
             By default is False. If this flag is set to True, then `nan` check will
-            be performed on each element of a sframe cell in a recursive manner if the cell
+            be performed on each element of a xframe cell in a recursive manner if the cell
             has a nested structure, such as dict, list.
 
 
         Returns
         -------
-        out : (SFrame, SFrame)
-            (SFrame with missing values removed,
-             SFrame with the removed missing values)
+        out : (XFrame, XFrame)
+            (XFrame with missing values removed,
+             XFrame with the removed missing values)
 
         See Also
         --------
@@ -6071,7 +6071,7 @@ class SFrame(object):
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'a': [1, None, None], 'b': ['a', 'b', None]})
+        >>> sf = turicreate.XFrame({'a': [1, None, None], 'b': ['a', 'b', None]})
         >>> good, bad = sf.dropna_split()
         >>> good
         +---+---+
@@ -6095,19 +6095,19 @@ class SFrame(object):
         # NA values being dropped would not be the expected behavior. This
         # is a NOOP, so let's not bother the server
         if type(columns) is list and len(columns) == 0:
-            return (SFrame(_proxy=self.__proxy__), SFrame())
+            return (XFrame(_proxy=self.__proxy__), XFrame())
 
         (columns, all_behavior) = self.__dropna_errchk(columns, how)
 
-        sframe_tuple = self.__proxy__.drop_missing_values(
+        xframe_tuple = self.__proxy__.drop_missing_values(
             columns, all_behavior, True, recursive
         )
 
-        if len(sframe_tuple) != 2:
-            raise RuntimeError("Did not return two SFrames!")
+        if len(xframe_tuple) != 2:
+            raise RuntimeError("Did not return two XFrames!")
 
         with cython_context():
-            return (SFrame(_proxy=sframe_tuple[0]), SFrame(_proxy=sframe_tuple[1]))
+            return (XFrame(_proxy=xframe_tuple[0]), XFrame(_proxy=xframe_tuple[1]))
 
     def __dropna_errchk(self, columns, how):
         if columns is None:
@@ -6152,8 +6152,8 @@ class SFrame(object):
 
         Returns
         -------
-        out : SFrame
-            A new SFrame with the specified value in place of missing values.
+        out : XFrame
+            A new XFrame with the specified value in place of missing values.
 
         See Also
         --------
@@ -6161,7 +6161,7 @@ class SFrame(object):
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'a':[1, None, None],
+        >>> sf = turicreate.XFrame({'a':[1, None, None],
         ...                       'b':['13.1', '17.2', None]})
         >>> sf = sf.fillna('a', 0)
         >>> sf
@@ -6183,17 +6183,17 @@ class SFrame(object):
 
     def add_row_number(self, column_name="id", start=0, inplace=False):
         """
-        Returns an SFrame with a new column that numbers each row
+        Returns an XFrame with a new column that numbers each row
         sequentially. By default the count starts at 0, but this can be changed
         to a positive or negative number.  The new column will be named with
         the given column name.  An error will be raised if the given column
-        name already exists in the SFrame.
+        name already exists in the XFrame.
 
         If inplace == False (default) this operation does not modify the
-        current SFrame, returning a new SFrame.
+        current XFrame, returning a new XFrame.
 
         If inplace == True, this operation modifies the current
-        SFrame, returning self.
+        XFrame, returning self.
 
         Parameters
         ----------
@@ -6205,12 +6205,12 @@ class SFrame(object):
 
 
         inplace : bool, optional. Defaults to False.
-            Whether the SFrame is modified in place.
+            Whether the XFrame is modified in place.
 
         Returns
         -------
-        out : SFrame
-            The new SFrame with a column name
+        out : XFrame
+            The new XFrame with a column name
 
         Notes
         -----
@@ -6220,7 +6220,7 @@ class SFrame(object):
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'a': [1, None, None], 'b': ['a', 'b', None]})
+        >>> sf = turicreate.XFrame({'a': [1, None, None], 'b': ['a', 'b', None]})
         >>> sf.add_row_number()
         +----+------+------+
         | id |  a   |  b   |
@@ -6240,13 +6240,13 @@ class SFrame(object):
 
         if column_name in self.column_names():
             raise RuntimeError(
-                "Column '" + column_name + "' already exists in the current SFrame"
+                "Column '" + column_name + "' already exists in the current XFrame"
             )
 
         the_col = _create_sequential_sarray(self.num_rows(), start)
 
         # Make sure the row number column is the first column
-        new_sf = SFrame()
+        new_sf = XFrame()
         new_sf.add_column(the_col, column_name, inplace=True)
         new_sf.add_columns(self, inplace=True)
 
@@ -6259,12 +6259,12 @@ class SFrame(object):
     @property
     def shape(self):
         """
-        The shape of the SFrame, in a tuple. The first entry is the number of
+        The shape of the XFrame, in a tuple. The first entry is the number of
         rows, the second is the number of columns.
 
         Examples
         --------
-        >>> sf = turicreate.SFrame({'id':[1,2,3], 'val':['A','B','C']})
+        >>> sf = turicreate.XFrame({'id':[1,2,3], 'val':['A','B','C']})
         >>> sf.shape
         (3, 2)
         """
@@ -6276,7 +6276,7 @@ class SFrame(object):
 
     @__proxy__.setter
     def __proxy__(self, value):
-        assert type(value) is UnitySFrameProxy
+        assert type(value) is UnityXFrameProxy
         self._cache = None
         self._proxy = value
         self._cache = None

@@ -6,8 +6,8 @@
 #ifndef __TC_VIS_GROUPBY
 #define __TC_VIS_GROUPBY
 
-#include <core/storage/sframe_data/groupby_aggregate_operators.hpp>
-#include <core/data/sframe/gl_sframe.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_operators.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
 #include <core/util/sys_util.hpp>
 
 #include "transformation.hpp"
@@ -132,7 +132,7 @@ class groupby_result {
 };
 
 template<typename Result>
-class groupby : public transformation<gl_sframe, Result> {
+class groupby : public transformation<gl_xframe, Result> {
   protected:
     virtual void merge_results(std::vector<Result>& transformers) override {
       for (auto& result : transformers) {

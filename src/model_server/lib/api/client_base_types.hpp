@@ -11,7 +11,7 @@
  * for the client library.
  */
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/dataframe.hpp>
+#include <core/storage/xframe_data/dataframe.hpp>
 #include <model_server/lib/variant.hpp>
 #include <model_server/lib/extensions/model_base.hpp>
 

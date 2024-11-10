@@ -21,11 +21,11 @@ pytestmark = [pytest.mark.minimal]
 
 class UnicodeStringTest(unittest.TestCase):
     def test_unicode_column_accessor(self):
-        sf = tc.SFrame({"a": list(range(100))})
+        sf = tc.XFrame({"a": list(range(100))})
         self.assertEqual(sf["a"][0], sf["a"][0])
 
     def test_unicode_unpack_prefix(self):
-        sf = tc.SFrame({"a": [{"x": 1}, {"x": 2}, {"x": 3}]})
+        sf = tc.XFrame({"a": [{"x": 1}, {"x": 2}, {"x": 3}]})
         sf = sf.unpack("a", "\u00aa")
         for col in sf.column_names():
             if six.PY2:
@@ -36,11 +36,11 @@ class UnicodeStringTest(unittest.TestCase):
                 self.assertTrue(col.startswith("\u00aa"))
 
     def test_unicode_column_construction(self):
-        sf = tc.SFrame({"\u00aa": [1, 2, 3]})
+        sf = tc.XFrame({"\u00aa": [1, 2, 3]})
         self.assertEqual(sf["\u00aa"][0], 1)
 
     def test_access_nonexistent_column(self):
-        sf = tc.SFrame({"\u00aa": [1, 2, 3], "a": [4, 5, 6]})
+        sf = tc.XFrame({"\u00aa": [1, 2, 3], "a": [4, 5, 6]})
         with self.assertRaises(RuntimeError):
             sf["b"]
         with self.assertRaises(RuntimeError):

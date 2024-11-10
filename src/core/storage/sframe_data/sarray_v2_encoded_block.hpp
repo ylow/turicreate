@@ -3,26 +3,26 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_ENCODED_BLOCK_HPP
-#define TURI_SFRAME_ENCODED_BLOCK_HPP
+#ifndef TURI_XFRAME_ENCODED_BLOCK_HPP
+#define TURI_XFRAME_ENCODED_BLOCK_HPP
 
 #include <boost/circular_buffer.hpp>
 #include <vector>
 #include <memory>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_types.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_types.hpp>
 namespace turi {
 
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  * \{
  */
 
 /**
- * SFrame v2 Format Implementation Detail
+ * XFrame v2 Format Implementation Detail
  */
 namespace v2_block_impl {
 

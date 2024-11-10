@@ -6,10 +6,10 @@
 extern "C" {
 #include <lz4/lz4.h>
 }
-#include <core/storage/sframe_data/sarray_v2_block_writer.hpp>
-#include <core/storage/sframe_data/sarray_index_file.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
-#include <core/storage/sframe_data/sarray_v2_type_encoding.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_writer.hpp>
+#include <core/storage/xframe_data/sarray_index_file.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
+#include <core/storage/xframe_data/sarray_v2_type_encoding.hpp>
 
 namespace turi {
 namespace v2_block_impl {

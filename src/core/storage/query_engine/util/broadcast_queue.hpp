@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef SFRAME_QUERY_ENGINE_broadcast_queue_HPP
-#define SFRAME_QUERY_ENGINE_broadcast_queue_HPP
+#ifndef XFRAME_QUERY_ENGINE_broadcast_queue_HPP
+#define XFRAME_QUERY_ENGINE_broadcast_queue_HPP
 #include <deque>
 #include <string>
 #include <memory>
@@ -26,7 +26,7 @@ struct broadcast_queue_serializer {
   }
 };
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup Utilities Utilities
  * \{
  */

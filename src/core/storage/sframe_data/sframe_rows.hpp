@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_sframe_rows_HPP
-#define TURI_SFRAME_sframe_rows_HPP
+#ifndef TURI_XFRAME_xframe_rows_HPP
+#define TURI_XFRAME_xframe_rows_HPP
 #include <vector>
 #include <map>
 #include <core/data/flexible_type/flexible_type.hpp>
@@ -14,38 +14,38 @@ class iarchive;
 
 
 /**
- * \ingroup sframe_physical
- * \addtogroup sframe_main Main SFrame Objects
+ * \ingroup xframe_physical
+ * \addtogroup xframe_main Main XFrame Objects
  * \{
  */
 
 /**
  *
- * sframe-rows is a semi-opaque wrapper around a collection of columns of
- * flexible_type (i.e. from an SFrame / SArray).  The objective is to allow the
+ * xframe-rows is a semi-opaque wrapper around a collection of columns of
+ * flexible_type (i.e. from an XFrame / SArray).  The objective is to allow the
  * underlying representation to be column-wise, while maintaining a row-wise
  * iterator interface.
  *
- * sframe_rows are fast and cheap to copy, and also allow values to be modified.
- * Internally, sframe_rows are built on a copy-on-write architecture thus
+ * xframe_rows are fast and cheap to copy, and also allow values to be modified.
+ * Internally, xframe_rows are built on a copy-on-write architecture thus
  * allowing for safe mutation. Most accessor methods have a "constant" version
  * which should be used if no value modifications are to be made. For instance:
- *  - sframe_rows::begin() vs sframe_rows::cbegin()
- *  - sframe_rows::get_columns() vs sframe_rows::cget_columns()
+ *  - xframe_rows::begin() vs xframe_rows::cbegin()
+ *  - xframe_rows::get_columns() vs xframe_rows::cget_columns()
  *
- * The sframe_rows object is a relatively shallow wrapper over an
+ * The xframe_rows object is a relatively shallow wrapper over an
  *
  *    vector<shared_ptr<vector<flexible_type>>>
  *
  * where each shared_ptr<vector<flexible_type>> represents a single column.
  * The column set can be directly accessed and modified using
- * sframe_rows::get_columns() (returns a reference to the underlying vector)
- * or sframe_rows::cget_columns()
+ * xframe_rows::get_columns() (returns a reference to the underlying vector)
+ * or xframe_rows::cget_columns()
  *
  * \TODO: We *could* templatize this around the column type, allowing this to
  * be used for anything.
  */
-class sframe_rows {
+class xframe_rows {
  public:
   /// The data type of decoded column (block_contents::DECODED_COLUMN)
   typedef std::vector<flexible_type> decoded_column_type;
@@ -54,13 +54,13 @@ class sframe_rows {
   /**
    * Constructor
    */
-  sframe_rows() = default;
+  xframe_rows() = default;
 
   /**
    * Copy constructor. The copy constructor is fast as only pointers
    * are copied in a copy-on-write fashion.
    */
-  sframe_rows(const sframe_rows& other) {
+  xframe_rows(const xframe_rows& other) {
     m_decoded_columns = other.m_decoded_columns;
     m_is_unique = false;
     other.m_is_unique = false;
@@ -68,13 +68,13 @@ class sframe_rows {
   /**
    * Move constructor.
    */
-  sframe_rows(sframe_rows&&) = default;
+  xframe_rows(xframe_rows&&) = default;
 
   /**
    * Assignment operator. The assignment operator is fast as only
    * pointers are copied in a copy on write fashion.
    */
-  sframe_rows& operator=(const sframe_rows& other)  {
+  xframe_rows& operator=(const xframe_rows& other)  {
     m_decoded_columns = other.m_decoded_columns;
     m_is_unique = false;
     other.m_is_unique = false;
@@ -84,7 +84,7 @@ class sframe_rows {
   /**
    * Move assignment
    */
-  sframe_rows& operator=(sframe_rows&&) = default;
+  xframe_rows& operator=(xframe_rows&&) = default;
 
   /// Returns the number of columns
   inline size_t num_columns() const {
@@ -99,20 +99,20 @@ class sframe_rows {
   }
 
   /**
-   * Clears the contents of the sframe_rows datastructure.
+   * Clears the contents of the xframe_rows datastructure.
    */
   void clear();
 
   /**
-   * Sets the size of sframe_rows. If num_rows == -1, columns are not resized.
+   * Sets the size of xframe_rows. If num_rows == -1, columns are not resized.
    *
-   * \note sframe_rows is a copy-on-write datastructure. This may trigger
-   * a full copy of the contents of sframe_rows.
+   * \note xframe_rows is a copy-on-write datastructure. This may trigger
+   * a full copy of the contents of xframe_rows.
    */
   void resize(size_t num_cols, ssize_t num_rows = -1);
 
   /**
-   * Adds to the right of the sframe_rows, a collection of decoded columns
+   * Adds to the right of the xframe_rows, a collection of decoded columns
    *
    * \code
    * add_decoded_column(std::move(source))
@@ -124,8 +124,8 @@ class sframe_rows {
   /**
    * Returns a modifiable reference to the set of column groups
    *
-   * \note sframe_rows is a copy-on-write datastructure. This may trigger
-   * a full copy of the contents of sframe_rows.
+   * \note xframe_rows is a copy-on-write datastructure. This may trigger
+   * a full copy of the contents of xframe_rows.
    */
   inline std::vector<ptr_to_decoded_column_type>& get_columns() {
     if (!m_is_unique) ensure_unique();
@@ -160,17 +160,17 @@ class sframe_rows {
   struct const_iterator;
 
   /**
-   * An row object which refererences a row of the sframe_rows
+   * An row object which refererences a row of the xframe_rows
    * and mimics a std::vector<flexible_type>.
    *
    * \code
-   * sframe_rows::row& r = rows[5];
+   * xframe_rows::row& r = rows[5];
    *
-   * // assigns row 5 in the sframe_rows object "rows" to be the same as row 10
+   * // assigns row 5 in the xframe_rows object "rows" to be the same as row 10
    * r = rows[10];
    *
-   * // assigns row 5 in the sframe_rows object "rows" to be the same as row 7
-   * // in some other sframe_rows object
+   * // assigns row 5 in the xframe_rows object "rows" to be the same as row 7
+   * // in some other xframe_rows object
    * r = some_other_rows[7]
    * \endcode
    */
@@ -219,7 +219,7 @@ class sframe_rows {
       return *this;
     }
 
-    inline row(const sframe_rows* source, size_t current_row_number):
+    inline row(const xframe_rows* source, size_t current_row_number):
         m_source(source), m_current_row_number(current_row_number) { }
 
     /**
@@ -279,11 +279,11 @@ class sframe_rows {
       return m_source->num_columns();
     }
 
-    const sframe_rows* m_source = NULL;
+    const xframe_rows* m_source = NULL;
     ssize_t m_current_row_number = 0;
     friend struct iterator;
     friend struct const_iterator;
-    friend class sframe_rows;
+    friend class xframe_rows;
 
     /**
      * Iterator over values of a row
@@ -301,7 +301,7 @@ class sframe_rows {
           const_iterator& operator=(const const_iterator&) = default;
           const_iterator& operator=(const_iterator&&) = default;
           /// default constructor
-          explicit const_iterator(const sframe_rows::row& source, size_t current_idx = 0):
+          explicit const_iterator(const xframe_rows::row& source, size_t current_idx = 0):
               m_source(&source), m_current_idx(current_idx) { };
 
          private:
@@ -349,14 +349,14 @@ class sframe_rows {
   };
 
   /**
-   * A constant iterator across rows of sframe_rows
+   * A constant iterator across rows of xframe_rows
    */
   struct const_iterator:
       public boost::iterator_facade<const_iterator,
                                     const row,
                                     boost::random_access_traversal_tag> {
     /// Pointer to the input range. NULL if end iterator.
-    const sframe_rows* m_source = NULL;
+    const xframe_rows* m_source = NULL;
     row m_row;
     /// default constructor
     const_iterator() {}
@@ -378,7 +378,7 @@ class sframe_rows {
       m_row.copy_reference(other.m_row);
       return *this;
     }
-    explicit const_iterator(const sframe_rows* source, size_t current_row_number = 0):
+    explicit const_iterator(const xframe_rows* source, size_t current_row_number = 0):
         m_row(source, current_row_number) { };
    private:
     friend class boost::iterator_core_access;
@@ -409,14 +409,14 @@ class sframe_rows {
   };
 
   /**
-   * A non-constant interator over rows of sframe_rows
+   * A non-constant interator over rows of xframe_rows
    */
   struct iterator:
       public boost::iterator_facade<iterator,
                                     row,
                                     boost::random_access_traversal_tag> {
     /// Pointer to the input range. NULL if end iterator.
-    const sframe_rows* m_source = NULL;
+    const xframe_rows* m_source = NULL;
     mutable row m_row;
     /// default constructor
     iterator() {}
@@ -438,7 +438,7 @@ class sframe_rows {
       m_row.copy_reference(other.m_row);
       return *this;
     }
-    explicit iterator(sframe_rows* source, size_t current_row_number = 0):
+    explicit iterator(xframe_rows* source, size_t current_row_number = 0):
         m_row(source, current_row_number) { };
    private:
     friend class boost::iterator_core_access;
@@ -469,38 +469,38 @@ class sframe_rows {
   };
 
   /**
-   * Gets a constant iterator to the first row of the sframe_rows.
+   * Gets a constant iterator to the first row of the xframe_rows.
    */
   inline const_iterator begin() const {
     return const_iterator(this, 0);
   }
 
   /**
-   * Gets a constant iterator to the end of the sframe_rows.
+   * Gets a constant iterator to the end of the xframe_rows.
    */
   inline const_iterator end() const {
     return const_iterator(this, num_rows());
   }
 
   /**
-   * Gets a constant iterator to the first row of the sframe_rows.
+   * Gets a constant iterator to the first row of the xframe_rows.
    */
   inline const_iterator cbegin() const {
     return const_iterator(this, 0);
   }
 
   /**
-   * Gets a constant iterator to the end of the sframe_rows.
+   * Gets a constant iterator to the end of the xframe_rows.
    */
   inline const_iterator cend() const {
     return const_iterator(this, num_rows());
   }
 
   /**
-   * Gets a mutable iterator to the first row of the sframe_rows.
+   * Gets a mutable iterator to the first row of the xframe_rows.
    *
-   * \note sframe_rows is a copy-on-write datastructure. This may trigger
-   * a full copy of the contents of sframe_rows.
+   * \note xframe_rows is a copy-on-write datastructure. This may trigger
+   * a full copy of the contents of xframe_rows.
    */
   inline iterator begin() {
     if (!m_is_unique) ensure_unique();
@@ -508,10 +508,10 @@ class sframe_rows {
   }
 
   /**
-   * Gets a mutable iterator to the first row of the sframe_rows.
+   * Gets a mutable iterator to the first row of the xframe_rows.
    *
-   * \note sframe_rows is a copy-on-write datastructure. This may trigger
-   * a full copy of the contents of sframe_rows.
+   * \note xframe_rows is a copy-on-write datastructure. This may trigger
+   * a full copy of the contents of xframe_rows.
    */
   inline iterator end() {
     if (!m_is_unique) ensure_unique();
@@ -519,14 +519,14 @@ class sframe_rows {
   }
 
   /**
-   * Reads a particular row of the sframe_rows object.
+   * Reads a particular row of the xframe_rows object.
    */
   inline const row operator[](size_t i) const {
     return row(this, i);
   }
 
   /**
-   * gets a mutable reference to a particular row of the sframe_rows object
+   * gets a mutable reference to a particular row of the xframe_rows object
    */
   inline row operator[](size_t i) {
     if (!m_is_unique) ensure_unique();
@@ -539,21 +539,21 @@ class sframe_rows {
   void ensure_unique();
 
   /**
-   * Modifies the SFrame Rows inplace to enforce typing.
+   * Modifies the XFrame Rows inplace to enforce typing.
    * \see type_check
    */
   void type_check_inplace(const std::vector<flex_type_enum>& typelist);
 
   /**
-   * Returns a new sframe rows where each column has the set of types enforced
+   * Returns a new xframe rows where each column has the set of types enforced
    * \see type_check_inplace
    */
-  sframe_rows type_check(const std::vector<flex_type_enum>& typelist) const;
+  xframe_rows type_check(const std::vector<flex_type_enum>& typelist) const;
 
    private:
     std::vector<ptr_to_decoded_column_type> m_decoded_columns;
     mutable bool m_is_unique = true;
-  };  // class sframe_rows
+  };  // class xframe_rows
 
 /// \}
 } // namespace turi

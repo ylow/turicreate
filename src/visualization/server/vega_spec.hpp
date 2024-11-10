@@ -17,7 +17,7 @@ namespace turi {
     // 1d plots (distribution plots)
     std::string histogram_spec(const flexible_type& title, const flexible_type& xlabel, const flexible_type& ylabel, flex_type_enum dtype);
     std::string categorical_spec(const flexible_type& title, const flexible_type& xlabel, const flexible_type& ylabel, flex_type_enum dtype);
-    // collection of 1d plots for SFrame
+    // collection of 1d plots for XFrame
     std::string summary_view_spec(size_t length_elements);
 
     // 2d plots

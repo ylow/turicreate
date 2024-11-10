@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_OPTIMIZATION_GENERALIZED_UNION_PROJECT_TRANSFORMS_HPP_
-#define TURI_SFRAME_QUERY_OPTIMIZATION_GENERALIZED_UNION_PROJECT_TRANSFORMS_HPP_
+#ifndef TURI_XFRAME_QUERY_OPTIMIZATION_GENERALIZED_UNION_PROJECT_TRANSFORMS_HPP_
+#define TURI_XFRAME_QUERY_OPTIMIZATION_GENERALIZED_UNION_PROJECT_TRANSFORMS_HPP_
 
 #include <core/storage/query_engine/planning/optimizations/optimization_transforms.hpp>
 #include <core/storage/query_engine/planning/optimization_engine.hpp>
@@ -199,7 +199,7 @@ class opt_project_add_direct_source_tags : public opt_transform {
 
     bool have_source = false;
     for(const auto& nn : n->inputs) {
-      if(nn->type == planner_node_type::SFRAME_SOURCE_NODE
+      if(nn->type == planner_node_type::XFRAME_SOURCE_NODE
          || nn->type == planner_node_type::SARRAY_SOURCE_NODE) {
         have_source = true;
         break;
@@ -221,8 +221,8 @@ class opt_project_add_direct_source_tags : public opt_transform {
 
       auto nn = n->inputs[idx_1];
 
-      if(nn->type == planner_node_type::SFRAME_SOURCE_NODE) {
-        auto sa = nn->any_p<sframe>("sframe").select_column(idx_2);
+      if(nn->type == planner_node_type::XFRAME_SOURCE_NODE) {
+        auto sa = nn->any_p<xframe>("xframe").select_column(idx_2);
         if (nn->p("begin_index") == 0 && nn->p("end_index") == sa->size()) {
           input_mapping[i] = sa;
         }

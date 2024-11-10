@@ -3,24 +3,24 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_ENGINE_SUBPLAN_EXECUTOR_H_
-#define TURI_SFRAME_QUERY_ENGINE_SUBPLAN_EXECUTOR_H_
+#ifndef TURI_XFRAME_QUERY_ENGINE_SUBPLAN_EXECUTOR_H_
+#define TURI_XFRAME_QUERY_ENGINE_SUBPLAN_EXECUTOR_H_
 
 #include <vector>
 #include <memory>
 #include <functional>
-#include <core/storage/sframe_data/sframe.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
 #include <core/storage/query_engine/planning/materialize_options.hpp>
 
 namespace turi { namespace query_eval {
 
-typedef std::function<bool(size_t, const std::shared_ptr<sframe_rows>&)> execution_callback;
+typedef std::function<bool(size_t, const std::shared_ptr<xframe_rows>&)> execution_callback;
 
 struct planner_node;
 
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup execution Execution
  * \{
  */
@@ -53,26 +53,26 @@ class subplan_executor {
  public:
 
  /**
-  * Runs a single job sequentially returning the resultant SFrame.
+  * Runs a single job sequentially returning the resultant XFrame.
   *
   * Note that materialize_options may be used to adapt the materialization
   * process.
   */
-  sframe run(const std::shared_ptr<planner_node>& run_this,
+  xframe run(const std::shared_ptr<planner_node>& run_this,
              const materialize_options& exec_params = materialize_options());
 
-  /** Runs a batch of planner nodes in parallel, returning an SFrame for
+  /** Runs a batch of planner nodes in parallel, returning an XFrame for
    * each of them.
    *
    * Note that materialize_options may be used to adapt the materialization
    * process.
    */
-  std::vector<sframe> run(
+  std::vector<xframe> run(
       const std::vector<std::shared_ptr<planner_node> >& stuff_to_run_in_parallel,
       const materialize_options& exec_params = materialize_options());
 
 
-  /** Runs a batch of planner nodes in parallel, returning an SFrame comprising
+  /** Runs a batch of planner nodes in parallel, returning an XFrame comprising
    *  of the concatenation of the output of each of the planner nodes.
    *
    *  All the stuff_to_run_in_parallel must share exactly the same schema.
@@ -80,7 +80,7 @@ class subplan_executor {
    *  Note that materialize_options may be used to adapt the materialization
    *  process.
    */
-  sframe run_concat(
+  xframe run_concat(
       const std::vector<std::shared_ptr<planner_node> >& stuff_to_run_in_parallel,
       const materialize_options& exec_params = materialize_options());
 
@@ -88,10 +88,10 @@ class subplan_executor {
 
  /**
   * \internal
-  * Runs a single job sequentially to a single sframe segment.
+  * Runs a single job sequentially to a single xframe segment.
   */
-  void generate_to_sframe_segment(const std::shared_ptr<planner_node>& run_this,
-                                  sframe& out,
+  void generate_to_xframe_segment(const std::shared_ptr<planner_node>& run_this,
+                                  xframe& out,
                                   size_t output_segment_id);
 
   /**

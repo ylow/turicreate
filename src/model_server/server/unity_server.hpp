@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef SFRAME_UNITY_SERVER_HPP
-#define SFRAME_UNITY_SERVER_HPP
+#ifndef XFRAME_UNITY_SERVER_HPP
+#define XFRAME_UNITY_SERVER_HPP
 
 #include <core/parallel/pthread_tools.hpp>
 #include <core/util/blocking_queue.hpp>

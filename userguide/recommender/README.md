@@ -13,7 +13,7 @@ IDs, and (optionally) the ratings. For this example, we use the [MovieLens
 
 ```python
 import turicreate as tc
-actions = tc.SFrame.read_csv('./dataset/ml-20m/ratings.csv')
+actions = tc.XFrame.read_csv('./dataset/ml-20m/ratings.csv')
 ```
 ```no-highlight
 +--------+---------+--------+------------+
@@ -32,14 +32,14 @@ actions = tc.SFrame.read_csv('./dataset/ml-20m/ratings.csv')
 +--------+---------+--------+------------+
 ```
 
-For information on how to load data into an SFrame from other sources,
-see the chapter on [SFrames](../sframe/sframe-intro.md).
+For information on how to load data into an XFrame from other sources,
+see the chapter on [XFrames](../xframe/xframe-intro.md).
 
 You may have additional data about users or items. For example we might
 have a dataset of movie metadata.
 
 ```python
-items = tc.SFrame.read_csv('./dataset/ml-20m/movies.csv')
+items = tc.XFrame.read_csv('./dataset/ml-20m/movies.csv')
 ```
 ```no-highlight
 +---------+---------------------+---------------------+------+

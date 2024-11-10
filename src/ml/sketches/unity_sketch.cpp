@@ -8,7 +8,7 @@
 #include <unordered_set>
 #include <core/parallel/mutex.hpp>
 #include <ml/sketches/unity_sketch.hpp>
-#include <core/storage/sframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
 #include <model_server/lib/flex_dict_view.hpp>
 #include <ml/sketches/hyperloglog.hpp>
 #include <ml/sketches/countsketch.hpp>

@@ -120,7 +120,7 @@ void transform_to_flat_dictionary::init_transformer(const std::map<std::string,f
 /**
  * Fit the data.
  */
-void transform_to_flat_dictionary::fit(gl_sframe data){
+void transform_to_flat_dictionary::fit(gl_xframe data){
 
   DASSERT_TRUE(options.get_option_info().size() > 0);
 
@@ -145,7 +145,7 @@ void transform_to_flat_dictionary::fit(gl_sframe data){
 /**
  * Transform the given data.
  */
-gl_sframe transform_to_flat_dictionary::transform(gl_sframe data) {
+gl_xframe transform_to_flat_dictionary::transform(gl_xframe data) {
 
   if(!fitted) {
     log_and_throw("`transform` called before `fit` or `fit_transform`.");
@@ -167,7 +167,7 @@ gl_sframe transform_to_flat_dictionary::transform(gl_sframe data) {
 
   transform_utils::validate_feature_types(transform_features, feature_types, data);
 
-  gl_sframe ret_sf = data;
+  gl_xframe ret_sf = data;
 
   // Do the actual transformations.
   for(const auto& s : transform_features) {

@@ -24,7 +24,7 @@ from os.path import basename
 
 # Load the audio data and meta data.
 data = tc.load_audio('./ESC-50/audio/')
-meta_data = tc.SFrame.read_csv('./ESC-50/meta/esc50.csv')
+meta_data = tc.XFrame.read_csv('./ESC-50/meta/esc50.csv')
 
 # Join the audio data and the meta data.
 data['filename'] = data['path'].apply(lambda p: basename(p))

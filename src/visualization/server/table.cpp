@@ -7,14 +7,14 @@
 #include <visualization/server/server.hpp>
 #include <visualization/server/table.hpp>
 
-#include <core/data/sframe/gl_sframe.hpp>
-#include <core/storage/sframe_interface/unity_sframe.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
 
 namespace turi {
 namespace visualization {
 
-std::string table_spec(const std::shared_ptr<unity_sframe>& table, const std::string& title, std::string table_id) {
+std::string table_spec(const std::shared_ptr<unity_xframe>& table, const std::string& title, std::string table_id) {
   // If table ID is unspecified, add it to the web server so we can get an ID reference to it
   // for image loading and other data streaming over HTTP
   if (table_id == "") {
@@ -52,11 +52,11 @@ std::string table_spec(const std::shared_ptr<unity_sframe>& table, const std::st
   return ss.str();
 }
 
-std::string table_data(const std::shared_ptr<unity_sframe>& table, sframe_reader* reader, size_t start, size_t end) {
+std::string table_data(const std::shared_ptr<unity_xframe>& table, xframe_reader* reader, size_t start, size_t end) {
 
   const auto& column_names = table->column_names();
 
-  sframe_rows rows;
+  xframe_rows rows;
   reader->read_rows(start, end, rows);
   std::stringstream ss;
 
@@ -92,7 +92,7 @@ std::string table_data(const std::shared_ptr<unity_sframe>& table, sframe_reader
   return ss.str();
 }
 
-std::string table_accordion(const std::shared_ptr<unity_sframe>& table, const std::string& column_name, size_t row_idx) {
+std::string table_accordion(const std::shared_ptr<unity_xframe>& table, const std::string& column_name, size_t row_idx) {
   using namespace boost;
   using namespace local_time;
   using namespace gregorian;

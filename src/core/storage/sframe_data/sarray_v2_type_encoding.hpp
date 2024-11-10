@@ -3,26 +3,26 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_SARRAY_V2_TYPE_ENCODING_HPP
-#define TURI_SFRAME_SARRAY_V2_TYPE_ENCODING_HPP
+#ifndef TURI_XFRAME_SARRAY_V2_TYPE_ENCODING_HPP
+#define TURI_XFRAME_SARRAY_V2_TYPE_ENCODING_HPP
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_types.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_types.hpp>
 #include <core/util/basic_types.hpp>
 #include <core/util/dense_bitset.hpp>
-#include <core/storage/sframe_data/integer_pack.hpp>
+#include <core/storage/xframe_data/integer_pack.hpp>
 #include <core/util/coro.hpp>
 namespace turi {
 
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  * \{
  */
 
 /**
- * SFrame v2 Format Implementation Detail
+ * XFrame v2 Format Implementation Detail
  */
 namespace v2_block_impl {
 using namespace turi::integer_pack;

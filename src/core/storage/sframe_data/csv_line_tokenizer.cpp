@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <core/logging/logger.hpp>
 #include <boost/config/warning_disable.hpp>
-#include <core/storage/sframe_data/csv_line_tokenizer.hpp>
+#include <core/storage/xframe_data/csv_line_tokenizer.hpp>
 #include <core/data/flexible_type/string_escape.hpp>
 #include <core/data/flexible_type/flexible_type_spirit_parser.hpp>
 

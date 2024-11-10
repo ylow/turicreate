@@ -3,15 +3,15 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include <core/storage/sframe_data/testing_utils.hpp>
+#include <core/storage/xframe_data/testing_utils.hpp>
 
 namespace turi {
 
-sframe make_testing_sframe(const std::vector<std::string>& names,
+xframe make_testing_xframe(const std::vector<std::string>& names,
                            const std::vector<flex_type_enum>& types,
                            const std::vector<std::vector<flexible_type> >& data) {
 
-  sframe out;
+  xframe out;
 
   out.open_for_write(names, types);
 
@@ -33,7 +33,7 @@ sframe make_testing_sframe(const std::vector<std::string>& names,
   return out;
 }
 
-sframe make_testing_sframe(const std::vector<std::string>& names,
+xframe make_testing_xframe(const std::vector<std::string>& names,
                            const std::vector<std::vector<flexible_type> >& data) {
 
   std::vector<flex_type_enum> types(names.size());
@@ -45,14 +45,14 @@ sframe make_testing_sframe(const std::vector<std::string>& names,
     types[i] = data.front()[i].get_type();
   }
 
-  return make_testing_sframe(names, types, data);
+  return make_testing_xframe(names, types, data);
 }
 
 
-sframe make_integer_testing_sframe(const std::vector<std::string>& names,
+xframe make_integer_testing_xframe(const std::vector<std::string>& names,
                                    const std::vector<std::vector<size_t> >& data) {
 
-  sframe out;
+  xframe out;
 
   std::vector<flex_type_enum> types(names.size(), flex_type_enum::INTEGER);
 
@@ -109,7 +109,7 @@ make_testing_sarray(flex_type_enum type,
   return new_x;
 }
 
-std::vector<std::vector<flexible_type> > testing_extract_sframe_data(const sframe& sf) {
+std::vector<std::vector<flexible_type> > testing_extract_xframe_data(const xframe& sf) {
 
   std::vector<std::vector<flexible_type> > ret;
 
@@ -128,7 +128,7 @@ std::vector<std::vector<flexible_type> > testing_extract_sframe_data(const sfram
   return ret;
 }
 
-/**  Creates a random SFrame for testing purposes.  The
+/**  Creates a random XFrame for testing purposes.  The
  *  column_types gives the types of the column.
  *
  *  \param[in] n_rows The number of observations to run the timing on.
@@ -160,11 +160,11 @@ std::vector<std::vector<flexible_type> > testing_extract_sframe_data(const sfram
  *     A:  3d ndarray of dimension 4x3x2, randomized non-canonical striding.
  *
  */
-sframe make_random_sframe(
+xframe make_random_xframe(
     size_t n_rows, std::string column_types,
     bool generate_target, size_t _random_seed) {
 
-  sframe data;
+  xframe data;
 
   size_t num_columns = column_types.size();
   size_t n_threads = thread::cpu_count();
@@ -252,7 +252,7 @@ sframe make_random_sframe(
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  // Create the sframe with each of the columns as determined above.
+  // Create the xframe with each of the columns as determined above.
 
   data.open_for_write(names, types, "", n_threads);
 
@@ -518,12 +518,12 @@ sframe make_random_sframe(
   return data;
 }
 
-sframe slice_sframe(const sframe& src, size_t row_lb, size_t row_ub) {
+xframe slice_xframe(const xframe& src, size_t row_lb, size_t row_ub) {
 
   ASSERT_LE(row_lb, row_ub);
   ASSERT_LE(row_ub, src.num_rows());
 
-  sframe out;
+  xframe out;
 
   out.open_for_write(src.column_names(), src.column_types(), "", thread::cpu_count());
   auto reader = src.get_reader();

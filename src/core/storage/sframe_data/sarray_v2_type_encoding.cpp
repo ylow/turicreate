@@ -5,10 +5,10 @@
  */
 #include <functional>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_types.hpp>
-#include <core/storage/sframe_data/sarray_v2_type_encoding.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_types.hpp>
+#include <core/storage/xframe_data/sarray_v2_type_encoding.hpp>
 #include <core/util/dense_bitset.hpp>
-#include <core/storage/sframe_data/integer_pack.hpp>
+#include <core/storage/xframe_data/integer_pack.hpp>
 #include <core/util/coro.hpp>
 
 namespace turi {

@@ -3,30 +3,30 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_GROUPBY_HPP
-#define TURI_SFRAME_GROUPBY_HPP
+#ifndef TURI_XFRAME_GROUPBY_HPP
+#define TURI_XFRAME_GROUPBY_HPP
 
 #include <core/parallel/mutex.hpp>
 #include<memory>
 #include<vector>
-#include<core/storage/sframe_data/sarray.hpp>
-#include<core/storage/sframe_data/sframe.hpp>
+#include<core/storage/xframe_data/sarray.hpp>
+#include<core/storage/xframe_data/xframe.hpp>
 
 namespace turi {
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup groupby_aggregate Groupby Aggregation
  * \{
  */
 
 /**
- * Group the sframe rows by the key_column.
+ * Group the xframe rows by the key_column.
  *
  * Like a sort, but not.
  */
-sframe group(sframe sframe_in, std::string key_column);
+xframe group(xframe xframe_in, std::string key_column);
 
 // Forward declaration
 template<typename T>
@@ -38,11 +38,11 @@ class hash_bucket;
  * by its hash_value, then all elements in the container are partially sorted,
  * or grouped.
  *
- * Below is an example of using the it to group an sframe by its first column.
+ * Below is an example of using the it to group an xframe by its first column.
  *
  * \code
  * typedef std::vector<flexible_type> valuetype;
- * sframe sf = ...;
+ * xframe sf = ...;
  *
  * hash_bucket_container<std::vector<flexible_type>> hash_container(
  *    sf.num_segments(),
@@ -59,7 +59,7 @@ class hash_bucket;
  *   }
  * });
  *
- * sframe outsf;
+ * xframe outsf;
  * hash_container.sort_and_write(outsf);
  *
  * \endcode
@@ -69,7 +69,7 @@ class hash_bucket;
  * a sorted chunk.
  *
  * The sort_and_write function then merges the sorted chunks and write out to
- * a new sarray or sframe.
+ * a new sarray or xframe.
  */
 template<typename T>
 class hash_bucket_container {
@@ -111,7 +111,7 @@ class hash_bucket_container {
     buckets[bucketid]->add(val);
   };
 
-  // Sort each bucket and write out the result to an sarray or sframe.
+  // Sort each bucket and write out the result to an sarray or xframe.
   template<typename SIterableType>
   void sort_and_write(SIterableType& out) {
     parallel_for (0, num_buckets(), [&](size_t i) { buckets[i]->flush();} );

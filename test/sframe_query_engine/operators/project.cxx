@@ -2,10 +2,10 @@
 #include <boost/test/unit_test.hpp>
 #include <core/util/test_macros.hpp>
 #include <core/storage/query_engine/execution/execution_node.hpp>
-#include <core/storage/query_engine/operators/sframe_source.hpp>
+#include <core/storage/query_engine/operators/xframe_source.hpp>
 #include <core/storage/query_engine/operators/project.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
 
 #include "check_node.hpp"
 
@@ -20,7 +20,7 @@ struct project_test  {
     };
     std::vector<std::string> column_names{"int", "string"};
     std::vector<flex_type_enum> column_types{flex_type_enum::INTEGER, flex_type_enum::STRING};
-    auto sf = make_sframe(column_names, column_types, data);
+    auto sf = make_xframe(column_names, column_types, data);
 
     std::vector<std::vector<size_t>> test_cases{{0}, {1}, {0, 1}, {1, 0}};
     for (auto& project_indices : test_cases) {
@@ -37,11 +37,11 @@ struct project_test  {
     }
   }
 
-  void test_empty_sframe() {
+  void test_empty_xframe() {
     std::vector<std::vector<flexible_type>> data;
     std::vector<std::string> column_names{"int", "string"};
     std::vector<flex_type_enum> column_types{flex_type_enum::INTEGER, flex_type_enum::STRING};
-    auto sf = make_sframe(column_names, column_types, data);
+    auto sf = make_xframe(column_names, column_types, data);
 
     std::vector<std::vector<size_t>> test_cases{{0}, {1}, {0, 1}, {1, 0}};
     for (auto& project_indices : test_cases) {
@@ -58,23 +58,23 @@ struct project_test  {
     //
     // std::vector<std::string> column_names{"int", "string"};
     // std::vector<flex_type_enum> column_types{flex_type_enum::INTEGER, flex_type_enum::STRING};
-    // auto sf = make_sframe(column_names, column_types, data);
+    // auto sf = make_xframe(column_names, column_types, data);
     // auto node = make_node(sf, {2});
     // check_node_throws(node);
   }
 
-  sframe make_sframe(const std::vector<std::string>& column_names,
+  xframe make_xframe(const std::vector<std::string>& column_names,
                      const std::vector<flex_type_enum>& column_types,
                      const std::vector<std::vector<flexible_type>>& rows) {
-    sframe sf;
+    xframe sf;
     sf.open_for_write(column_names, column_types);
     turi::copy(rows.begin(), rows.end(), sf);
     sf.close();
     return sf;
   }
 
-  std::shared_ptr<execution_node> make_node(sframe source, std::vector<size_t> project_indices) {
-    auto source_node = std::make_shared<execution_node>(std::make_shared<op_sframe_source>(source));
+  std::shared_ptr<execution_node> make_node(xframe source, std::vector<size_t> project_indices) {
+    auto source_node = std::make_shared<execution_node>(std::make_shared<op_xframe_source>(source));
     auto node = std::make_shared<execution_node>(std::make_shared<op_project>(project_indices),
                                                  std::vector<std::shared_ptr<execution_node>>({source_node}));
     return node;
@@ -85,8 +85,8 @@ BOOST_FIXTURE_TEST_SUITE(_project_test, project_test)
 BOOST_AUTO_TEST_CASE(test_simple_case) {
   project_test::test_simple_case();
 }
-BOOST_AUTO_TEST_CASE(test_empty_sframe) {
-  project_test::test_empty_sframe();
+BOOST_AUTO_TEST_CASE(test_empty_xframe) {
+  project_test::test_empty_xframe();
 }
 BOOST_AUTO_TEST_CASE(test_project_out_of_bound) {
   project_test::test_project_out_of_bound();

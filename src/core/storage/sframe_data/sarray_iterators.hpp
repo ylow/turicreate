@@ -3,15 +3,15 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include <core/storage/sframe_data/sarray.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
 #include <iostream>
 
 namespace turi {
 
 
 /**
- * \ingroup sframe_physical
- * \addtogroup sframe_main Main SFrame Objects
+ * \ingroup xframe_physical
+ * \addtogroup xframe_main Main XFrame Objects
  * \{
  */
 

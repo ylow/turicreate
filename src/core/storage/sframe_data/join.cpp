@@ -3,12 +3,12 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#include <core/storage/sframe_data/join.hpp>
+#include <core/storage/xframe_data/join.hpp>
 
 namespace turi {
 
-sframe join(sframe& sf_left,
-            sframe& sf_right,
+xframe join(xframe& sf_left,
+            xframe& sf_right,
             std::string join_type,
             const std::map<std::string,std::string>& join_columns,
             const std::map<std::string,std::string>& alter_names_right,
@@ -18,7 +18,7 @@ sframe join(sframe& sf_left,
   std::vector<size_t> left_join_positions;
   std::vector<size_t> right_join_positions;
   for(const auto &col_pair : join_columns) {
-    // Check that all columns exist (in both sframes)
+    // Check that all columns exist (in both xframes)
     // These will throw if not found
     left_join_positions.push_back(sf_left.column_index(col_pair.first));
     right_join_positions.push_back(sf_right.column_index(col_pair.second));
@@ -28,7 +28,7 @@ sframe join(sframe& sf_left,
         sf_right.column_type(right_join_positions.back())) {
       if((sf_left.num_rows() > 0) && (sf_right.num_rows() > 0)) {
         log_and_throw("Columns " + col_pair.first + " and " + col_pair.second +
-            " do not have the same type in both SFrames.");
+            " do not have the same type in both XFrames.");
       }
     }
   }

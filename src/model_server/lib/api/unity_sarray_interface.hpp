@@ -14,7 +14,7 @@
 
 namespace turi {
 
-class unity_sframe_base;
+class unity_xframe_base;
 typedef std::map<std::string, flexible_type> func_options_map;
 
 GENERATE_INTERFACE_AND_PROXY(unity_sarray_base, unity_sarray_proxy,
@@ -77,9 +77,9 @@ GENERATE_INTERFACE_AND_PROXY(unity_sarray_base, unity_sarray_proxy,
       (std::shared_ptr<unity_sarray_base>, dict_has_any_keys,(const std::vector<flexible_type>&))
       (std::shared_ptr<unity_sarray_base>, dict_has_all_keys,(const std::vector<flexible_type>&))
       (std::shared_ptr<unity_sarray_base>, item_length, )
-      (std::shared_ptr<unity_sframe_base>, unpack_dict, (const std::string&)(const std::vector<flexible_type>&)(const flexible_type&))
-      (std::shared_ptr<unity_sframe_base>, expand, (const std::string&)(const std::vector<flexible_type>&)(const std::vector<flex_type_enum>&))
-      (std::shared_ptr<unity_sframe_base>, unpack, (const std::string&)(const std::vector<flexible_type>&)(const std::vector<flex_type_enum>&)(const flexible_type&))
+      (std::shared_ptr<unity_xframe_base>, unpack_dict, (const std::string&)(const std::vector<flexible_type>&)(const flexible_type&))
+      (std::shared_ptr<unity_xframe_base>, expand, (const std::string&)(const std::vector<flexible_type>&)(const std::vector<flex_type_enum>&))
+      (std::shared_ptr<unity_xframe_base>, unpack, (const std::string&)(const std::vector<flexible_type>&)(const std::vector<flex_type_enum>&)(const flexible_type&))
       (size_t, get_content_identifier, )
       (std::shared_ptr<unity_sarray_base>, copy_range, (size_t)(size_t)(size_t))
       (std::shared_ptr<unity_sarray_base>, subslice, (flexible_type)(flexible_type)(flexible_type))
@@ -93,4 +93,4 @@ GENERATE_INTERFACE_AND_PROXY(unity_sarray_base, unity_sarray_proxy,
     )
 } // namespace turi
 #endif // TURI_UNITY_SARRAY_INTERFACE_HPP
-#include <model_server/lib/api/unity_sframe_interface.hpp>
+#include <model_server/lib/api/unity_xframe_interface.hpp>

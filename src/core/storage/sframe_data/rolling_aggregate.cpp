@@ -7,7 +7,7 @@
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <boost/circular_buffer.hpp>
 #include <boost/algorithm/string.hpp>
-#include <core/storage/sframe_data/rolling_aggregate.hpp>
+#include <core/storage/xframe_data/rolling_aggregate.hpp>
 
 namespace turi {
 namespace rolling_aggregate {

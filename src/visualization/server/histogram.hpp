@@ -6,13 +6,13 @@
 #ifndef __TC_HISTOGRAM
 #define __TC_HISTOGRAM
 
-#include <core/storage/sframe_data/groupby_aggregate_operators.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_operators.hpp>
 #include <visualization/server/batch_size.hpp>
 #include <visualization/server/escape.hpp>
 #include <visualization/server/histogram.hpp>
 #include <visualization/server/plot.hpp>
 #include <visualization/server/vega_spec.hpp>
-#include <core/data/sframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
 
 #include "transformation.hpp"
 
@@ -97,7 +97,7 @@ static T get_value_at_bin(
  *     Rescale the result to the range represented by the provided values.
  */
 template<typename T>
-struct histogram_result : public sframe_transformation_output {
+struct histogram_result : public xframe_transformation_output {
   public:
     // also store and compute basic summary stats
     groupby_operators::count m_count; // num rows

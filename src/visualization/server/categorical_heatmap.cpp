@@ -31,7 +31,7 @@ void categorical_heatmap::merge_results(std::vector<categorical_heatmap_result>&
   }
 }
 
-std::string categorical_heatmap_result::vega_column_data(bool sframe) const {
+std::string categorical_heatmap_result::vega_column_data(bool xframe) const {
   auto items_list = emit().get<flex_dict>();
   size_t size_list = items_list.size();
 
@@ -113,7 +113,7 @@ std::shared_ptr<Plot> turi::visualization::plot_categorical_heatmap(
 
     categorical_heatmap hm;
 
-    gl_sframe temp_sf;
+    gl_xframe temp_sf;
 
     temp_sf["x"] = x;
     temp_sf["y"] = y;

@@ -5,9 +5,9 @@
  */
 #include<memory>
 #include<vector>
-#include<core/storage/sframe_data/sarray.hpp>
-#include<core/storage/sframe_data/sframe.hpp>
-#include<core/storage/sframe_data/sframe_config.hpp>
+#include<core/storage/xframe_data/sarray.hpp>
+#include<core/storage/xframe_data/xframe.hpp>
+#include<core/storage/xframe_data/xframe_config.hpp>
 #include<core/parallel/mutex.hpp>
 #include<core/storage/query_engine/algorithm/sort_comparator.hpp>
 
@@ -80,7 +80,7 @@ static void write_one_chunk(
   const std::vector<size_t>& permute_order,
   size_t segment_id,
   size_t num_columns,
-  sframe_output_iterator& output_iterator) {
+  xframe_output_iterator& output_iterator) {
 
   flex_list permuted_row(num_columns);
   flex_list output_row(num_columns);
@@ -96,7 +96,7 @@ static void write_one_chunk(
 static void write_one_chunk(
     std::vector<std::pair<flex_list, std::string>>& rows,
     const std::vector<size_t>& permute_order,
-    sframe_output_iterator& output_iterator,
+    xframe_output_iterator& output_iterator,
     size_t num_columns) {
   std::vector<flexible_type> permuted_row(num_columns);
   std::vector<flexible_type> output_row(num_columns);
@@ -123,7 +123,7 @@ static void write_one_chunk(
  * until no other threads are running, and then it will take up the whole
  * buffer to sort...hopefully not allocating too much memory :/.
  */
-std::shared_ptr<sframe> sort_and_merge(
+std::shared_ptr<xframe> sort_and_merge(
     const std::shared_ptr<sarray<std::pair<flex_list, std::string>>>& partition_array,
     const std::vector<bool>& partition_sorted,
     const std::vector<size_t>& partition_sizes,
@@ -140,9 +140,9 @@ std::shared_ptr<sframe> sort_and_merge(
   size_t mem_used = 0;
   size_t num_threads = thread::cpu_count();
 
-  // Prepare the output sframe
-  sframe out_sframe;
-  out_sframe.open_for_write(column_names, column_types, "", num_segments);
+  // Prepare the output xframe
+  xframe out_xframe;
+  out_xframe.open_for_write(column_names, column_types, "", num_segments);
   size_t num_columns = column_names.size();
   less_than_full_function comparator(sort_orders);
 
@@ -152,14 +152,14 @@ std::shared_ptr<sframe> sort_and_merge(
     std::vector<std::pair<flex_list, std::string>> rows;
     size_t segment_id = next_segment_to_sort++;
     while(segment_id < num_segments) {
-      auto outiterator = out_sframe.get_output_iterator(segment_id);
+      auto outiterator = out_xframe.get_output_iterator(segment_id);
       if (partition_sorted[segment_id]) {
         logstream(LOG_INFO) << "segment " << segment_id << " is already sorted, skip sorting " << std::endl;
         write_one_chunk(reader, permute_order, segment_id, num_columns, outiterator);
       } else {
         mem_used_mutex.lock();
-        while((mem_used+partition_sizes[segment_id]) > sframe_config::SFRAME_SORT_BUFFER_SIZE) {
-          if(((partition_sizes[segment_id] > sframe_config::SFRAME_SORT_BUFFER_SIZE) && (mem_used == 0)) ||
+        while((mem_used+partition_sizes[segment_id]) > xframe_config::XFRAME_SORT_BUFFER_SIZE) {
+          if(((partition_sizes[segment_id] > xframe_config::XFRAME_SORT_BUFFER_SIZE) && (mem_used == 0)) ||
             (partition_sizes[segment_id] == 0)) {
             break;
           }
@@ -174,7 +174,7 @@ std::shared_ptr<sframe> sort_and_merge(
         std::sort(rows.begin(), rows.end(), comparator);
 
         write_one_chunk(rows, permute_order ,outiterator, num_columns);
-        out_sframe.flush_write_to_segment(segment_id);
+        out_xframe.flush_write_to_segment(segment_id);
         logstream(LOG_INFO) << "Finished sorting segment " << segment_id << std::endl;
 
         mem_used_mutex.lock();
@@ -185,8 +185,8 @@ std::shared_ptr<sframe> sort_and_merge(
       segment_id = next_segment_to_sort++;
     }
   });
-  out_sframe.close();
-  return std::make_shared<sframe>(out_sframe);
+  out_xframe.close();
+  return std::make_shared<xframe>(out_xframe);
 }
 
 

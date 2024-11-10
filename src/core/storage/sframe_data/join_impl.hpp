@@ -7,7 +7,7 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#include <core/storage/sframe_data/sframe.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
 
 //TODO: What happens if a join key (or part of one) is NULL?
 enum join_type_t {INNER_JOIN = 0, LEFT_JOIN, RIGHT_JOIN, FULL_JOIN};
@@ -16,7 +16,7 @@ namespace turi {
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup Join Join
  * \{
  */
@@ -107,9 +107,9 @@ class join_hash_table {
  */
 class hash_join_executor {
  public:
-  //TODO: Perhaps combine the sframe and the join positions into a struct?
-  hash_join_executor(const sframe &left,
-                     const sframe &right,
+  //TODO: Perhaps combine the xframe and the join positions into a struct?
+  hash_join_executor(const xframe &left,
+                     const xframe &right,
                      const std::vector<size_t> &left_join_positions,
                      const std::vector<size_t> &right_join_positions,
                      join_type_t join_type,
@@ -118,12 +118,12 @@ class hash_join_executor {
 
   ~hash_join_executor() {}
 
-  sframe grace_hash_join();
+  xframe grace_hash_join();
 
  private:
   // The original frames we were passed
-  sframe _left_frame;
-  sframe _right_frame;
+  xframe _left_frame;
+  xframe _right_frame;
   std::vector<size_t> _left_join_positions;
   std::vector<size_t> _right_join_positions;
   size_t _max_buffer_size;
@@ -142,32 +142,32 @@ class hash_join_executor {
    * Partition the left and right frames for the GRACE hash join algorithm and
    * write these partitions out to disk.
    */
-  std::pair<std::shared_ptr<sframe>,std::shared_ptr<sframe>> grace_partition_frames();
+  std::pair<std::shared_ptr<xframe>,std::shared_ptr<xframe>> grace_partition_frames();
 
   /**
-   * Partition one SFrame for the GRACE hash join algorithm.
+   * Partition one XFrame for the GRACE hash join algorithm.
    *
    * Used by grace_partition_frames().
    */
-  std::shared_ptr<sframe> grace_partition_frame(const sframe &sf, const std::vector<size_t> &join_col_nums, size_t num_partitions);
+  std::shared_ptr<xframe> grace_partition_frame(const xframe &sf, const std::vector<size_t> &join_col_nums, size_t num_partitions);
 
   /**
-   * Return the number of cells (rows * cols) of an sframe.
+   * Return the number of cells (rows * cols) of an xframe.
    */
-  size_t get_num_cells(const sframe &sf);
+  size_t get_num_cells(const xframe &sf);
 
   /**
-   * Estimates how many partitions this SFrame should be divided into for the
+   * Estimates how many partitions this XFrame should be divided into for the
    * GRACE hash join. The goal is for each partition to fit into memory.
    *
    */
-  size_t choose_number_of_grace_partitions(const sframe &sf);
+  size_t choose_number_of_grace_partitions(const xframe &sf);
 
   /**
-   * Create an empty SFrame that includes the columns of both left and right
+   * Create an empty XFrame that includes the columns of both left and right
    * frames without duplicating the join columns.
    */
-  void init_result_frame(sframe &result_frame);
+  void init_result_frame(xframe &result_frame);
 
   /**
    * Join a vector of rows from the left frame with a vector of rows from the
@@ -178,8 +178,8 @@ class hash_join_executor {
    * non-empty vector is join with 'NULL' values, making sure that each join
    * column is not 'NULL'.
    */
-  void merge_rows_for_output(sframe &result_frame,
-                             sframe::iterator result_iter,
+  void merge_rows_for_output(xframe &result_frame,
+                             xframe::iterator result_iter,
                              const std::vector<std::vector<flexible_type>> &left_rows,
                              const std::vector<std::vector<flexible_type>> &right_rows);
 

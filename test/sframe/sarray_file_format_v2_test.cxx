@@ -2,9 +2,9 @@
 #include <boost/test/unit_test.hpp>
 #include <core/util/test_macros.hpp>
 #include <core/storage/fileio/temp_files.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_manager.hpp>
-#include <core/storage/sframe_data/sarray_file_format_v2.hpp>
-#include <core/storage/sframe_data/sarray_index_file.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_manager.hpp>
+#include <core/storage/xframe_data/sarray_file_format_v2.hpp>
+#include <core/storage/xframe_data/sarray_index_file.hpp>
 #include <timer/timer.hpp>
 #include <core/random/random.hpp>
 
@@ -321,7 +321,7 @@ struct sarray_file_format_v2_test {
         // 15 so as to give some gap for reading
       }
       for (size_t i = 0;i < 100; ++i) {
-        sframe_rows rows;
+        xframe_rows rows;
         for (size_t j = 0;j < start_points.size(); ++j) {
           size_t len = 4096;
           reader.read_rows(start_points[j], start_points[j] + len, rows);
@@ -336,7 +336,7 @@ struct sarray_file_format_v2_test {
           start_points[j] += len;
         }
       }
-      std::cout << "1600 sframe_rows semi-sequential seeks of average 4096 flexible_type values in "
+      std::cout << "1600 xframe_rows semi-sequential seeks of average 4096 flexible_type values in "
                 << ti.current_time() << " seconds\n" << std::endl;
     }
 
@@ -364,7 +364,7 @@ struct sarray_file_format_v2_test {
       sarray_format_reader_v2<flexible_type> reader;
       reader.open(test_file_name + ":0");
       ti.start();
-      sframe_rows rows;
+      xframe_rows rows;
       for (size_t j = 0;j < 64; ++j) {
         size_t len = 1*1024*1024;
         reader.read_rows(j * len, (j+1)*len, rows);
@@ -377,7 +377,7 @@ struct sarray_file_format_v2_test {
         }
         TS_ASSERT_EQUALS(k, len);
       }
-      std::cout << "64 sframe_rows sequential seeks of average 1M flexible_type values in "
+      std::cout << "64 xframe_rows sequential seeks of average 1M flexible_type values in "
                 << ti.current_time() << " seconds\n" << std::endl;
     }
   }
@@ -494,7 +494,7 @@ struct sarray_file_format_v2_test {
         // 15 so as to give some gap for reading
       }
       for (size_t i = 0;i < 100; ++i) {
-        sframe_rows rows;
+        xframe_rows rows;
         for (size_t j = 0;j < start_points.size(); ++j) {
           size_t len = 4096;
           reader.read_rows(start_points[j], start_points[j] + len, rows);
@@ -515,7 +515,7 @@ struct sarray_file_format_v2_test {
           start_points[j] += len;
         }
       }
-      std::cout << "1600 sframe_rows semi-sequential seeks of average 4096 flexible_type values in "
+      std::cout << "1600 xframe_rows semi-sequential seeks of average 4096 flexible_type values in "
                 << ti.current_time() << " seconds\n" << std::endl;
     }
 
@@ -547,7 +547,7 @@ struct sarray_file_format_v2_test {
       sarray_format_reader_v2<flexible_type> reader;
       reader.open(test_file_name + ":0");
       ti.start();
-      sframe_rows rows;
+      xframe_rows rows;
       for (size_t j = 0;j < 64; ++j) {
         size_t len = 1*1024*1024;
         reader.read_rows(j * len, (j+1)*len, rows);
@@ -564,7 +564,7 @@ struct sarray_file_format_v2_test {
         }
         TS_ASSERT_EQUALS(k, len);
       }
-      std::cout << "64 sframe_rows sequential seeks of average 1M flexible_type values in " 
+      std::cout << "64 xframe_rows sequential seeks of average 1M flexible_type values in " 
                 << ti.current_time() << " seconds\n" << std::endl;
     }
   }

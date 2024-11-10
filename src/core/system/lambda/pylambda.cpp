@@ -4,9 +4,9 @@
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
 #include <core/system/lambda/pylambda.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sframe_rows.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/xframe_rows.hpp>
 #include <core/storage/fileio/fs_utils.hpp>
 #include <core/util/cityhash_tc.hpp>
 #include <shmipc/shmipc.hpp>
@@ -109,7 +109,7 @@ std::vector<flexible_type> pylambda_evaluator::bulk_eval(
 
 std::vector<flexible_type> pylambda_evaluator::bulk_eval_rows(
     size_t lambda_id,
-    const sframe_rows& rows,
+    const xframe_rows& rows,
     bool skip_undefined,
     uint64_t seed) {
 
@@ -159,7 +159,7 @@ std::vector<flexible_type> pylambda_evaluator::bulk_eval_dict(
 std::vector<flexible_type> pylambda_evaluator::bulk_eval_dict_rows(
     size_t lambda_id,
     const std::vector<std::string>& keys,
-    const sframe_rows& rows,
+    const xframe_rows& rows,
     bool skip_undefined,
     uint64_t seed) {
 
@@ -167,14 +167,14 @@ std::vector<flexible_type> pylambda_evaluator::bulk_eval_dict_rows(
 
   std::vector<flexible_type> ret(rows.num_rows());
 
-  lambda_call_by_sframe_rows_data lcd;
+  lambda_call_by_xframe_rows_data lcd;
   lcd.output_enum_type = flex_type_enum::UNDEFINED;
   lcd.skip_undefined = skip_undefined;
   lcd.input_keys = &keys;
   lcd.input_rows = &rows;
   lcd.output_values = ret.data();
 
-  evaluation_functions.eval_lambda_by_sframe_rows(lambda_id, &lcd);
+  evaluation_functions.eval_lambda_by_xframe_rows(lambda_id, &lcd);
   python::check_for_python_exception();
 
   return ret;
@@ -187,7 +187,7 @@ pylambda_evaluator::bulk_eval_rows_serialized(const char* ptr, size_t len) {
   iarc >> c;
   if (c == (char)bulk_eval_serialized_tag::BULK_EVAL_ROWS) {
     size_t lambda_id;
-    sframe_rows rows;
+    xframe_rows rows;
     bool skip_undefined;
     int seed;
     iarc >> lambda_id >> rows >> skip_undefined >> seed;
@@ -195,7 +195,7 @@ pylambda_evaluator::bulk_eval_rows_serialized(const char* ptr, size_t len) {
   } else if (c == (char)bulk_eval_serialized_tag::BULK_EVAL_DICT_ROWS) {
     size_t lambda_id;
     std::vector<std::string> keys;
-    sframe_rows values;
+    xframe_rows values;
     bool skip_undefined;
     int seed;
     iarc >> lambda_id >> keys >> values >> skip_undefined >> seed;

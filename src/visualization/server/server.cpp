@@ -7,11 +7,11 @@
 // Server impl code adapted from Beast example in
 // boost/beast/example/http/server/async/http_server_async.cpp
 
-#include <core/data/sframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
 #include <core/storage/fileio/fs_utils.hpp>
 #include <core/storage/fileio/general_fstream.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_interface/unity_sframe.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
 #include <core/globals/globals.hpp>
 #include <core/logging/logger.hpp>
 #include <visualization/server/escape.hpp>
@@ -213,7 +213,7 @@ void handle_request(
                 return server_error("Expected table " + table_id + " was not found");
             }
             const WebServer::table& container = tables[idx];
-            const std::shared_ptr<turi::unity_sframe>& table = container.sf;
+            const std::shared_ptr<turi::unity_xframe>& table = container.sf;
             std::stringstream ss;
             ss << "{\"type\":\"table\",\"data\":";
             ss << table_spec(table, container.title, table_id);
@@ -246,7 +246,7 @@ void handle_request(
                 return server_error("Expected table " + table_id + " was not found");
             }
             const WebServer::table& container = tables[idx];
-            const std::shared_ptr<turi::unity_sframe>& table = container.sf;
+            const std::shared_ptr<turi::unity_xframe>& table = container.sf;
 
             // Read request type out of message body
             using boost::property_tree::ptree;
@@ -354,7 +354,7 @@ private:
     std::shared_ptr<void> res_;
     send_lambda lambda_;
     const WebServer::plot_map& m_plots; // reference to the uuid->plot dictionary
-    const WebServer::table_vector& m_tables; // reference to the table (unity_sframe) array
+    const WebServer::table_vector& m_tables; // reference to the table (unity_xframe) array
 
 public:
     // Take ownership of the socket
@@ -446,7 +446,7 @@ private:
     tcp::acceptor acceptor_;
     tcp::socket socket_;
     const WebServer::plot_map& m_plots; // reference to the uuid->plot dictionary
-    const WebServer::table_vector& m_tables; // reference to the table (SFrame) vector
+    const WebServer::table_vector& m_tables; // reference to the table (XFrame) vector
 
 public:
     listener(
@@ -625,7 +625,7 @@ std::string WebServer::get_url_for_plot(const Plot& plot) {
     return get_base_url() + "/index.html?type=plot&id=" + id;
 }
 
-std::string WebServer::get_url_for_table(const std::shared_ptr<turi::unity_sframe>& sf, const std::string& title) {
+std::string WebServer::get_url_for_table(const std::shared_ptr<turi::unity_xframe>& sf, const std::string& title) {
     std::string id = get_instance().add_table(sf, title);
 
     // return formatted URL
@@ -640,25 +640,25 @@ std::string WebServer::add_plot(const Plot& plot) {
     return uuid_str;
 }
 
-std::string WebServer::add_table(const std::shared_ptr<turi::unity_sframe>& sf, const std::string& title) {
+std::string WebServer::add_table(const std::shared_ptr<turi::unity_xframe>& sf, const std::string& title) {
 
     // add to vector with index
     size_t idx = m_tables.size();
 
     // This materializes if not already
-    auto underlying_sframe = sf->get_underlying_sframe();
+    auto underlying_xframe = sf->get_underlying_xframe();
 
     // Get a reader just once.
-    auto reader = underlying_sframe->get_reader();
+    auto reader = underlying_xframe->get_reader();
 
-    // Store the SFrame and reader.
+    // Store the XFrame and reader.
     m_tables.emplace_back(sf, std::move(reader), title);
 
     // Return the table ID
     return std::to_string(idx);
 }
 
-WebServer::table::table(const std::shared_ptr<unity_sframe>& sf, std::unique_ptr<sframe_reader> reader, const std::string& title)
+WebServer::table::table(const std::shared_ptr<unity_xframe>& sf, std::unique_ptr<xframe_reader> reader, const std::string& title)
     : sf(sf), reader(std::move(reader)), title(title) { }
 
 namespace turi {

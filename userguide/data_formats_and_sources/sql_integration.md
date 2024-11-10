@@ -27,21 +27,21 @@ results = c.fetchall()
 ```
 (example adapted from [here](https://docs.python.org/2/library/sqlite3.html))
 
-SFrame offers a DBAPI2 integration that enables you to read and write
+XFrame offers a DBAPI2 integration that enables you to read and write
 SQL data in a similar, concise fashion. Using the connection object in
-the previous example, here is how you would read the data as an SFrame
+the previous example, here is how you would read the data as an XFrame
 using the
-[`from_sql`](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.from_sql.html)
+[`from_sql`](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.from_sql.html)
 method:
 
 ```python
 import turicreate as tc
-stocks_sf = tc.SFrame.from_sql(conn, "SELECT * FROM stocks")
+stocks_sf = tc.XFrame.from_sql(conn, "SELECT * FROM stocks")
 ```
 
 If you would like to then write this table to the database, that's easy
 too, using the
-[`to_sql`](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.to_sql.html)
+[`to_sql`](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.to_sql.html)
 method. `to_sql` simply attempts to append to an already existing table,
 so if you intend to write the data to a new table in your database, then
 you must use the "CREATE TABLE" syntax, including the type syntax
@@ -58,7 +58,7 @@ c.commit()
 stocks_sf.to_sql(conn, "more_stocks")
 
 # Append another row
-another_row = tc.SFrame({'date':[dt.datetime(2006, 3, 28)],
+another_row = tc.XFrame({'date':[dt.datetime(2006, 3, 28)],
                          'trans':['BUY'],
                          'symbol':['IBM'],
                          'qty':[1000],
@@ -66,11 +66,11 @@ another_row = tc.SFrame({'date':[dt.datetime(2006, 3, 28)],
 another_row.to_sql(conn, "more_stocks")
 ```
 
-That is all there is to know to get started using SFrames with Python DBAPI2
+That is all there is to know to get started using XFrames with Python DBAPI2
 modules! For more details you can consult the API documentation of
-[`from_sql`](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.from_sql.html)
+[`from_sql`](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.from_sql.html)
 and
-[`to_sql`](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.to_sql.html).
+[`to_sql`](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.to_sql.html).
 Currently, we have tested our DBAPI2 support with these modules:
  - [MySQLdb](https://github.com/PyMySQL/mysqlclient-python)
  - [psycopg2](http://initd.org/psycopg/)

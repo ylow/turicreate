@@ -11,7 +11,7 @@ We start by dowloading a few examples of "square" and "triangle" shapes -- aroun
 # Make directories with the data
 mkdir quickdraw
 cd quickdraw
-mkdir bitmaps strokes sframes
+mkdir bitmaps strokes xframes
 
 cd bitmaps
 
@@ -38,15 +38,15 @@ quickdraw/
     strokes/
         square.ndjson
         triangle.ndjson
-    sframes/
+    xframes/
 
 ```
 
-For both bitmap and stroke-based drawing input formats, we will sample 100 examples from each of the classes and turn it into an SFrame. 
+For both bitmap and stroke-based drawing input formats, we will sample 100 examples from each of the classes and turn it into an XFrame. 
 
 #### Using Bitmap Data
 
-Here is a snippet to sample 100 examples per class into an SFrame for bitmap data as the input format:
+Here is a snippet to sample 100 examples per class into an XFrame for bitmap data as the input format:
 
 ```python
 import turicreate as tc
@@ -58,13 +58,13 @@ random_state = np.random.RandomState(100)
 # Change if applicable
 quickdraw_dir = 'quickdraw'
 bitmaps_dir = os.path.join(quickdraw_dir, 'bitmaps')
-sframes_dir = os.path.join(quickdraw_dir, 'sframes')
+xframes_dir = os.path.join(quickdraw_dir, 'xframes')
 npy_ext = '.npy'
 num_examples_per_class = 100
 classes = ["square", "triangle"]
 num_classes = len(classes)
 
-def build_bitmap_sframe():
+def build_bitmap_xframe():
     bitmaps_list, labels_list = [], []
     for class_name in classes:
         class_data = np.load(os.path.join(bitmaps_dir, class_name + npy_ext))
@@ -83,14 +83,14 @@ def build_bitmap_sframe():
             bitmaps_list.append(bitmap)
             labels_list.append(class_name)
 
-    sf = tc.SFrame({"drawing": bitmaps_list, "label": labels_list})
-    sf.save(os.path.join(sframes_dir, "bitmap_square_triangle.sframe"))
+    sf = tc.XFrame({"drawing": bitmaps_list, "label": labels_list})
+    sf.save(os.path.join(xframes_dir, "bitmap_square_triangle.xframe"))
     return sf 
 
-sf = build_bitmap_sframe()
+sf = build_bitmap_xframe()
 ```
 
-After building the two SFrames, your directory structure should look like the
+After building the two XFrames, your directory structure should look like the
 following:
 ```
 quickdraw/
@@ -100,14 +100,14 @@ quickdraw/
     strokes/
         square.ndjson
         triangle.ndjson
-    sframes/
-        bitmap_square_triangle.sframe
-        stroke_square_triangle.sframe
+    xframes/
+        bitmap_square_triangle.xframe
+        stroke_square_triangle.xframe
 ```
 
 #### Using Stroke-Based Drawing Data
 
-For stroke-based drawing data to be given as the feature in the input SFrame 
+For stroke-based drawing data to be given as the feature in the input XFrame 
 to `turicreate.drawing_classifier.create`, the stroke-based drawing data 
 must adhere to the following format:
 
@@ -136,7 +136,7 @@ example_drawing = [
 ]
 ```
 
-Our first task at hand is to build an SFrame that adheres to this format from 
+Our first task at hand is to build an XFrame that adheres to this format from 
 the "Quick, Draw!" data that we have downloaded. 
 Here is a snippet to accomplish that:
 ```python
@@ -150,13 +150,13 @@ random_state = np.random.RandomState(100)
 # Change if applicable
 quickdraw_dir = 'quickdraw'
 strokes_dir = os.path.join(quickdraw_dir, 'strokes')
-sframes_dir = os.path.join(quickdraw_dir, 'sframes')
+xframes_dir = os.path.join(quickdraw_dir, 'xframes')
 ndjson_ext = '.ndjson'
 num_examples_per_class = 100
 classes = ["square", "triangle"]
 num_classes = len(classes)
 
-def build_strokes_sframe():
+def build_strokes_xframe():
     drawings_list, labels_list = [], []
     for class_name in classes:
         with open(os.path.join(strokes_dir, class_name+ndjson_ext)) as fin:
@@ -178,11 +178,11 @@ def build_strokes_sframe():
         final_drawing_list = list(map(raw_to_final, raw_drawing_list))
         drawings_list.extend(final_drawing_list)
         labels_list.extend([class_name] * num_examples_per_class)
-    sf = tc.SFrame({"drawing": drawings_list, "label": labels_list})
-    sf.save(os.path.join(sframes_dir, "stroke_square_triangle.sframe"))
+    sf = tc.XFrame({"drawing": drawings_list, "label": labels_list})
+    sf.save(os.path.join(xframes_dir, "stroke_square_triangle.xframe"))
     return sf 
 
-sf = build_strokes_sframe()
+sf = build_strokes_xframe()
 ```
 
 When stroke-based drawing data is given as input to the Drawing Classifier 
@@ -194,7 +194,7 @@ more information about the preprocessing done under the hood.
 To visualize what your stroke-based drawings look like when rendered as a 
 bitmap, you can run the following utility function:
 ```python
-sf = build_strokes_sframe()
+sf = build_strokes_xframe()
 sf["rendered"] = tc.drawing_classifier.util.draw_strokes(sf["drawing"])
 sf.explore()
 ```

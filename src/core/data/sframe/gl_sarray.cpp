@@ -5,12 +5,12 @@
  */
 #include <ctime>
 #include <core/parallel/pthread_tools.hpp>
-#include <core/data/sframe/gl_sarray.hpp>
-#include <core/data/sframe/gl_sframe.hpp>
-#include <core/storage/sframe_interface/unity_sarray.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/sarray_reader.hpp>
-#include <core/storage/sframe_data/sarray_reader_buffer.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/sarray_reader.hpp>
+#include <core/storage/xframe_data/sarray_reader_buffer.hpp>
 #include <core/storage/query_engine/planning/planner.hpp>
 #include <visualization/server/histogram.hpp>
 #include <visualization/server/item_frequency.hpp>
@@ -315,9 +315,9 @@ gl_sarray gl_sarray::operator[](const std::initializer_list<int64_t>& _slice) co
 /*                                                                        */
 /**************************************************************************/
 void gl_sarray::materialize_to_callback(
-    std::function<bool(size_t, const std::shared_ptr<sframe_rows>&)> callback,
+    std::function<bool(size_t, const std::shared_ptr<xframe_rows>&)> callback,
     size_t nthreads) {
-  if (nthreads == (size_t)(-1)) nthreads = SFRAME_DEFAULT_NUM_SEGMENTS;
+  if (nthreads == (size_t)(-1)) nthreads = XFRAME_DEFAULT_NUM_SEGMENTS;
   turi::query_eval::planner().materialize(get_proxy()->get_planner_node(),
                                               callback,
                                               nthreads);
@@ -362,7 +362,7 @@ void gl_sarray::save(const std::string& path, const std::string& _format) const 
   if (format == "binary") {
     get_proxy()->save_array(path);
   } else if (format == "text" || format == "csv") {
-    gl_sframe sf;
+    gl_xframe sf;
     sf["X1"] = (*this);
     sf.save(path, "csv");
   } else {
@@ -521,7 +521,7 @@ gl_sarray gl_sarray::append(const gl_sarray& other) const {
 }
 
 gl_sarray gl_sarray::unique() const {
-  gl_sframe sf({{"a",(*this)}});
+  gl_xframe sf({{"a",(*this)}});
   sf = sf.groupby({"a"});
   return sf.select_column("a");
 }
@@ -530,7 +530,7 @@ gl_sarray gl_sarray::item_length() const {
   return get_proxy()->item_length();
 }
 
-gl_sframe gl_sarray::split_datetime(const std::string& column_name_prefix,
+gl_xframe gl_sarray::split_datetime(const std::string& column_name_prefix,
                                     const std::vector<std::string>& _limit,
                                     bool tzone) const {
   std::vector<std::string> limit = _limit;
@@ -558,7 +558,7 @@ gl_sframe gl_sarray::split_datetime(const std::string& column_name_prefix,
   return get_proxy()->expand(column_name_prefix, flex_limit, column_types);
 }
 
-gl_sframe gl_sarray::unpack(const std::string& column_name_prefix,
+gl_xframe gl_sarray::unpack(const std::string& column_name_prefix,
                            const std::vector<flex_type_enum>& _column_types,
                            const flexible_type& na_value,
                            const std::vector<flexible_type>& _limit) const {
@@ -643,7 +643,7 @@ gl_sframe gl_sarray::unpack(const std::string& column_name_prefix,
 
 
 gl_sarray gl_sarray::sort(bool ascending) const {
-  gl_sframe sf({{"a",(*this)}});
+  gl_xframe sf({{"a",(*this)}});
   sf = sf.sort("a", ascending);
   return sf.select_column("a");
 }
@@ -955,7 +955,7 @@ class gl_sarray_writer_impl {
 
 gl_sarray_writer_impl::gl_sarray_writer_impl(flex_type_enum type, size_t num_segments) {
   // open the output array
-  if (num_segments == (size_t)(-1)) num_segments = SFRAME_DEFAULT_NUM_SEGMENTS;
+  if (num_segments == (size_t)(-1)) num_segments = XFRAME_DEFAULT_NUM_SEGMENTS;
   m_out_sarray = std::make_shared<sarray<flexible_type>>();
   m_out_sarray->open_for_write(num_segments);
   m_out_sarray->set_type(type);

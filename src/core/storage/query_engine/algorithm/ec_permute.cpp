@@ -8,15 +8,15 @@
 #include <map>
 #include <algorithm>
 #include <core/system/platform/timer//timer.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_manager.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
+#include <core/storage/xframe_data/xframe_config.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_manager.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
 namespace turi {
 namespace query_eval {
-using sframe_config::SFRAME_SORT_BUFFER_SIZE;
+using xframe_config::XFRAME_SORT_BUFFER_SIZE;
 
 /**
 * This returns the number of bytes after LZ4 decode needed for each column.
@@ -29,11 +29,11 @@ using sframe_config::SFRAME_SORT_BUFFER_SIZE;
 *
 * However, for complex values such as dicts, arrays, lists, this should be
 * closer to the true in memory size; probably within a factor of 2 or 4.
-* \param values The sframe
+* \param values The xframe
 * \return a list of length ncolumns. Element i is the number of bytes on disk
 *         used to store the column without LZ4 encoding.
 */
-static std::vector<size_t> num_bytes_per_column(sframe& values) {
+static std::vector<size_t> num_bytes_per_column(xframe& values) {
   std::vector<size_t> column_num_bytes(values.num_columns(), 0);
   auto& block_manager = v2_block_impl::block_manager::get_instance();
 
@@ -145,10 +145,10 @@ static std::vector<size_t> column_row_boundaries(std::shared_ptr<sarray<flexible
  * The forward_map must be an SArray of the same length as the input and contain
  * every integer from 0 to len-1.
  *
- * Returns an sframe. The last column of the sframe is the per-bucket
+ * Returns an xframe. The last column of the xframe is the per-bucket
  * forward map.
  */
-static sframe ec_scatter_partitions(sframe input,
+static xframe ec_scatter_partitions(xframe input,
                                     size_t rows_per_bucket,
                                     const std::vector<bool>& indirect_column,
                                     std::shared_ptr<sarray<flexible_type> > forward_map) {
@@ -162,7 +162,7 @@ static sframe ec_scatter_partitions(sframe input,
   logstream(LOG_INFO) << "forward map size " << forward_map->size() << std::endl;
   input = input.add_column(forward_map);
   auto num_buckets = (input.size() + rows_per_bucket - 1)/ rows_per_bucket;
-  sframe output;
+  xframe output;
   auto out_column_types = input.column_types();
   for (size_t i = 0;i < out_column_types.size(); ++i) {
     if (i < indirect_column.size() &&
@@ -177,13 +177,13 @@ static sframe ec_scatter_partitions(sframe input,
     auto cur_column = input.select_column(i);
     readers[i] = std::shared_ptr<sarray<flexible_type>::reader_type>(cur_column->get_reader());
   }
-  // now. the challenge here is that the natural order of the sframe is not
+  // now. the challenge here is that the natural order of the xframe is not
   // necessarily good for forward map lookups. The forward map lookup has to
   // really fast. Instead we are going to do it this way:
-  //  - Use the SFRAME_SORT_BUFFER_SIZE to estimate how much forward map
+  //  - Use the XFRAME_SORT_BUFFER_SIZE to estimate how much forward map
   //  we can keep in memory at any one time. Then in parallel over
-  //  columns of the sframe.
-  size_t max_forward_map_in_memory = SFRAME_SORT_BUFFER_SIZE / sizeof(flexible_type);
+  //  columns of the xframe.
+  size_t max_forward_map_in_memory = XFRAME_SORT_BUFFER_SIZE / sizeof(flexible_type);
   auto forward_map_reader = forward_map->get_reader();
   std::vector<flexible_type> forward_map_buffer;
   logstream(LOG_INFO) << "Beginning Scatter"  << std::endl;
@@ -279,13 +279,13 @@ static sframe ec_scatter_partitions(sframe input,
  * The forward_map must be an SArray of the same length as the input and contain
  * every integer from 0 to len-1.
  *
- * Returns the permuted sframe without the forward map.
+ * Returns the permuted xframe without the forward map.
  *
  * \param input : the result of ec_scatter_partitions
  * \param original_input : The original original input passed into ec_scatter_partitions
  */
-sframe ec_permute_partitions(sframe input,
-                             sframe& original_input,
+xframe ec_permute_partitions(xframe input,
+                             xframe& original_input,
                              size_t rows_per_bucket,
                              const std::vector<size_t>& column_bytes_per_value,
                              const std::vector<bool>& indirect_column) {
@@ -296,7 +296,7 @@ sframe ec_permute_partitions(sframe input,
 //         Load forward_map[S:T] into memory
 //         For each (c,r,v) in bucket b
 //             Output[forward_map(r) - S][c] = v
-//         Dump Output to an SFrame
+//         Dump Output to an XFrame
 //
   auto num_input_columns = input.num_columns() - 1; // last column is the forward map
   auto num_buckets = (input.size() + rows_per_bucket - 1)/ rows_per_bucket;
@@ -323,14 +323,14 @@ sframe ec_permute_partitions(sframe input,
   auto& block_manager = v2_block_impl::block_manager::get_instance();
 
   // prepare the output
-  sframe output;
+  xframe output;
   output.open_for_write(original_input.column_names(),
                         original_input.column_types(), "", num_buckets);
   auto writer = output.get_internal_writer();
 
 
   auto forward_map_reader = input.select_column(num_input_columns)->get_reader();
-  size_t MAX_SORT_BUFFER = SFRAME_SORT_BUFFER_SIZE / thread::cpu_count();
+  size_t MAX_SORT_BUFFER = XFRAME_SORT_BUFFER_SIZE / thread::cpu_count();
 
   atomic<size_t> atomic_bucket_id = 0;
   // for each bucket
@@ -464,19 +464,19 @@ sframe ec_permute_partitions(sframe input,
 }
 
 /**
- * Permutes an sframe.
- * forward_map must be an SArray of the same length as the values_sframe,
- * containing every integer in the range 0 to len-1. Row i of the input sframe
- * is moved to row forward_map[i] of the output sframe.
- * The result is an SFrame of the same size as the input sframe, but with
+ * Permutes an xframe.
+ * forward_map must be an SArray of the same length as the values_xframe,
+ * containing every integer in the range 0 to len-1. Row i of the input xframe
+ * is moved to row forward_map[i] of the output xframe.
+ * The result is an XFrame of the same size as the input xframe, but with
  * its elements permuted.
  */
-sframe permute_sframe(sframe &values_sframe,
+xframe permute_xframe(xframe &values_xframe,
                       std::shared_ptr<sarray<flexible_type> > forward_map) {
-  auto num_rows = values_sframe.size();
-  auto value_column_names = values_sframe.column_names();
-  auto value_column_types = values_sframe.column_types();
-  auto num_value_columns = values_sframe.num_columns();
+  auto num_rows = values_xframe.size();
+  auto value_column_names = values_xframe.column_names();
+  auto value_column_types = values_xframe.column_types();
+  auto num_value_columns = values_xframe.num_columns();
   timer ti;
   // column_bytes_per_value: The average number of bytes of memory required for
   //                         a value in each columns
@@ -488,7 +488,7 @@ sframe permute_sframe(sframe &values_sframe,
   {
     // First lets get an estimate of the column sizes and we use that
     // to estimate the number of buckets needed.
-    std::vector<size_t> column_num_bytes = num_bytes_per_column(values_sframe);
+    std::vector<size_t> column_num_bytes = num_bytes_per_column(values_xframe);
     for (size_t i = 0;i < column_bytes_per_value.size();++i) {
       column_bytes_per_value[i] =
               column_bytes_per_value_estimate(column_num_bytes[i],
@@ -514,7 +514,7 @@ sframe permute_sframe(sframe &values_sframe,
                                                column_num_bytes.end());
     // maximum size of column / sort buffer size. round up
     // at least 1 bucket
-    size_t HALF_SORT_BUFFER = SFRAME_SORT_BUFFER_SIZE / 2;
+    size_t HALF_SORT_BUFFER = XFRAME_SORT_BUFFER_SIZE / 2;
     num_buckets = (max_column_num_bytes + HALF_SORT_BUFFER - 1) / HALF_SORT_BUFFER;
     num_buckets = std::max<size_t>(1, num_buckets);
     num_buckets *= thread::cpu_count();
@@ -531,22 +531,22 @@ sframe permute_sframe(sframe &values_sframe,
     /*
      * There is a theoretical maximum number of rows we can sort, given
      * max_column_bytes_per_value. We can contain a maximum of
-     * SFRAME_SORT_BUFFER_SIZE / max_column_bytes_per_value values per segment, and
-     * we can only construct SFRAME_SORT_MAX_SEGMENTS number of segments.
+     * XFRAME_SORT_BUFFER_SIZE / max_column_bytes_per_value values per segment, and
+     * we can only construct XFRAME_SORT_MAX_SEGMENTS number of segments.
      */
     size_t max_sort_rows =
-            ((HALF_SORT_BUFFER * SFRAME_SORT_MAX_SEGMENTS) / max_column_bytes_per_value);
+            ((HALF_SORT_BUFFER * XFRAME_SORT_MAX_SEGMENTS) / max_column_bytes_per_value);
     logstream(LOG_INFO) << "Maximum sort rows: " << max_sort_rows << std::endl;
     if (num_rows > max_sort_rows) {
       logstream(LOG_WARNING)
-        << "With the current configuration of SFRAME_SORT_BUFFER_SIZE "
-        << "and SFRAME_SORT_MAX_SEGMENTS "
-        << "we can sort an SFrame of up to " << max_sort_rows << " elements\n"
-        << "The size of the current SFrame exceeds this length. We will proceed anyway "
+        << "With the current configuration of XFRAME_SORT_BUFFER_SIZE "
+        << "and XFRAME_SORT_MAX_SEGMENTS "
+        << "we can sort an XFrame of up to " << max_sort_rows << " elements\n"
+        << "The size of the current XFrame exceeds this length. We will proceed anyway "
         << "If this fails, either of these constants need to be increased.\n"
-        << "SFRAME_SORT_MAX_SEGMENTS can be increased by increasing the number of n"
+        << "XFRAME_SORT_MAX_SEGMENTS can be increased by increasing the number of n"
         << "file handles via ulimit -n\n"
-        << "SFRAME_SORT_BUFFER_SIZE can be increased with tc.set_runtime_config()"
+        << "XFRAME_SORT_BUFFER_SIZE can be increased with tc.set_runtime_config()"
         << std::endl;
     }
   }
@@ -570,18 +570,18 @@ sframe permute_sframe(sframe &values_sframe,
   // -------
   //  - For each (c,r,v) in data:
   //    Write (c,v) to bucket `Floor(K \ forward_map(r) / N)`
-  sframe scatter_sframe = ec_scatter_partitions(values_sframe,
+  xframe scatter_xframe = ec_scatter_partitions(values_xframe,
                                                 rows_per_bucket,
                                                 indirect_column,
                                                 forward_map);
   logstream(LOG_INFO) << "Scatter finished in " << ti.current_time() << std::endl;
 
-  sframe sorted_values_sframe = ec_permute_partitions(scatter_sframe,
-                                                      values_sframe,
+  xframe sorted_values_xframe = ec_permute_partitions(scatter_xframe,
+                                                      values_xframe,
                                                       rows_per_bucket,
                                                       column_bytes_per_value,
                                                       indirect_column);
-  return sorted_values_sframe;
+  return sorted_values_xframe;
 }
 
 } // query_eval

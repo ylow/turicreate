@@ -623,9 +623,9 @@ class unity_sarray: public unity_sarray_base {
    *  'hour','minute','second', and 'timezone'.
    * \param expanded_columns_types: list of types for the expanded columns
 
-   * Returns a new SFrame that contains the expanded columns
+   * Returns a new XFrame that contains the expanded columns
    **/
-  std::shared_ptr<unity_sframe_base> expand(
+  std::shared_ptr<unity_xframe_base> expand(
     const std::string& column_name_prefix,
     const std::vector<flexible_type>& expanded_column_elements,
     const std::vector<flex_type_enum>& expanded_columns_types);
@@ -641,9 +641,9 @@ class unity_sarray: public unity_sarray_base {
     * \param unpacked_column_types: list of types for the unpacked columns
     * \param na_value: if not undefined, replace all na_value with missing values
 
-    * Returns a new SFrame that contains the unpacked columns
+    * Returns a new XFrame that contains the unpacked columns
   **/
-  std::shared_ptr<unity_sframe_base> unpack(
+  std::shared_ptr<unity_xframe_base> unpack(
     const std::string& column_name_prefix,
     const std::vector<flexible_type>& unpacked_keys,
     const std::vector<flex_type_enum>& unpacked_columns_types,
@@ -657,9 +657,9 @@ class unity_sarray: public unity_sarray_base {
     * \param limit: limited keys for the unpack
     * \param na_value: if not undefined, replace all na_value with missing values
 
-    * Returns a new SFrame that contains the unpacked columns
+    * Returns a new XFrame that contains the unpacked columns
   **/
-  std::shared_ptr<unity_sframe_base> unpack_dict(
+  std::shared_ptr<unity_xframe_base> unpack_dict(
   const std::string& column_name_prefix,
   const std::vector<flexible_type>& limit,
   const flexible_type& na_value);
@@ -716,7 +716,7 @@ class unity_sarray: public unity_sarray_base {
   void begin_iterator();
 
   /**
-   * Obtains the next block of elements of size len from the SFrame.
+   * Obtains the next block of elements of size len from the XFrame.
    * Works together with \ref begin_iterator(). See the code example
    * in \ref begin_iterator() for details.
    *

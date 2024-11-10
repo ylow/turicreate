@@ -8,10 +8,10 @@
 #include <model_server/lib/unity_global_singleton.hpp>
 #include <model_server/server/unity_server_init.hpp>
 #include <model_server/server/registration.hpp>
-#include <core/storage/sframe_interface/unity_sarray.hpp>
-#include <core/storage/sframe_interface/unity_sarray_builder.hpp>
-#include <core/storage/sframe_interface/unity_sframe.hpp>
-#include <core/storage/sframe_interface/unity_sframe_builder.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_interface/unity_sarray_builder.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
+#include <core/storage/xframe_interface/unity_xframe_builder.hpp>
 #include <model_server/lib/simple_model.hpp>
 
 namespace turi {

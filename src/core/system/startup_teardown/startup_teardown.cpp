@@ -19,8 +19,8 @@
 #include <core/util/fs_util.hpp>
 #include <core/globals/globals.hpp>
 #include <core/globals/global_constants.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
-#include <core/storage/sframe_data/sframe_config.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
+#include <core/storage/xframe_data/xframe_config.hpp>
 #include <core/storage/fileio/file_download_cache.hpp>
 #include <core/storage/fileio/fixed_size_cache_manager.hpp>
 #include <core/storage/fileio/temp_files.hpp>
@@ -123,15 +123,15 @@ void configure_global_environment(std::string argv0) {
   //    we keep it to 128
   if (file_handle_limit >= 512) {
     size_t practical_limit = file_handle_limit / 4 * 3;
-    turi::SFRAME_FILE_HANDLE_POOL_SIZE = practical_limit;
+    turi::XFRAME_FILE_HANDLE_POOL_SIZE = practical_limit;
   } else {
-    turi::SFRAME_FILE_HANDLE_POOL_SIZE = 128;
+    turi::XFRAME_FILE_HANDLE_POOL_SIZE = 128;
   }
 
-  turi::SFRAME_DEFAULT_NUM_SEGMENTS = turi::thread::cpu_count();
-  turi::SFRAME_MAX_BLOCKS_IN_CACHE = 16 * turi::thread::cpu_count();
-  turi::SFRAME_SORT_MAX_SEGMENTS = std::max(
-      turi::SFRAME_SORT_MAX_SEGMENTS, turi::SFRAME_FILE_HANDLE_POOL_SIZE / 4);
+  turi::XFRAME_DEFAULT_NUM_SEGMENTS = turi::thread::cpu_count();
+  turi::XFRAME_MAX_BLOCKS_IN_CACHE = 16 * turi::thread::cpu_count();
+  turi::XFRAME_SORT_MAX_SEGMENTS = std::max(
+      turi::XFRAME_SORT_MAX_SEGMENTS, turi::XFRAME_FILE_HANDLE_POOL_SIZE / 4);
   // configure all memory constants
   // use up at most half of system memory.
   size_t total_system_memory = total_mem();
@@ -168,9 +168,9 @@ void configure_global_environment(std::string argv0) {
     size_t max_cell_estimate = total_system_memory / 4 / CELL_SIZE_ESTIMATE;
     size_t max_row_estimate = total_system_memory / 4 / ROW_SIZE_ESTIMATE;
 
-    turi::SFRAME_GROUPBY_BUFFER_NUM_ROWS = max_row_estimate;
-    turi::SFRAME_JOIN_BUFFER_NUM_CELLS = max_cell_estimate;
-    turi::sframe_config::SFRAME_SORT_BUFFER_SIZE = total_system_memory / 4;
+    turi::XFRAME_GROUPBY_BUFFER_NUM_ROWS = max_row_estimate;
+    turi::XFRAME_JOIN_BUFFER_NUM_CELLS = max_cell_estimate;
+    turi::xframe_config::XFRAME_SORT_BUFFER_SIZE = total_system_memory / 4;
     turi::fileio::FILEIO_MAXIMUM_CACHE_CAPACITY_PER_FILE =
         total_system_memory / 2;
     turi::fileio::FILEIO_MAXIMUM_CACHE_CAPACITY = total_system_memory / 2;

@@ -3,60 +3,60 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_READER_BUFFER
-#define TURI_SFRAME_READER_BUFFER
+#ifndef TURI_XFRAME_READER_BUFFER
+#define TURI_XFRAME_READER_BUFFER
 #include <memory>
 #include <vector>
 #include <core/data/flexible_type/flexible_type.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
 namespace turi {
-class sframe;
+class xframe;
 
 
 /**
- * \ingroup sframe_physical
- * \addtogroup sframe_main Main SFrame Objects
+ * \ingroup xframe_physical
+ * \addtogroup xframe_main Main XFrame Objects
  * \{
  */
 
 /**
- * A buffered reader reading from a range of an sframe<T>.
+ * A buffered reader reading from a range of an xframe<T>.
  *
  * \code
- * sframe<flexible_type> mysframe = ...;
+ * xframe<flexible_type> myxframe = ...;
  *
  * // Reader for the first thousand lines
- * sframe_reader_buffer<flexible_type> reader(mysframe, 0, 1000);
+ * xframe_reader_buffer<flexible_type> reader(myxframe, 0, 1000);
  *
  * while(reader.has_next()) {
  *  flexible_type val = reader.next();
  *  ... do some thing with val ...
  * }
  *
- * // Reader for the entire sframe
- * reader = sframe_reader_buffer<flexible_type>(mysframe, 0, (size_t)(-1));
+ * // Reader for the entire xframe
+ * reader = xframe_reader_buffer<flexible_type>(myxframe, 0, (size_t)(-1));
  * ...
  * \endcode
  *
  * Internally, the reader maintains a vector as buffer, and when reading
- * reaches the end of the buffer, refill the buffer by reading from sframe.
+ * reaches the end of the buffer, refill the buffer by reading from xframe.
  */
-class sframe_reader_buffer {
+class xframe_reader_buffer {
  public:
-  typedef sframe_rows::row value_type;
+  typedef xframe_rows::row value_type;
 
-  sframe_reader_buffer() = default;
+  xframe_reader_buffer() = default;
 
-  /// Construct from sframe reader with begin and end row.
-  sframe_reader_buffer(
-      std::shared_ptr<typename sframe::reader_type> reader,
+  /// Construct from xframe reader with begin and end row.
+  xframe_reader_buffer(
+      std::shared_ptr<typename xframe::reader_type> reader,
       size_t row_start, size_t row_end,
       size_t buffer_size = DEFAULT_SARRAY_READER_BUFFER_SIZE) {
     init(reader, row_start, row_end, buffer_size);
   }
 
-  void init(std::shared_ptr<typename sframe::reader_type>& reader,
+  void init(std::shared_ptr<typename xframe::reader_type>& reader,
             size_t row_start, size_t row_end,
             size_t internal_buffer_size = DEFAULT_SARRAY_READER_BUFFER_SIZE) {
     m_reader = reader;
@@ -70,16 +70,16 @@ class sframe_reader_buffer {
   }
 
   /// Return the next element in the reader.
-  const sframe_rows::row& next();
+  const xframe_rows::row& next();
 
   /// Returns the current element
-  const sframe_rows::row& current();
+  const xframe_rows::row& current();
 
   /// Return true if the reader has more element.
   bool has_next();
 
   /// Return the buffer.
-  inline sframe_rows& get_buffer() {return m_buffer;}
+  inline xframe_rows& get_buffer() {return m_buffer;}
 
   /// Return the Number of elements between row_start and row_end.
   inline size_t size() {return m_row_end - m_original_row_start;}
@@ -90,16 +90,16 @@ class sframe_reader_buffer {
   void clear();
 
  private:
-  /// Refill the chunk buffer form the sframe reader.
+  /// Refill the chunk buffer form the xframe reader.
   void refill();
 
-  typedef sframe::reader_type reader_type;
+  typedef xframe::reader_type reader_type;
 
   /// Buffer the prefetched elements.
-  sframe_rows m_buffer;
+  xframe_rows m_buffer;
 
   /// Current value
-  sframe_rows::row m_current;
+  xframe_rows::row m_current;
 
   /// The underlying reader as a data source.
   std::shared_ptr<reader_type> m_reader;
@@ -121,7 +121,7 @@ class sframe_reader_buffer {
 /// \}
 //
 /// Return the next element in the chunk.
-inline const sframe_rows::row& sframe_reader_buffer::next() {
+inline const xframe_rows::row& xframe_reader_buffer::next() {
   if (m_buffer_pos == m_buffer.num_rows()) {
     refill();
     m_buffer_pos = 0;
@@ -132,24 +132,24 @@ inline const sframe_rows::row& sframe_reader_buffer::next() {
   return m_current;
 }
 
-inline const sframe_rows::row& sframe_reader_buffer::current() {
+inline const xframe_rows::row& xframe_reader_buffer::current() {
   return m_current;
 }
 
 /// Return true if the chunk has remaining element.
-inline bool sframe_reader_buffer::has_next() {
+inline bool xframe_reader_buffer::has_next() {
   return m_iter < m_row_end;
 }
 
-/// Refill the chunk buffer form the sframe reader.
-inline void sframe_reader_buffer::refill() {
+/// Refill the chunk buffer form the xframe reader.
+inline void xframe_reader_buffer::refill() {
   size_t size_of_refill = std::min<size_t>(m_row_end - m_row_start, m_buffer_size);
   m_reader->read_rows(m_row_start, m_row_start + size_of_refill, m_buffer);
   m_row_start += size_of_refill;
 }
 
 
-inline void sframe_reader_buffer::clear() {
+inline void xframe_reader_buffer::clear() {
   m_buffer.clear();
   m_row_start = m_original_row_start;
   m_iter = m_original_row_start;

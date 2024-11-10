@@ -4,8 +4,8 @@
 #include <core/storage/query_engine/execution/execution_node.hpp>
 #include <core/storage/query_engine/operators/sarray_source.hpp>
 #include <core/storage/query_engine/operators/transform.hpp>
-#include <core/storage/sframe_data/sarray.hpp>
-#include <core/storage/sframe_data/algorithm.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
+#include <core/storage/xframe_data/algorithm.hpp>
 
 #include "check_node.hpp"
 
@@ -21,7 +21,7 @@ struct transform_test {
     turi::copy(expected.begin(), expected.end(), *sa);
     sa->close();
     auto node = make_node(op_sarray_source(sa),
-                          [](const sframe_rows::row& row) { return row[0]; },
+                          [](const xframe_rows::row& row) { return row[0]; },
                           flex_type_enum::INTEGER);
     check_node(node, expected);
   }
@@ -32,7 +32,7 @@ struct transform_test {
     sa->open_for_write();
     turi::copy(data.begin(), data.end(), *sa);
     sa->close();
-    transform_type f = [](const sframe_rows::row& row) { return row[0] + 1; };
+    transform_type f = [](const xframe_rows::row& row) { return row[0] + 1; };
     std::vector<flexible_type> expected(data.size());
     auto f2 = [](const flexible_type& val) { return val + 1; };
     std::transform(data.begin(), data.end(), expected.begin(), f2);

@@ -3,14 +3,14 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_ENGINE_PLANNER_HPP_
-#define TURI_SFRAME_QUERY_ENGINE_PLANNER_HPP_
+#ifndef TURI_XFRAME_QUERY_ENGINE_PLANNER_HPP_
+#define TURI_XFRAME_QUERY_ENGINE_PLANNER_HPP_
 
 #include <vector>
 #include <string>
 #include <memory>
 
-#include <core/storage/sframe_data/sframe.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
 #include <core/storage/query_engine/planning/materialize_options.hpp>
 #include <core/storage/query_engine/planning/planner_node.hpp>
 
@@ -20,7 +20,7 @@ namespace query_eval {
 class query_planner;
 
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup planning Planning, Optimization and Execution
  * \{
  */
@@ -30,13 +30,13 @@ class query_planner;
  */
 class planner {
  public:
-  typedef std::function<bool(size_t, const std::shared_ptr<sframe_rows>&)>
+  typedef std::function<bool(size_t, const std::shared_ptr<xframe_rows>&)>
     write_callback_type;
 
   planner() {}
 
   /**
-   * Materialize the output from a node on a graph as an SFrame.
+   * Materialize the output from a node on a graph as an XFrame.
    *
    * Note that exec_params allows some control over the execution of the
    * materialization.
@@ -52,7 +52,7 @@ class planner {
    *                               A private function.
    *  - \ref subplan_executor Executes a restricted plan.
    */
-  sframe materialize(std::shared_ptr<planner_node> tip,
+  xframe materialize(std::shared_ptr<planner_node> tip,
                      materialize_options exec_params = materialize_options());
 
   /**
@@ -72,7 +72,7 @@ class planner {
 
 
   /** If this returns true, it is recommended to go ahead and
-   *  materialize the sframe operations on the fly to prevent memory
+   *  materialize the xframe operations on the fly to prevent memory
    *  issues.
    */
   bool online_materialization_recommended(std::shared_ptr<planner_node> tip);
@@ -106,4 +106,4 @@ class planner {
 } // namespace query_eval
 } // namespace turi
 
-#endif /* TURI_SFRAME_QUERY_ENGINE_PLANNER_HPP_ */
+#endif /* TURI_XFRAME_QUERY_ENGINE_PLANNER_HPP_ */

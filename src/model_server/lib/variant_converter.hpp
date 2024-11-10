@@ -25,11 +25,11 @@ namespace turi {
 
 // forward declarations
 class unity_sarray_base;
-class unity_sframe_base;
+class unity_xframe_base;
 class model_base;
 class unity_sarray;
-class unity_sframe;
-class gl_sframe;
+class unity_xframe;
+class gl_xframe;
 class gl_sarray;
 
 extern int64_t USE_GL_DATATYPE;
@@ -70,7 +70,7 @@ template <typename T>
 struct is_toolkit_builtin {
   static constexpr bool value =
       std::is_same<typename std::decay<T>::type, gl_sarray>::value ||
-      std::is_same<typename std::decay<T>::type, gl_sframe>::value ||
+      std::is_same<typename std::decay<T>::type, gl_xframe>::value ||
       std::is_same<typename std::decay<T>::type, gl_sarray>::value;
 };
 
@@ -106,15 +106,15 @@ struct all_variant_convertible;
  *  - variant_type
  *  - any direct member of variant_type:
  *     - std::shared_ptr<unity_sarray_base>
- *     - std::shared_ptr<unity_sframe_base>
+ *     - std::shared_ptr<unity_xframe_base>
  *     - std::shared_ptr<model_base>
  *     - std::vector<variant_type>
  *     - std::map<std::string, variant_type>
  *  - everything convertible to flexible_type (See flexible_type_conveter.hpp)
  *  - std::shared_ptr<unity_sarray>
- *  - std::shared_ptr<unity_sframe>
+ *  - std::shared_ptr<unity_xframe>
  *  - gl_sarray
- *  - gl_sframe
+ *  - gl_xframe
  *  - std::shared_ptr<T> where T is a descendent of model_base
  *  - variant_type
  *  - Recursive cases
@@ -176,7 +176,7 @@ struct variant_converter<T,
  * Case 2: Cover all direct members of variant_type.
  * But not flexible_type since that is covered by case 1.
  *     - unity_sarray_base*
- *     - unity_sframe_base*
+ *     - unity_xframe_base*
  *     - model_base*
  *     - std::vector<variant_type>
  *     - std::map<std::string, variant_type>
@@ -222,15 +222,15 @@ struct variant_converter<std::shared_ptr<unity_sarray>, void> {
 };
 
 /**
- * Case 5: Cover unity_sframe*.
+ * Case 5: Cover unity_xframe*.
  * (note that this case is not covered by Case 2 since variant_type
- * stores unity_sframe_base* and not unity_sframe*
+ * stores unity_xframe_base* and not unity_xframe*
  */
 template <>
-struct variant_converter<std::shared_ptr<unity_sframe>, void> {
+struct variant_converter<std::shared_ptr<unity_xframe>, void> {
   static constexpr bool value = true;
-  std::shared_ptr<unity_sframe> get(const variant_type& val);
-  variant_type set(std::shared_ptr<unity_sframe> val);
+  std::shared_ptr<unity_xframe> get(const variant_type& val);
+  variant_type set(std::shared_ptr<unity_xframe> val);
 };
 
 /**
@@ -400,10 +400,10 @@ struct variant_converter<gl_sarray, void> {
 };
 
 template <>
-struct variant_converter<gl_sframe, void> {
+struct variant_converter<gl_xframe, void> {
   static constexpr bool value = true;
-  gl_sframe get(const variant_type& val);
-  variant_type set(gl_sframe val);
+  gl_xframe get(const variant_type& val);
+  variant_type set(gl_xframe val);
 };
 
 

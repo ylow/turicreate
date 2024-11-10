@@ -224,26 +224,26 @@ def set_runtime_config(name, value):
       CPU use in all situations.
 
     - *TURI_CACHE_FILE_LOCATIONS*: The directory in which intermediate
-      SFrames/SArray are stored.  For instance "/var/tmp".  Multiple
+      XFrames/SArray are stored.  For instance "/var/tmp".  Multiple
       directories can be specified separated by a colon (ex: "/var/tmp:/tmp")
-      in which case intermediate SFrames will be striped across both
+      in which case intermediate XFrames will be striped across both
       directories (useful for specifying multiple disks).  Defaults to /var/tmp
       if the directory exists, /tmp otherwise.
 
     - *TURI_FILEIO_MAXIMUM_CACHE_CAPACITY*: The maximum amount of memory which
-      will be occupied by *all* intermediate SFrames/SArrays. Once this limit
-      is exceeded, SFrames/SArrays will be flushed out to temporary storage (as
+      will be occupied by *all* intermediate XFrames/SArrays. Once this limit
+      is exceeded, XFrames/SArrays will be flushed out to temporary storage (as
       specified by `TURI_CACHE_FILE_LOCATIONS`). On large systems increasing
       this as well as `TURI_FILEIO_MAXIMUM_CACHE_CAPACITY_PER_FILE` can improve
       performance significantly. Defaults to 2147483648 bytes (2GB).
 
     - *TURI_FILEIO_MAXIMUM_CACHE_CAPACITY_PER_FILE*: The maximum amount of
       memory which will be occupied by any individual intermediate
-      SFrame/SArray.  Once this limit is exceeded, the SFrame/SArray will be
+      XFrame/SArray.  Once this limit is exceeded, the XFrame/SArray will be
       flushed out to temporary storage (as specified by
       `TURI_CACHE_FILE_LOCATIONS`). On large systems, increasing this as well
       as `TURI_FILEIO_MAXIMUM_CACHE_CAPACITY` can improve performance
-      significantly for large SFrames. Defaults to 134217728 bytes (128MB).
+      significantly for large XFrames. Defaults to 134217728 bytes (128MB).
 
     **S3 Configuration**
 
@@ -271,18 +271,18 @@ def set_runtime_config(name, value):
 
     **Sort Performance Configuration**
 
-    - *TURI_SFRAME_SORT_PIVOT_ESTIMATION_SAMPLE_SIZE*: The number of random
-      rows to sample from the SFrame to estimate the sort pivots used to
+    - *TURI_XFRAME_SORT_PIVOT_ESTIMATION_SAMPLE_SIZE*: The number of random
+      rows to sample from the XFrame to estimate the sort pivots used to
       partition the sort. Defaults to 2000000.
 
-    - *TURI_SFRAME_SORT_BUFFER_SIZE*: The maximum estimated memory consumption
+    - *TURI_XFRAME_SORT_BUFFER_SIZE*: The maximum estimated memory consumption
       sort is allowed to use. Increasing this will increase the size of each
       sort partition, and will increase performance with increased memory
       consumption.  Defaults to 2GB.
 
     **Join Performance Configuration**
 
-    - *TURI_SFRAME_JOIN_BUFFER_NUM_CELLS*: The maximum number of cells to
+    - *TURI_XFRAME_JOIN_BUFFER_NUM_CELLS*: The maximum number of cells to
       buffer in memory. Increasing this will increase the size of each join
       partition and will increase performance with increased memory
       consumption.  If you have very large cells (very long strings for
@@ -291,17 +291,17 @@ def set_runtime_config(name, value):
 
     **Groupby Aggregate Performance Configuration**
 
-    - *TURI_SFRAME_GROUPBY_BUFFER_NUM_ROWS*: The number of groupby keys cached
+    - *TURI_XFRAME_GROUPBY_BUFFER_NUM_ROWS*: The number of groupby keys cached
       in memory. Increasing this will increase performance with increased
       memory consumption. Defaults to 1048576.
 
     **Advanced Configuration Variables**
 
-    - *TURI_SFRAME_FILE_HANDLE_POOL_SIZE*: The maximum number of file handles
-      to use when reading SFrames/SArrays.  Once this limit is exceeded, file
+    - *TURI_XFRAME_FILE_HANDLE_POOL_SIZE*: The maximum number of file handles
+      to use when reading XFrames/SArrays.  Once this limit is exceeded, file
       handles will be recycled, reducing performance. This limit should be
-      rarely approached by most SFrame/SArray operations. Large SGraphs however
-      may create a large a number of SFrames in which case increasing this
+      rarely approached by most XFrame/SArray operations. Large SGraphs however
+      may create a large a number of XFrames in which case increasing this
       limit may improve performance (You may also need to increase the system
       file handle limit with "ulimit -n").  Defaults to 128.
     """

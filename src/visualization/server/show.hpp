@@ -6,7 +6,7 @@
 #ifndef __SHOW_HPP
 #define __SHOW_HPP
 
-#include <core/data/sframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
 #include <model_server/lib/toolkit_function_specification.hpp>
 #include <visualization/server/plot.hpp>
 

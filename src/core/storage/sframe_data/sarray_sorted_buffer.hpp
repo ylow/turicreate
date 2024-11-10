@@ -3,15 +3,15 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_SARRAY_SORTED_BUFFER_HPP
-#define TURI_SFRAME_SARRAY_SORTED_BUFFER_HPP
+#ifndef TURI_XFRAME_SARRAY_SORTED_BUFFER_HPP
+#define TURI_XFRAME_SARRAY_SORTED_BUFFER_HPP
 
 #include<core/parallel/mutex.hpp>
 #include<memory>
 #include<vector>
 #include<future>
-#include<core/storage/sframe_data/sarray.hpp>
-#include<core/storage/sframe_data/sframe.hpp>
+#include<core/storage/xframe_data/sarray.hpp>
+#include<core/storage/xframe_data/xframe.hpp>
 
 
 namespace turi {
@@ -19,8 +19,8 @@ namespace turi {
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  * \{
  */
 

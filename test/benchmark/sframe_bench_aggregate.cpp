@@ -5,11 +5,11 @@
  * https://opensource.org/licenses/BSD-3-Clause
  */
 #include <atomic>
-#include <core/storage/sframe_data/groupby_aggregate.hpp>
-#include <core/storage/sframe_data/groupby_aggregate_operators.hpp>
-#include <core/storage/sframe_data/sframe.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
-#include <core/storage/sframe_data/testing_utils.hpp>
+#include <core/storage/xframe_data/groupby_aggregate.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_operators.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
+#include <core/storage/xframe_data/testing_utils.hpp>
 #include <iostream>
 #include <random>
 #include <thread>
@@ -19,7 +19,7 @@ namespace {
 
 /* global variables */
 size_t thread_size_beg = 2;
-bool sframe_debug_print = false;
+bool xframe_debug_print = false;
 
 // ---------------------- benchmark test framework -------------------------
 
@@ -35,9 +35,9 @@ bool sframe_debug_print = false;
  * \ref bench_test_aggreate_count_fn
  * \ref bench_test_aggreate_summary_count_bin
  *
- * \param sf: input sframe
+ * \param sf: input xframe
  * \param reps: repeatitions
- * \param Runner: void (*)(const sframe& sf, size_t nthreads, size_t reps,
+ * \param Runner: void (*)(const xframe& sf, size_t nthreads, size_t reps,
  *                         const std::vector<std::string>& keys,
  *                         const std::vector<std::string>& op_keys);
  *
@@ -45,7 +45,7 @@ bool sframe_debug_print = false;
  * \param op_keys: columns to operate on
  */
 template <typename Runner>
-void _bench_test_aggreate_runner(const sframe& sf, size_t reps, Runner runner,
+void _bench_test_aggreate_runner(const xframe& sf, size_t reps, Runner runner,
                                  const std::vector<std::string>& keys,
                                  const std::vector<std::string>& op_keys) {
   size_t max_hardware_mp = turi::thread::cpu_count();
@@ -62,17 +62,17 @@ void _bench_test_aggreate_runner(const sframe& sf, size_t reps, Runner runner,
  * helper function to run aggregate with controlled thread pool size.
  *
  * \param nthreads: thread pool size
- * \param in_sf: input sframe
+ * \param in_sf: input xframe
  * \param op: group-by aggregation operator
  * \param keys: compsite keys to group by
  * \param op_keys: columns to operate on
  *
  * */
-sframe _bench_test_aggreate_with_pool(size_t nthreads, const sframe& in_sf,
+xframe _bench_test_aggreate_with_pool(size_t nthreads, const xframe& in_sf,
                                     std::shared_ptr<group_aggregate_value> op,
                                     const std::vector<std::string>& keys,
                                     const std::vector<std::string>& op_keys,
-                                    bool debug_print = sframe_debug_print) {
+                                    bool debug_print = xframe_debug_print) {
   ASSERT_MSG(nthreads > 0 && nthreads <= thread::cpu_count(),
              "invalid thread count");
 
@@ -89,7 +89,7 @@ sframe _bench_test_aggreate_with_pool(size_t nthreads, const sframe& in_sf,
                       << "threads." << std::endl;
 
   turi::timer ti;
-  sframe out_sf = groupby_aggregate(
+  xframe out_sf = groupby_aggregate(
       in_sf, keys, {"__output_name_is_not_important"}, {{op_keys, op}});
 
   logstream(LOG_INFO) << "Bench test groupby with count finished in "
@@ -108,7 +108,7 @@ sframe _bench_test_aggreate_with_pool(size_t nthreads, const sframe& in_sf,
 
 
 /*
- * generate sframe data of type T, whose value ranges
+ * generate xframe data of type T, whose value ranges
  * from [start, end) obeying a uniform distribution.
  *
  * \param nrows: number of rows.
@@ -118,7 +118,7 @@ sframe _bench_test_aggreate_with_pool(size_t nthreads, const sframe& in_sf,
  *
  * */
 template <typename T>
-sframe _generate_range_data(size_t nrows, int start, int end,
+xframe _generate_range_data(size_t nrows, int start, int end,
                             const std::vector<std::string> keys) {
   ASSERT_MSG(start < end, "start should be less than end");
   ASSERT_MSG(keys.size(), "at least one key is required");
@@ -137,14 +137,14 @@ sframe _generate_range_data(size_t nrows, int start, int end,
     return ret;
   };
 
-  sframe sf = make_testing_sframe(keys, {flexible_type(T()).get_type()}, nrows,
+  xframe sf = make_testing_xframe(keys, {flexible_type(T()).get_type()}, nrows,
                                   range_seq_gen);
   return sf;
 }
 
 
 /*
- * generate sframe data of type T, whose value ranges
+ * generate xframe data of type T, whose value ranges
  * from [start, end) with a customized histogram distribution.
  *
  * this data generator is intended to benchmark the multithreading
@@ -163,7 +163,7 @@ sframe _generate_range_data(size_t nrows, int start, int end,
  *
  * */
 template <typename T>
-sframe _generate_weighted_data(size_t nrows, T start, T end,
+xframe _generate_weighted_data(size_t nrows, T start, T end,
                                const std::vector<std::string>& keys,
                                const std::map<size_t, T>& percentages) {
   ASSERT_MSG(keys.size(), "at least one key is required");
@@ -220,7 +220,7 @@ sframe _generate_weighted_data(size_t nrows, T start, T end,
     return ret;
   };
 
-  sframe sf = make_testing_sframe(keys, {flexible_type(T()).get_type()}, nrows,
+  xframe sf = make_testing_xframe(keys, {flexible_type(T()).get_type()}, nrows,
                                   range_seq_gen);
   return sf;
 }
@@ -234,7 +234,7 @@ sframe _generate_weighted_data(size_t nrows, T start, T end,
  *
  * It's client's responsibility to make sure key and op_keys correct
  *
- * \param sf: input sframe
+ * \param sf: input xframe
  * \param nthreads: thread pool control
  * \param op: group-by aggregation operator
  * \param keys: compsite keys to group by
@@ -242,7 +242,7 @@ sframe _generate_weighted_data(size_t nrows, T start, T end,
  * */
 #define DEFINE_RUNNER(op_name, op)                                       \
   void bench_test_aggreate_fn_##op_name(                                 \
-      const sframe& sf, size_t nthreads, size_t reps,                    \
+      const xframe& sf, size_t nthreads, size_t reps,                    \
       const std::vector<std::string>& keys,                              \
       const std::vector<std::string>& op_keys) {                         \
     ASSERT_MSG(reps > 0, "reps shouldn't be 0");                         \
@@ -262,7 +262,7 @@ sframe _generate_weighted_data(size_t nrows, T start, T end,
  *
  * It's client's responsibility to make sure key and op_keys correct
  *
- * \param sf: input sframe
+ * \param sf: input xframe
  * \param op: group-by aggregation operator
  * \param keys: compsite keys to group by
  * \param op_keys: columns to operate on
@@ -277,14 +277,14 @@ DEFINE_RUNNER(count, std::make_shared<groupby_operators::count>());
  * 2. reps
  * 3. number of unique keys except count operator
  *
- * the generated sframe will be reused for different
+ * the generated xframe will be reused for different
  * sized thread pool settings.
  * */
 void bench_test_aggreate_summary_count_bin(size_t nrows, size_t reps) {
   ASSERT_MSG(reps > 0, "reps shouldn't be 0");
   ASSERT_MSG(nrows > 0, "nrows shouldn't be 0");
 
-  sframe sf = make_random_sframe(nrows, "b", false);
+  xframe sf = make_random_xframe(nrows, "b", false);
 
   std::cout << "=========== count on binary categorical data ============="
             << std::endl
@@ -306,7 +306,7 @@ void bench_test_aggreate_summary_count_bin(size_t nrows, size_t reps) {
  *
  * It's client's responsibility to make sure key and op_keys correct
  *
- * \param sf: input sframe
+ * \param sf: input xframe
  * \param op: group-by aggregation operator
  * \param keys: compsite keys to group by
  * \param op_keys: columns to operate on
@@ -321,7 +321,7 @@ DEFINE_RUNNER(min, std::make_shared<groupby_operators::min>());
  * 2. reps
  * 3. number of unique keys except for count operator
  *
- * the generated sframe will be reused for different
+ * the generated xframe will be reused for different
  * sized thread pool settings.
  * */
 void bench_test_aggreate_summary_min(size_t nrows, size_t reps, size_t nusers,
@@ -388,7 +388,7 @@ void bench_test_aggreate_summary_min(size_t nrows, size_t reps, size_t nusers,
  *
  * It's client's responsibility to make sure key and op_keys correct
  *
- * \param sf: input sframe
+ * \param sf: input xframe
  * \param nthreads: thread pool control
  * \param op: group-by aggregation operator
  * \param keys: compsite keys to group by
@@ -443,9 +443,9 @@ int main(int argc, char** argv) {
     if (argc > 4) turi::thread_size_beg = std::stoi(argv[4]);
     ASSERT_LE(turi::thread_size_beg, turi::thread::cpu_count());
     if (argc > 5)
-      turi::sframe_debug_print = std::strlen(argv[5]) > 0 && argv[5][0] == 'T';
+      turi::xframe_debug_print = std::strlen(argv[5]) > 0 && argv[5][0] == 'T';
 
-    /* use global var to control debug print a result sframe */
+    /* use global var to control debug print a result xframe */
 
     /* actual benchmark runners */
     turi::bench_test_aggreate_summary_count_bin(nrows, reps);

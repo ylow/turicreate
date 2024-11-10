@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_MANAGER_APPEND_HPP
-#define TURI_SFRAME_QUERY_MANAGER_APPEND_HPP
+#ifndef TURI_XFRAME_QUERY_MANAGER_APPEND_HPP
+#define TURI_XFRAME_QUERY_MANAGER_APPEND_HPP
 
 #include <core/logging/assertions.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
@@ -17,7 +17,7 @@ namespace turi {
 
 namespace query_eval {
 /**
- * \ingroup sframe_query_engine
+ * \ingroup xframe_query_engine
  * \addtogroup operators Logical Operators
  * \{
  */
@@ -32,12 +32,12 @@ class operator_impl<planner_node_type::APPEND_NODE> : public query_operator {
 
 
   // state
-  std::shared_ptr<sframe_rows> out;
+  std::shared_ptr<xframe_rows> out;
   size_t outidx;
   size_t input;
-  std::shared_ptr<const sframe_rows> input_rows;
-  sframe_rows::const_iterator row_iter_begin;
-  sframe_rows::const_iterator row_iter_end;
+  std::shared_ptr<const xframe_rows> input_rows;
+  xframe_rows::const_iterator row_iter_begin;
+  xframe_rows::const_iterator row_iter_end;
 
   planner_node_type type() const { return planner_node_type::APPEND_NODE; }
   static std::string name() { return "append"; }
@@ -163,4 +163,4 @@ typedef operator_impl<planner_node_type::APPEND_NODE> op_append;
 } // query_eval
 } // turicreate
 
-#endif // TURI_SFRAME_QUERY_MANAGER_APPEND_HPP
+#endif // TURI_XFRAME_QUERY_MANAGER_APPEND_HPP

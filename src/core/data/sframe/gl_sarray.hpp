@@ -10,8 +10,8 @@
 #include <cstddef>
 #include <string>
 #include <iostream>
-#include <core/storage/sframe_data/sframe_rows.hpp>
-#include <core/storage/sframe_data/group_aggregate_value.hpp>
+#include <core/storage/xframe_data/xframe_rows.hpp>
+#include <core/storage/xframe_data/group_aggregate_value.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <visualization/server/plot.hpp>
 
@@ -23,7 +23,7 @@ namespace turi {
 /**************************************************************************/
 class unity_sarray;
 class unity_sarray_base;
-class gl_sframe;
+class gl_xframe;
 class gl_sarray_range;
 
 template <typename T>
@@ -131,8 +131,8 @@ class sarray_reader_buffer;
  * \endcode
  *
  *
- * The range_iterator materializes the SFrame if not already materialized, but
- * \ref materialize_to_callback can be used to read the SFrame without
+ * The range_iterator materializes the XFrame if not already materialized, but
+ * \ref materialize_to_callback can be used to read the XFrame without
  * materialization.
  *
  * The gl_sarray can constructed in a variety of means:
@@ -536,13 +536,13 @@ class gl_sarray {
    *
    * Each call to the callback passes:
    *  - a thread id,
-   *  - a shared_ptr to an sframe_rows object
+   *  - a shared_ptr to an xframe_rows object
    *
-   * The sframe_rows object looks like a vector<vector<flexible_type>>.
+   * The xframe_rows object looks like a vector<vector<flexible_type>>.
    * i.e. to look at all the rows, you need to write:
    *
    * \code
-   * sa.materalize_to_callback([&](size_t, const std::shared_ptr<sframe_rows>& rows) {
+   * sa.materalize_to_callback([&](size_t, const std::shared_ptr<xframe_rows>& rows) {
    *   for(const auto& row: *rows) {
    *      // each row looks like an std::vector<flexible_type>
    *      // and can be casted to to a vector<flexible_type> if necessary
@@ -557,7 +557,7 @@ class gl_sarray {
    * \param nthreads Number of threads. If not specified, #cpus is used
    */
   void materialize_to_callback(
-      std::function<bool(size_t, const std::shared_ptr<sframe_rows>&)> callback,
+      std::function<bool(size_t, const std::shared_ptr<xframe_rows>&)> callback,
       size_t nthreads = (size_t)(-1));
 
 
@@ -617,7 +617,7 @@ class gl_sarray {
    * created at the location which will contain the SArray.
    *
    * \param format Either "binary", "text", "csv". Defaults to "binary". optional.
-   *     Format in which to save the SFrame. Binary saved SArrays can be
+   *     Format in which to save the XFrame. Binary saved SArrays can be
    *     loaded much faster and without any format conversion losses.
    *     'text' and 'csv' are synonymous: Each SArray row will be written
    *     as a single line in an output text file. If not
@@ -943,7 +943,7 @@ class gl_sarray {
    * [2, 4, 6]
    * \endcode
    *
-   * \see gl_sframe::apply
+   * \see gl_xframe::apply
    */
   gl_sarray apply(std::function<flexible_type(const flexible_type&)> fn,
                   flex_type_enum dtype,
@@ -1427,7 +1427,7 @@ class gl_sarray {
    * [1, 2, 3, 4, 5, 6]
    * \endcode
    *
-   * \see \ref gl_sframe.append
+   * \see \ref gl_xframe.append
    */
   gl_sarray append(const gl_sarray& other) const;
 
@@ -1436,7 +1436,7 @@ class gl_sarray {
    * if the \ref gl_sarray is of dictionary type. Will not necessarily preserve
    * the order of the given \ref gl_sarray in the new \ref gl_sarray.
    *
-   * \see gl_sframe::unique
+   * \see gl_xframe::unique
    */
   gl_sarray unique() const;
 
@@ -1473,8 +1473,8 @@ class gl_sarray {
 
   /**
    * Splits an \ref gl_sarray of datetime type to multiple columns, return a
-   * new \ref gl_sframe that contains expanded columns. A \ref gl_sarray of datetime will be
-   * split by default into an \ref gl_sframe of 6 columns, one for each
+   * new \ref gl_xframe that contains expanded columns. A \ref gl_sarray of datetime will be
+   * split by default into an \ref gl_xframe of 6 columns, one for each
    * year/month/day/hour/minute/second element.
    *
    * When splitting a \ref gl_sarray of datetime type, new columns are named:
@@ -1518,18 +1518,18 @@ class gl_sarray {
    * \endcode
    *
    */
-  gl_sframe split_datetime(const std::string& column_name_prefix = "X",
+  gl_xframe split_datetime(const std::string& column_name_prefix = "X",
                    const std::vector<std::string>& limit = {"year","month","day","hour","minute","second"},
                    bool tzone=false) const;
 
   /**
    * Convert an \ref gl_sarray of list, array, or dict type to an \ref
-   * gl_sframe with multiple columns.
+   * gl_xframe with multiple columns.
    *
    * "unpack" expands an \ref gl_sarray using the values of each
-   * vector/list/dict as elements in a new \ref gl_sframe of multiple columns.
+   * vector/list/dict as elements in a new \ref gl_xframe of multiple columns.
    * For example, an \ref gl_sarray of lists each of length 4 will be expanded
-   * into an \ref gl_sframe of 4 columns, one for each list element. An \ref
+   * into an \ref gl_xframe of 4 columns, one for each list element. An \ref
    * gl_sarray of lists/arrays of varying size will be expand to a number of
    * columns equal to the longest list/array.  An \ref gl_sarray of
    * dictionaries will be expanded into as many columns as there are keys.
@@ -1545,7 +1545,7 @@ class gl_sarray {
    * this given value are also replaced with missing values. In an \ref
    * gl_sarray of vector type, NaN is interpreted as a missing value.
    *
-   * \ref gl_sframe::pack_columns() is the reverse effect of unpack.
+   * \ref gl_xframe::pack_columns() is the reverse effect of unpack.
    *
    * \param column_name_prefix Optional. If provided, unpacked column
    * names would start with the given prefix. Defaults to "X". If the empty
@@ -1636,7 +1636,7 @@ class gl_sarray {
    * [3 rows x 3 columns]
    * \endcode
    */
-  gl_sframe unpack(const std::string& column_name_prefix = "X",
+  gl_xframe unpack(const std::string& column_name_prefix = "X",
                    const std::vector<flex_type_enum>& column_types = std::vector<flex_type_enum>(),
                    const flexible_type& na_value = FLEX_UNDEFINED,
                    const std::vector<flexible_type>& limit = std::vector<flexible_type>()) const;

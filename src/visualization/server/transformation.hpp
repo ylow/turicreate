@@ -15,10 +15,10 @@ namespace visualization {
 class transformation_output {
   public:
     virtual ~transformation_output() = default;
-    virtual std::string vega_column_data(bool sframe = false) const = 0;
+    virtual std::string vega_column_data(bool xframe = false) const = 0;
 };
 
-class sframe_transformation_output : public transformation_output {
+class xframe_transformation_output : public transformation_output {
   public:
     virtual std::string vega_summary_data() const = 0;
 };

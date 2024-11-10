@@ -16,10 +16,10 @@
 #include <visualization/server/vega_spec.hpp>
 
 namespace turi {
-  class unity_sframe_base;
+  class unity_xframe_base;
 
   namespace visualization {
-    std::shared_ptr<Plot> plot_columnwise_summary(std::shared_ptr<unity_sframe_base> sf);
+    std::shared_ptr<Plot> plot_columnwise_summary(std::shared_ptr<unity_xframe_base> sf);
   }
 }
 

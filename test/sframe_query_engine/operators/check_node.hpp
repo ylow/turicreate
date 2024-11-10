@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef SFRAME_QUERY_ENGINE_TEST_UTIL_CHECK_NODE
-#define SFRAME_QUERY_ENGINE_TEST_UTIL_CHECK_NODE
+#ifndef XFRAME_QUERY_ENGINE_TEST_UTIL_CHECK_NODE
+#define XFRAME_QUERY_ENGINE_TEST_UTIL_CHECK_NODE
 
 #include <core/storage/query_engine/execution/execution_node.hpp>
 #include <core/data/flexible_type/flexible_type.hpp>

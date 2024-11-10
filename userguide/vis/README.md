@@ -23,7 +23,7 @@ There are three primary visualization methods in Turi Create:
   rendered is determined automatically by the type of data structure, the
   underlying type of the data structure (`dtype`), and the number of rows of
   data. See
-  [SFrame.show](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.show.html)
+  [XFrame.show](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.show.html)
   and
   [SArray.show](https://apple.github.io/turicreate/docs/api/generated/turicreate.SArray.show.html).
 * `turicreate.show(x=, y=)` produces a two-dimensional plot of an
@@ -31,10 +31,10 @@ There are three primary visualization methods in Turi Create:
   is determined automatically by the underlying `dtype` of both `x` and `y`.
   See
   [turicreate.show](https://apple.github.io/turicreate/docs/api/generated/turicreate.show.html).
-* `explore` opens an interactive view of the data structure. For SFrame and
+* `explore` opens an interactive view of the data structure. For XFrame and
   SArray, this takes the form of a scrollable table of rows and columns of
   data. See
-  [SFrame.explore](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.explore.html)
+  [XFrame.explore](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.explore.html)
   and
   [SArray.explore](https://apple.github.io/turicreate/docs/api/generated/turicreate.SArray.explore.html).
 
@@ -61,7 +61,7 @@ of aggregation used in Turi Create visualization include
 [histogram binning](https://en.wikipedia.org/wiki/Histogram), used in the
 histogram and heat map plots, and
 [count distinct](https://en.wikipedia.org/wiki/Count-distinct_problem), used in
-the summary statistics in `SFrame.show`. These aggregations can take a long
+the summary statistics in `XFrame.show`. These aggregations can take a long
 time to perform on a large dataset.
 
 To enable you to see the plot immediately, Turi Create runs these aggregators
@@ -74,7 +74,7 @@ While aggregation is happening, a green progress bar is shown at the top of the
 plot area (see screenshot below). The progress bar will disappear once
 aggregation has finished.
 
-![sf.show() with progress bar](images/sframe_show_with_progress.png)
+![sf.show() with progress bar](images/xframe_show_with_progress.png)
 
 ##### One-Dimensional Plots
 
@@ -84,7 +84,7 @@ numeric data (`int` or `float`), this shows a numeric
 For categorical data (`str`), this shows a
 [bar chart](https://en.wikipedia.org/wiki/Bar_chart)
 representing the counts of frequently occurring items, sorted by count. The
-`show` method on SFrame produces a summary of each column of the SFrame, using
+`show` method on XFrame produces a summary of each column of the XFrame, using
 the plot types described for `SArray.show`.
 
 ##### Two-Dimensional Plots
@@ -109,9 +109,9 @@ In order to stream plots on very large datasets, we use some highly accurate
 approximate aggregators from
 [Sketch](https://apple.github.io/turicreate/docs/api/generated/turicreate.Sketch.html#turicreate.Sketch):
 
-* `Num. Unique` in `SFrame.show` uses `num_unique`.
-* `Median` in `SFrame.show` and `SArray.show` for `int` and `float` columns uses `quantile`.
-* Counts shown in the plot for categorical item frequency in `SFrame.show` and `SArray.show` on `str` columns use `frequent_items`.
+* `Num. Unique` in `XFrame.show` uses `num_unique`.
+* `Median` in `XFrame.show` and `SArray.show` for `int` and `float` columns uses `quantile`.
+* Counts shown in the plot for categorical item frequency in `XFrame.show` and `SArray.show` on `str` columns use `frequent_items`.
 * All numeric values in Box Plots use `quantile`.
 
 All other values shown in Turi Create visualizations are calculated exactly.
@@ -122,7 +122,7 @@ Most `show` methods have optional parameters for specifying some plot
 configurations:
 
 * `title=` sets the title of the plot for `SArray.show` and `turicreate.show`,
-  or the title of the exploration UI for `SFrame.explore` and `SArray.explore`.
+  or the title of the exploration UI for `XFrame.explore` and `SArray.explore`.
 * `xlabel=` sets the label of the X axis for `SArray.show` and `turicreate.show`.
 * `ylabel=` sets the label of the Y axis for `SArray.show` and `turicreate.show`.
 
@@ -165,7 +165,7 @@ The `explore` method allows for interactive exploration of the dataset,
 including raw (non-aggregated) data. This takes the form of a
 scrollable table capable of showing all rows and columns from the dataset:
 
-![SFrame.explore](images/sframe_explore.png)
+![XFrame.explore](images/xframe_explore.png)
 
 Unlike `show`, the result of `explore` cannot be saved to `.png` or exported as
 a Vega specification.
@@ -178,8 +178,8 @@ use visualization in the process of feature engineering, see
 [sample use cases](use_cases.md).
 For specific methods and their API parameters, see:
 
-* [SFrame.explore](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.explore.html)
-* [SFrame.show](https://apple.github.io/turicreate/docs/api/generated/turicreate.SFrame.show.html)
+* [XFrame.explore](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.explore.html)
+* [XFrame.show](https://apple.github.io/turicreate/docs/api/generated/turicreate.XFrame.show.html)
 * [SArray.explore](https://apple.github.io/turicreate/docs/api/generated/turicreate.SArray.explore.html)
 * [SArray.show](https://apple.github.io/turicreate/docs/api/generated/turicreate.SArray.show.html)
 * [turicreate.show](https://apple.github.io/turicreate/docs/api/generated/turicreate.show.html)

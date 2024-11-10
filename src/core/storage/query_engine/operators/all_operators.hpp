@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_QUERY_ALL_OPERATORS_H_
-#define TURI_SFRAME_QUERY_ALL_OPERATORS_H_
+#ifndef TURI_XFRAME_QUERY_ALL_OPERATORS_H_
+#define TURI_XFRAME_QUERY_ALL_OPERATORS_H_
 
 #include <core/storage/query_engine/operators/append.hpp>
 #include <core/storage/query_engine/operators/binary_transform.hpp>
@@ -13,7 +13,7 @@
 #include <core/storage/query_engine/operators/project.hpp>
 #include <core/storage/query_engine/operators/range.hpp>
 #include <core/storage/query_engine/operators/sarray_source.hpp>
-#include <core/storage/query_engine/operators/sframe_source.hpp>
+#include <core/storage/query_engine/operators/xframe_source.hpp>
 #include <core/storage/query_engine/operators/transform.hpp>
 #include <core/storage/query_engine/operators/generalized_transform.hpp>
 #include <core/storage/query_engine/operators/union.hpp>
@@ -26,4 +26,4 @@
 #include <core/storage/query_engine/operators/ternary_operator.hpp>
 
 
-#endif /* TURI_SFRAME_QUERY_ALL_OPERATORS_H_ */
+#endif /* TURI_XFRAME_QUERY_ALL_OPERATORS_H_ */

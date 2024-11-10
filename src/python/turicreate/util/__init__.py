@@ -15,9 +15,9 @@ import uuid as _uuid
 import datetime as _datetime
 import sys as _sys
 
-from ._sframe_generation import generate_random_sframe
-from ._sframe_generation import generate_random_regression_sframe
-from ._sframe_generation import generate_random_classification_sframe
+from ._xframe_generation import generate_random_xframe
+from ._xframe_generation import generate_random_regression_xframe
+from ._xframe_generation import generate_random_classification_xframe
 from ._type_checks import _raise_error_if_not_of_type
 from ._type_checks import _is_non_string_iterable
 from ._progress_table_printer import ProgressTablePrinter as _ProgressTablePrinter
@@ -166,10 +166,10 @@ def _make_internal_url(url):
 
 def is_directory_archive(path):
     """
-    Utility function that returns True if the path provided is a directory that has an SFrame in it.
+    Utility function that returns True if the path provided is a directory that has an XFrame in it.
 
-    SFrames are written to disk as a directory archive, this function identifies if a given directory is an archive
-    for an SFrame.
+    XFrames are written to disk as a directory archive, this function identifies if a given directory is an archive
+    for an XFrame.
 
     Parameters
     ----------
@@ -207,7 +207,7 @@ def get_archive_type(path):
 
     Returns
     -------
-    Returns a string of: sarray, sframe. Raises TypeError for anything else.
+    Returns a string of: sarray, xframe. Raises TypeError for anything else.
     """
     if not is_directory_archive(path):
         raise TypeError("Unable to determine the type of archive at path: %s" % path)
@@ -225,7 +225,7 @@ def get_archive_type(path):
 
 def crossproduct(d):
     """
-    Create an SFrame containing the crossproduct of all provided options.
+    Create an XFrame containing the crossproduct of all provided options.
 
     Parameters
     ----------
@@ -235,7 +235,7 @@ def crossproduct(d):
 
     Returns
     -------
-    out : SFrame
+    out : XFrame
         There will be a column for each key in the provided dictionary,
         and a row for each unique combination of all values.
 
@@ -267,7 +267,7 @@ def crossproduct(d):
 def get_turicreate_object_type(url):
     """
     Given url where a Turi Create object is persisted, return the Turi
-    Create object type: 'model', 'sframe', or 'sarray'
+    Create object type: 'model', 'xframe', or 'sarray'
     """
     from .._connect import main as _glconnect
 
@@ -276,7 +276,7 @@ def get_turicreate_object_type(url):
     return ret
 
 
-def _assert_sframe_equal(
+def _assert_xframe_equal(
     sf1,
     sf2,
     check_column_names=True,
@@ -285,7 +285,7 @@ def _assert_sframe_equal(
     float_column_delta=None,
 ):
     """
-    Assert the two SFrames are equal.
+    Assert the two XFrames are equal.
 
     The default behavior of this function uses the strictest possible
     definition of equality, where all columns must be in the same order, with
@@ -296,9 +296,9 @@ def _assert_sframe_equal(
 
     Parameters
     ----------
-    sf1 : SFrame
+    sf1 : XFrame
 
-    sf2 : SFrame
+    sf2 : XFrame
 
     check_column_names : bool
         If true, assert if the data values in two columns are the same, but
@@ -312,8 +312,8 @@ def _assert_sframe_equal(
         determine which columns to compare.
 
     check_row_order : bool
-        If true, assert if all rows in the first SFrame exist in the second
-        SFrame, but they are not in the same order.
+        If true, assert if all rows in the first XFrame exist in the second
+        XFrame, but they are not in the same order.
 
     float_column_delta : float
         The acceptable delta that two float values can be and still be
@@ -321,10 +321,10 @@ def _assert_sframe_equal(
         This is the default behavior since columns of all Nones are often of
         float type. Applies to all float columns.
     """
-    from .. import SFrame as _SFrame
+    from .. import XFrame as _XFrame
 
-    if (type(sf1) is not _SFrame) or (type(sf2) is not _SFrame):
-        raise TypeError("Cannot function on types other than SFrames.")
+    if (type(sf1) is not _XFrame) or (type(sf2) is not _XFrame):
+        raise TypeError("Cannot function on types other than XFrames.")
 
     if not check_column_order and not check_column_names:
         raise ValueError("Cannot ignore both column order and column names.")
@@ -351,7 +351,7 @@ def _assert_sframe_equal(
             sorted_s1_names != sorted_s2_names
         ):
             raise AssertionError(
-                "SFrame does not have same column names: "
+                "XFrame does not have same column names: "
                 + str(sf1.column_names())
                 + " != "
                 + str(sf2.column_names())

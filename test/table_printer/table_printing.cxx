@@ -10,9 +10,9 @@
 #include <algorithm>
 #include <core/util/cityhash_tc.hpp>
 
-// SFrame and Flex type
+// XFrame and Flex type
 #include <core/logging/table_printer/table_printer.hpp>
-#include <core/storage/sframe_data/testing_utils.hpp>
+#include <core/storage/xframe_data/testing_utils.hpp>
 
 using namespace turi;
 
@@ -23,9 +23,9 @@ struct test_table_printer  {
   void test_table() {
     size_t num_columns = 4;
 
-    sframe sf = make_random_sframe(100, "znsb");
+    xframe sf = make_random_xframe(100, "znsb");
 
-    std::vector<std::vector<flexible_type> > values = testing_extract_sframe_data(sf);
+    std::vector<std::vector<flexible_type> > values = testing_extract_xframe_data(sf);
 
     std::vector<std::pair<std::string, size_t> > format(num_columns);
 
@@ -44,9 +44,9 @@ struct test_table_printer  {
                                  std::string(values[i][2]), bool(values[i][3]));
       }
 
-      sframe saved_sf = table.get_tracked_table();
+      xframe saved_sf = table.get_tracked_table();
 
-      std::vector<std::vector<flexible_type> > saved_values = testing_extract_sframe_data(saved_sf);
+      std::vector<std::vector<flexible_type> > saved_values = testing_extract_xframe_data(saved_sf);
 
       DASSERT_EQ(saved_values.size(), size_t(100) / interval);
 

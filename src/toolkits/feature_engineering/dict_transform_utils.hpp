@@ -5,7 +5,7 @@
  */
 #include <core/data/flexible_type/flexible_type.hpp>
 #include <functional>
-#include <core/data/sframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
 
 namespace turi {
 

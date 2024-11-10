@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_SARRAY_FILE_FORMAT_V2_HPP
-#define TURI_SFRAME_SARRAY_FILE_FORMAT_V2_HPP
+#ifndef TURI_XFRAME_SARRAY_FILE_FORMAT_V2_HPP
+#define TURI_XFRAME_SARRAY_FILE_FORMAT_V2_HPP
 #include <string>
 #include <memory>
 #include <typeinfo>
@@ -14,16 +14,16 @@
 #include <core/logging/logger.hpp>
 #include <core/random/random.hpp>
 #include <core/util/dense_bitset.hpp>
-#include <core/storage/sframe_data/sarray_file_format_interface.hpp>
-#include <core/storage/sframe_data/sarray_index_file.hpp>
+#include <core/storage/xframe_data/sarray_file_format_interface.hpp>
+#include <core/storage/xframe_data/sarray_index_file.hpp>
 #include <core/storage/fileio/general_fstream.hpp>
 #include <core/storage/fileio/temp_files.hpp>
 #include <core/storage/serialization/serialization_includes.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_manager.hpp>
-#include <core/storage/sframe_data/sarray_v2_block_writer.hpp>
-#include <core/storage/sframe_data/sarray_v2_encoded_block.hpp>
-#include <core/storage/sframe_data/sarray_v2_type_encoding.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_manager.hpp>
+#include <core/storage/xframe_data/sarray_v2_block_writer.hpp>
+#include <core/storage/xframe_data/sarray_v2_encoded_block.hpp>
+#include <core/storage/xframe_data/sarray_v2_type_encoding.hpp>
 #include <core/system/cppipc/server/cancel_ops.hpp>
 namespace turi {
 
@@ -31,8 +31,8 @@ namespace turi {
 
 /**
  * \internal
- * \ingroup sframe_physical
- * \addtogroup sframe_internal SFrame Internal
+ * \ingroup xframe_physical
+ * \addtogroup xframe_internal XFrame Internal
  * \{
  */
 
@@ -155,7 +155,7 @@ class sarray_format_reader_v2: public sarray_format_reader<T> {
 
   size_t read_rows(size_t row_start,
                    size_t row_end,
-                   sframe_rows& out_obj);
+                   xframe_rows& out_obj);
 
   /**
    * Reads a collection of rows, storing the result in out_obj.
@@ -384,9 +384,9 @@ fetch_cache_from_file(size_t block_number, cache_entry& ret) {
   // evict something random
   // we will only loop at most this number of times
   size_t num_to_evict = m_cache_size.value -
-      SFRAME_MAX_BLOCKS_IN_CACHE;
+      XFRAME_MAX_BLOCKS_IN_CACHE;
   while(num_to_evict > 0 &&
-        m_cache_size.value > SFRAME_MAX_BLOCKS_IN_CACHE) {
+        m_cache_size.value > XFRAME_MAX_BLOCKS_IN_CACHE) {
     try_evict_something_from_cache();
     --num_to_evict;
   }
@@ -409,9 +409,9 @@ fetch_cache_from_file(size_t block_number, cache_entry& ret) {
   m_used_cache_entries.set_bit(block_number);
   // evict something random
   // we will only loop at most this number of times
-  size_t num_to_evict = m_cache_size.value - SFRAME_MAX_BLOCKS_IN_CACHE;
+  size_t num_to_evict = m_cache_size.value - XFRAME_MAX_BLOCKS_IN_CACHE;
   while(num_to_evict > 0 &&
-        m_cache_size.value > SFRAME_MAX_BLOCKS_IN_CACHE) {
+        m_cache_size.value > XFRAME_MAX_BLOCKS_IN_CACHE) {
     try_evict_something_from_cache();
     --num_to_evict;
   }
@@ -556,7 +556,7 @@ template <>
 inline size_t sarray_format_reader_v2<flexible_type>::
 read_rows(size_t row_start,
           size_t row_end,
-          sframe_rows& out_obj) {
+          xframe_rows& out_obj) {
   return sarray_format_reader<flexible_type>::read_rows(row_start, row_end, out_obj);
 }
 
@@ -565,7 +565,7 @@ template <typename T>
 inline size_t sarray_format_reader_v2<T>::
 read_rows(size_t row_start,
           size_t row_end,
-          sframe_rows& out_obj) {
+          xframe_rows& out_obj) {
   ASSERT_MSG(false, "Attempting to type decode a non-flexible_type column");
   return 0;
 }
@@ -713,7 +713,7 @@ class sarray_group_format_writer_v2: public sarray_group_format_writer<T> {
     }
   }
 
-  void write_segment(size_t segmentid, const sframe_rows& rows);
+  void write_segment(size_t segmentid, const xframe_rows& rows);
 
   /** Closes all writes
    */
@@ -837,14 +837,14 @@ inline void sarray_group_format_writer_v2<flexible_type>::flush_block(size_t col
   std::lock_guard<simple_spinlock> guard(colbuf.lock);
   colbuf.total_bytes_written += ret;
   colbuf.total_elements_written += write_size;
-  colbuf.elements_before_flush = (float)(SFRAME_DEFAULT_BLOCK_SIZE) / (
+  colbuf.elements_before_flush = (float)(XFRAME_DEFAULT_BLOCK_SIZE) / (
       (float)(colbuf.total_bytes_written+1) / (float)(colbuf.total_elements_written+1));
   colbuf.elements_before_flush = std::max(colbuf.elements_before_flush,
                                           SARRAY_WRITER_MIN_ELEMENTS_PER_BLOCK);
   colbuf.elements_before_flush = std::min(colbuf.elements_before_flush,
-                                          SFRAME_WRITER_MAX_BUFFERED_CELLS / (m_nsegments * m_column_buffers.size()));
+                                          XFRAME_WRITER_MAX_BUFFERED_CELLS / (m_nsegments * m_column_buffers.size()));
   colbuf.elements_before_flush = std::min(colbuf.elements_before_flush,
-                                          SFRAME_WRITER_MAX_BUFFERED_CELLS_PER_BLOCK);
+                                          XFRAME_WRITER_MAX_BUFFERED_CELLS_PER_BLOCK);
 }
 
 template <typename T>
@@ -866,20 +866,20 @@ inline void sarray_group_format_writer_v2<T>::flush_block(size_t columnid,
   std::lock_guard<simple_spinlock> guard(colbuf.lock);
   colbuf.total_bytes_written += ret;
   colbuf.total_elements_written += write_size;
-  colbuf.elements_before_flush = (float)(SFRAME_DEFAULT_BLOCK_SIZE) / (
+  colbuf.elements_before_flush = (float)(XFRAME_DEFAULT_BLOCK_SIZE) / (
       (float)(colbuf.total_bytes_written+1) / (float)(colbuf.total_elements_written+1));
   colbuf.elements_before_flush = std::max(colbuf.elements_before_flush,
                                           SARRAY_WRITER_MIN_ELEMENTS_PER_BLOCK);
   colbuf.elements_before_flush = std::min(colbuf.elements_before_flush,
-                                          SFRAME_WRITER_MAX_BUFFERED_CELLS / (m_nsegments * m_column_buffers.size()));
+                                          XFRAME_WRITER_MAX_BUFFERED_CELLS / (m_nsegments * m_column_buffers.size()));
   colbuf.elements_before_flush = std::min(colbuf.elements_before_flush,
-                                          SFRAME_WRITER_MAX_BUFFERED_CELLS_PER_BLOCK);
+                                          XFRAME_WRITER_MAX_BUFFERED_CELLS_PER_BLOCK);
 
 }
 
 template <>
 inline void sarray_group_format_writer_v2<flexible_type>::write_segment(size_t segmentid,
-                                                                        const sframe_rows& rows) {
+                                                                        const xframe_rows& rows) {
   DASSERT_LT(segmentid, m_nsegments);
   DASSERT_EQ(m_array_open, true);
 
@@ -898,8 +898,8 @@ inline void sarray_group_format_writer_v2<flexible_type>::write_segment(size_t s
 
 template <typename T>
 inline void sarray_group_format_writer_v2<T>::write_segment(size_t segmentid,
-                                                     const sframe_rows& rows) {
-  ASSERT_MSG(false, "Cannot write to general SArray with sframe_rows");
+                                                     const xframe_rows& rows) {
+  ASSERT_MSG(false, "Cannot write to general SArray with xframe_rows");
 }
 
 } // namespace turi

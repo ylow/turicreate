@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_COMMA_ESCAPE_STRING_HPP
-#define TURI_SFRAME_COMMA_ESCAPE_STRING_HPP
+#ifndef TURI_XFRAME_COMMA_ESCAPE_STRING_HPP
+#define TURI_XFRAME_COMMA_ESCAPE_STRING_HPP
 
 #include <string>
 #include <iostream>

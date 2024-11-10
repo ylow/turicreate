@@ -1,7 +1,7 @@
 
 
-make_library(gl_sframe OBJECT
+make_library(gl_xframe OBJECT
   SOURCES
     gl_sarray.cpp
-    gl_sframe.cpp
+    gl_xframe.cpp
 )

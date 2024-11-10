@@ -3,25 +3,25 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_GROUPBY_AGGREGATE_IMPL_HPP
-#define TURI_SFRAME_GROUPBY_AGGREGATE_IMPL_HPP
+#ifndef TURI_XFRAME_GROUPBY_AGGREGATE_IMPL_HPP
+#define TURI_XFRAME_GROUPBY_AGGREGATE_IMPL_HPP
 
 #include <memory>
 #include <vector>
 #include <cstdint>
 #include <functional>
 #include <unordered_set>
-#include <core/storage/sframe_data/sframe.hpp>
+#include <core/storage/xframe_data/xframe.hpp>
 #include <core/util/cityhash_tc.hpp>
 #include <core/parallel/mutex.hpp>
-#include <core/storage/sframe_data/group_aggregate_value.hpp>
+#include <core/storage/xframe_data/group_aggregate_value.hpp>
 #include <core/generics/hopscotch_map.hpp>
 
 namespace turi {
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup groupby_aggregate Groupby Aggregation
  * \{
  */
@@ -126,9 +126,9 @@ struct groupby_element {
 
   static size_t hash_key(const std::vector<flexible_type>& key, size_t keylen);
 
-  static size_t hash_key(const sframe_rows::row& key);
+  static size_t hash_key(const xframe_rows::row& key);
 
-  static size_t hash_key(const sframe_rows::row& key, size_t keylen);
+  static size_t hash_key(const xframe_rows::row& key, size_t keylen);
 
   size_t hash() const;
 
@@ -145,7 +145,7 @@ struct groupby_element {
 namespace std {
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup groupby_aggregate Groupby Aggregation
  * Hash function.
  *
@@ -166,7 +166,7 @@ struct hash<turi::groupby_aggregate_impl::groupby_element> {
 namespace turi {
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * \addtogroup groupby_aggregate Groupby Aggregation
  * \{
  */
@@ -174,14 +174,14 @@ namespace turi {
 namespace groupby_aggregate_impl {
 
 /**
- * This maintains the complete aggregation result for an SFrame.
+ * This maintains the complete aggregation result for an XFrame.
  *
  * This class essentially implements the entire groupby aggregation algorithm.
  * Aggregation groups are defined using \ref define_group.
  * After which, rows are inserted using the add method.
  *
  * num_segments is the maximum degree of parallelism permissible. This is
- * the number of segments of the output SFrame.
+ * the number of segments of the output XFrame.
  *
  * Keys are first hashed into a segment, and each segment is then executed
  * independently.
@@ -221,11 +221,11 @@ class group_aggregate_container {
             size_t num_keys);
 
    /// Add a new element to the container.
-  void add(const sframe_rows::row& val,
+  void add(const xframe_rows::row& val,
             size_t num_keys);
 
    /// Sort all elements in the container and writes to the output.
-   void group_and_write(sframe& out);
+   void group_and_write(xframe& out);
 
    /// init tls data members
    void init_tls();
@@ -303,7 +303,7 @@ class group_aggregate_container {
    std::unique_ptr<sarray<std::string>::reader_type> reader;
 
    /// Sort all elements in the container and writes to the output.
-   void group_and_write_segment(sframe& out,
+   void group_and_write_segment(xframe& out,
                                 std::shared_ptr<sarray<std::string>::reader_type> reader,
                                 size_t segmentid);
 };
@@ -315,4 +315,4 @@ class group_aggregate_container {
 } // namespace turi
 
 
-#endif //  TURI_SFRAME_GROUPBY_AGGREGATE_IMPL_HPP
+#endif //  TURI_XFRAME_GROUPBY_AGGREGATE_IMPL_HPP

@@ -11,15 +11,15 @@
 namespace turi {
 
 /**
-** Global configuration for sframe, keep them as non-constants because we want to
+** Global configuration for xframe, keep them as non-constants because we want to
 ** allow user/server to change the configuration according to the environment
 **/
-namespace sframe_config {
-EXPORT size_t SFRAME_SORT_BUFFER_SIZE = size_t(2*1024*1024)*size_t(1024);
-EXPORT size_t SFRAME_READ_BATCH_SIZE = 128;
+namespace xframe_config {
+EXPORT size_t XFRAME_SORT_BUFFER_SIZE = size_t(2*1024*1024)*size_t(1024);
+EXPORT size_t XFRAME_READ_BATCH_SIZE = 128;
 
 REGISTER_GLOBAL_WITH_CHECKS(int64_t,
-                            SFRAME_SORT_BUFFER_SIZE,
+                            XFRAME_SORT_BUFFER_SIZE,
                             true,
                             +[](int64_t val){ return (val >= 1024) &&
                             // Check against overflow...no more than an exabyte
@@ -27,7 +27,7 @@ REGISTER_GLOBAL_WITH_CHECKS(int64_t,
 
 
 REGISTER_GLOBAL_WITH_CHECKS(int64_t,
-                            SFRAME_READ_BATCH_SIZE,
+                            XFRAME_READ_BATCH_SIZE,
                             true,
                             +[](int64_t val){ return val >= 1; });
 

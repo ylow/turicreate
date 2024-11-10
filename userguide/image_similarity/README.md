@@ -22,8 +22,8 @@ import turicreate as tc
 reference_data  = tc.image_analysis.load_images('./101_ObjectCategories')
 reference_data = reference_data.add_row_number()
 
-# Save the SFrame for future use
-reference_data.save('./caltech-101.sframe')
+# Save the XFrame for future use
+reference_data.save('./caltech-101.xframe')
 ```
 
 We can explore the data interactively using:
@@ -41,7 +41,7 @@ model = tc.image_similarity.create(reference_data)
 
 Once created, we can query the model to retrieve the ten closest images
 in the original reference data (by setting the `k` parameter to `10`).
-The result of the query method is an SFrame with four columns: query
+The result of the query method is an XFrame with four columns: query
 label, reference label, distance, and rank of the reference point 
 among the query point's nearest neighbors.
 

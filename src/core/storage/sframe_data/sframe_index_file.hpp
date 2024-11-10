@@ -3,8 +3,8 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_UNITY_SFRAME_INDEX_FILE_HPP
-#define TURI_UNITY_SFRAME_INDEX_FILE_HPP
+#ifndef TURI_UNITY_XFRAME_INDEX_FILE_HPP
+#define TURI_UNITY_XFRAME_INDEX_FILE_HPP
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -15,16 +15,16 @@ namespace turi {
 
 
 /**
- * \ingroup sframe_physical
- * \addtogroup sframe_main Main SFrame Objects
+ * \ingroup xframe_physical
+ * \addtogroup xframe_main Main XFrame Objects
  * \{
  */
 
 /**
- * Describes all the information in an sframe index file
+ * Describes all the information in an xframe index file
  */
-struct sframe_index_file_information {
-  /// The format version of the sframe
+struct xframe_index_file_information {
+  /// The format version of the xframe
   size_t version = -1;
   /// The number of segments in the frame
   size_t nsegments = 0;
@@ -52,24 +52,24 @@ struct sframe_index_file_information {
   }
 };
 /**
- * Reads an sframe index file from disk.
+ * Reads an xframe index file from disk.
  * Raises an exception on failure.
  *
  * This function will also automatically de-relativize the
- * \ref sframe_index_file_information::column_files to get absolute paths
+ * \ref xframe_index_file_information::column_files to get absolute paths
  */
-sframe_index_file_information read_sframe_index_file(std::string index_file);
+xframe_index_file_information read_xframe_index_file(std::string index_file);
 
 /**
- * Writes an sframe index file to disk.
+ * Writes an xframe index file to disk.
  * Raises an exception on failure.
  *
  * This function will also automatically relativize the
- * \ref sframe_index_file_information::column_files to get relative paths
+ * \ref xframe_index_file_information::column_files to get relative paths
  * when writing to disk
  */
-void write_sframe_index_file(std::string index_file,
-                             const sframe_index_file_information& info);
+void write_xframe_index_file(std::string index_file,
+                             const xframe_index_file_information& info);
 
 /// \}
 } // namespace turi

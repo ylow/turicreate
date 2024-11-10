@@ -8,13 +8,13 @@
 
 #include <iterator>
 #include <type_traits>
-#include <core/storage/sframe_data/siterable.hpp>
+#include <core/storage/xframe_data/siterable.hpp>
 namespace turi {
-namespace sframe_impl {
+namespace xframe_impl {
 
 
 /**
- * \ingroup sframe_physical
+ * \ingroup xframe_physical
  * is_siterable<T>::value is true if T inherits from siterable
  */
 template <typename T,
@@ -33,7 +33,7 @@ struct is_siterable<T,void,void> {
 
 
 
-} // sframe_impl
+} // xframe_impl
 } // turicreate
 
 #endif

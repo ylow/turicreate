@@ -8,8 +8,8 @@
 
 #include <core/logging/assertions.hpp>
 #include <core/logging/logger.hpp>
-#include <core/data/sframe/gl_sarray.hpp>
-#include <core/data/sframe/gl_sframe.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
+#include <core/data/xframe/gl_xframe.hpp>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/archive/iterators/base64_from_binary.hpp>
@@ -142,8 +142,8 @@ static void _to_serializable(flexible_type& data, schema_t& schema, const flexib
   }
 }
 
-static void _to_serializable(flexible_type& data, schema_t& schema, const gl_sframe& input) {
-  schema.insert(std::make_pair("type", JSON::types::SFRAME));
+static void _to_serializable(flexible_type& data, schema_t& schema, const gl_xframe& input) {
+  schema.insert(std::make_pair("type", JSON::types::XFRAME));
   flex_dict data_dict;
 
   flex_list column_names;
@@ -207,8 +207,8 @@ static void _any_to_serializable(flexible_type& data, schema_t& schema, const va
       _to_serializable(data, schema, variant_get_value<flexible_type>(input));
       break;
     case 4:
-      // sframe
-      _to_serializable(data, schema, variant_get_value<gl_sframe>(input));
+      // xframe
+      _to_serializable(data, schema, variant_get_value<gl_xframe>(input));
       break;
     case 5:
       // sarray
@@ -223,7 +223,7 @@ static void _any_to_serializable(flexible_type& data, schema_t& schema, const va
       _to_serializable(data, schema, variant_get_value<std::vector<variant_type>>(input));
       break;
     default:
-      log_and_throw("Unsupported type for to_serializable. Expected a flexible_type, SFrame, SArray, dictionary, or list.");
+      log_and_throw("Unsupported type for to_serializable. Expected a flexible_type, XFrame, SArray, dictionary, or list.");
   }
 }
 

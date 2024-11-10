@@ -17,16 +17,16 @@ make_library(unity_core OBJECT
     simple_model.cpp
     variant_deep_serialize.cpp
     flex_dict_view.cpp
-    ../extensions/additional_sframe_utilities.cpp
+    ../extensions/additional_xframe_utilities.cpp
   REQUIRES
-    unity_sframe
-    gl_sframe
+    unity_xframe
+    gl_xframe
     flexible_type
     pylambda
     table_printer
-    sframe
+    xframe
     cancel_serverside_ops
-    sframe_query_engine
+    xframe_query_engine
     libjson 
     curl
     startup_teardown

@@ -7,12 +7,12 @@
 #include <memory>
 #include <queue>
 #include <thread>
-#include <core/storage/sframe_data/groupby_aggregate_impl.hpp>
-#include <core/storage/sframe_data/sarray_reader_buffer.hpp>
+#include <core/storage/xframe_data/groupby_aggregate_impl.hpp>
+#include <core/storage/xframe_data/sarray_reader_buffer.hpp>
 #include <core/parallel/lambda_omp.hpp>
 #include <core/util/cityhash_tc.hpp>
 #include <core/util/fs_util.hpp>
-#include <core/storage/sframe_data/groupby_aggregate.hpp>
+#include <core/storage/xframe_data/groupby_aggregate.hpp>
 
 namespace turi {
 namespace groupby_aggregate_impl {
@@ -191,7 +191,7 @@ size_t groupby_element::hash_key(const std::vector<flexible_type>& key, size_t l
 }
 
 
-size_t groupby_element::hash_key(const sframe_rows::row& key) {
+size_t groupby_element::hash_key(const xframe_rows::row& key) {
   size_t ret = 0;
   for (size_t i = 0;i < key.size(); ++i) {
     ret = hash64_combine(ret, key[i].hash());
@@ -199,7 +199,7 @@ size_t groupby_element::hash_key(const sframe_rows::row& key) {
   return ret;
 }
 
-size_t groupby_element::hash_key(const sframe_rows::row& key, size_t len) {
+size_t groupby_element::hash_key(const xframe_rows::row& key, size_t len) {
   size_t ret = 0;
   for (size_t i = 0;i < len; ++i) {
     ret = hash64_combine(ret, key[i].hash());
@@ -327,7 +327,7 @@ void group_aggregate_container::add(const std::vector<flexible_type>& val,
 }
 
 /* using thread_local for optimization */
-void group_aggregate_container::add(const sframe_rows::row& val,
+void group_aggregate_container::add(const xframe_rows::row& val,
                                     size_t num_keys) {
   throw_if_not_initialized();
 
@@ -510,7 +510,7 @@ void group_aggregate_container::merge_local_buffer_set() {
                           << " ms." << std::endl;
 }
 
-void group_aggregate_container::group_and_write(sframe& out) {
+void group_aggregate_container::group_and_write(xframe& out) {
   ASSERT_MSG(UNLIKELY(!tss_.init_),
              "call flush_tls fisrt before write out groupby result");
 
@@ -533,7 +533,7 @@ void group_aggregate_container::group_and_write(sframe& out) {
 }
 
 void group_aggregate_container::group_and_write_segment(
-    sframe& out, std::shared_ptr<sarray<std::string>::reader_type> reader,
+    xframe& out, std::shared_ptr<sarray<std::string>::reader_type> reader,
     size_t segmentid) {
 
   // prepare the begin row and end row for each chunk.

@@ -3,11 +3,11 @@
  * Use of this source code is governed by a BSD-3-clause license that can
  * be found in the LICENSE.txt file or at https://opensource.org/licenses/BSD-3-Clause
  */
-#ifndef TURI_SFRAME_COMPACT_IMPL_HPP
-#define TURI_SFRAME_COMPACT_IMPL_HPP
+#ifndef TURI_XFRAME_COMPACT_IMPL_HPP
+#define TURI_XFRAME_COMPACT_IMPL_HPP
 #include <vector>
 #include <memory>
-#include <core/storage/sframe_data/sarray.hpp>
+#include <core/storage/xframe_data/sarray.hpp>
 namespace turi {
 namespace {
 /**
@@ -29,7 +29,7 @@ compact_rows(sarray<T>& arr, size_t row_start, size_t row_end) {
 
     // read input array
   auto reader = arr.get_reader();
-  sframe_rows rows;
+  xframe_rows rows;
   while(row_start < row_end) {
     size_t read_end = std::min(row_start + DEFAULT_SARRAY_READER_BUFFER_SIZE, row_end);
     bool read_ok = reader->read_rows(row_start, read_end, rows);

@@ -15,9 +15,9 @@ Visualize data in various forms including scatter plots, heat maps, categorical 
  SArray.show
  SArray.plot
  SArray.explore
- SFrame.show
- SFrame.plot
- SFrame.explore
+ XFrame.show
+ XFrame.plot
+ XFrame.explore
  visualization.scatter
  visualization.heatmap
  visualization.categorical_heatmap

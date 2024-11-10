@@ -54,7 +54,7 @@ following features.
 import turicreate as tc
 
 # Load the data
-data =  tc.SFrame('ratings-data.csv')
+data =  tc.XFrame('ratings-data.csv')
 
 # Restaurants with rating >=3 are good
 data['is_good'] = data['stars'] >= 3
@@ -124,7 +124,7 @@ print(predictions)
 |  ...  |      ...       |
 +-------+----------------+
 [43018 rows x 2 columns]
-Note: Only the head of the SFrame is printed.
+Note: Only the head of the XFrame is printed.
 You can use print_rows(num_rows=m, num_columns=n) to print more rows and columns.
 ```
 
@@ -184,7 +184,7 @@ Confusion Matrix :
 [4 rows x 3 columns]
 ```
 
-Using basic SFrame operations, we can also isolate the examples in the
+Using basic XFrame operations, we can also isolate the examples in the
 test data where the model made mistakes:
 
 ```python
@@ -225,7 +225,7 @@ assigning asymmetric costs of misclassifying elements of different classes.
 
 ```python
 # Load the data
-data =  tc.SFrame.read_csv('mushroom.csv')
+data =  tc.XFrame.read_csv('mushroom.csv')
 
 # Label 'c' is edible
 data['label'] = data['label'] == 'c'
@@ -251,7 +251,7 @@ create a model a finite set of labels at the same time, say "cat", "dog", "rat",
 import turicreate as tc
 
 # Load the data
-data = tc.SFrame('mnist/train6k-array')
+data = tc.XFrame('mnist/train6k-array')
 
 # Make a train-test split
 train_data, test_data = data.random_split(0.8)
@@ -259,7 +259,7 @@ train_data, test_data = data.random_split(0.8)
 # Create a model
 model = tc.logistic_classifier.create(train_data, target='label')
 
-# Save predictions to an SFrame (class and corresponding class-probabilities)
+# Save predictions to an XFrame (class and corresponding class-probabilities)
 predictions = model.classify(test_data)
 
 # Top 5 predictions with probabilities, rank, and margin

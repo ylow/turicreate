@@ -8,8 +8,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <core/storage/sframe_interface/unity_sarray.hpp>
-#include <core/storage/sframe_interface/unity_sframe.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_interface/unity_xframe.hpp>
 #include <model_server/lib/flex_dict_view.hpp>
 #include <model_server/lib/unity_global.hpp>
 #include <model_server/lib/unity_global_singleton.hpp>
@@ -22,11 +22,11 @@
 #include <core/util/hash_value.hpp>
 #include <core/parallel/atomic.hpp>
 #include <core/parallel/lambda_omp.hpp>
-#include <core/storage/sframe_interface/unity_sarray_binary_operations.hpp>
-#include <core/storage/sframe_data/csv_line_tokenizer.hpp>
-#include <core/storage/sframe_data/parallel_csv_parser.hpp>
+#include <core/storage/xframe_interface/unity_sarray_binary_operations.hpp>
+#include <core/storage/xframe_data/csv_line_tokenizer.hpp>
+#include <core/storage/xframe_data/parallel_csv_parser.hpp>
 #include <core/data/flexible_type/flexible_type_spirit_parser.hpp>
-#include <core/storage/sframe_data/sframe_constants.hpp>
+#include <core/storage/xframe_data/xframe_constants.hpp>
 #include <core/storage/serialization/oarchive.hpp>
 #include <core/storage/serialization/iarchive.hpp>
 #include <model_server/lib/auto_close_sarray.hpp>
@@ -36,8 +36,8 @@
 #include <core/storage/query_engine/planning/planner.hpp>
 #include <core/storage/query_engine/planning/optimization_engine.hpp>
 #include <core/storage/query_engine/util/aggregates.hpp>
-#include <core/storage/sframe_data/rolling_aggregate.hpp>
-#include <core/data/sframe/gl_sarray.hpp>
+#include <core/storage/xframe_data/rolling_aggregate.hpp>
+#include <core/data/xframe/gl_sarray.hpp>
 #include <ml/sketches/unity_sketch.hpp>
 #include <algorithm>
 #include <core/logging/logger.hpp>
@@ -205,7 +205,7 @@ void unity_sarray::construct_from_files(std::string url,
   csv_line_tokenizer tokenizer;
   tokenizer.delimiter = "\n";
   tokenizer.init();
-  sframe sf;
+  xframe sf;
   sf.init_from_csvs(url,
                     tokenizer,
                     false /* use_header */ ,
@@ -461,7 +461,7 @@ std::shared_ptr<unity_sarray_base> unity_sarray::head(size_t nrows) {
   size_t row_counter = 0;
   if (nrows > 0) {
     auto callback = [&out, &row_counter, nrows](size_t segment_id,
-                                                const std::shared_ptr<sframe_rows>& data) {
+                                                const std::shared_ptr<xframe_rows>& data) {
       for (const auto& row : (*data)) {
         *out = row[0];
         ++out;
@@ -515,7 +515,7 @@ std::shared_ptr<unity_sarray_base> unity_sarray::transform_native(
                   ->get_native_function(toolkit_fn_closure);
 
   auto fn =
-      [native_execute_function, skip_undefined](const sframe_rows::row& f)->flexible_type {
+      [native_execute_function, skip_undefined](const xframe_rows::row& f)->flexible_type {
         if (skip_undefined && f[0].get_type() == flex_type_enum::UNDEFINED) {
           return flex_undefined();
         } else {
@@ -537,7 +537,7 @@ std::shared_ptr<unity_sarray_base> unity_sarray::transform_lambda(
     bool skip_undefined,
     uint64_t seed) {
 
-  auto fn = [function, type, skip_undefined](const sframe_rows::row& f)->flexible_type {
+  auto fn = [function, type, skip_undefined](const xframe_rows::row& f)->flexible_type {
     if (skip_undefined && f[0].get_type() == flex_type_enum::UNDEFINED) {
       return flex_undefined();
     } else {
@@ -593,7 +593,7 @@ std::shared_ptr<unity_sarray_base> unity_sarray::vector_slice(size_t start, size
         flex_type_enum::FLOAT : this_dtype;
 
   auto fn =
-      [=](const sframe_rows::row& row)->flexible_type {
+      [=](const xframe_rows::row& row)->flexible_type {
         const auto& f = row[0];
         if (f.get_type() == flex_type_enum::UNDEFINED) {
           return f;
@@ -1131,7 +1131,7 @@ flexible_type unity_sarray::median(bool approx) {
     atomic<size_t> n_below_a = 0;
     std::vector<flexible_type> candidates;
     std::mutex candidate_lock;
-    auto count_median = [&](size_t, const std::shared_ptr<sframe_rows>& rows) {
+    auto count_median = [&](size_t, const std::shared_ptr<xframe_rows>& rows) {
       for (const auto& row : *rows) {
         const flexible_type x = row[0];
         if(x < lower_bound) {
@@ -1671,8 +1671,8 @@ std::shared_ptr<unity_sarray_base> unity_sarray::vector_operator(
   query_eval::binary_transform_type transform_fn_with_undefined_checking;
   if (op == "==") {
     transform_fn_with_undefined_checking =
-        [=](const sframe_rows::row& frow,
-            const sframe_rows::row& grow)->flexible_type {
+        [=](const xframe_rows::row& frow,
+            const xframe_rows::row& grow)->flexible_type {
           const auto& f = frow[0];
           const auto& g = grow[0];
           if (f.get_type() == flex_type_enum::UNDEFINED ||
@@ -1685,8 +1685,8 @@ std::shared_ptr<unity_sarray_base> unity_sarray::vector_operator(
         };
   } else if (op == "!=") {
     transform_fn_with_undefined_checking =
-        [=](const sframe_rows::row& frow,
-            const sframe_rows::row& grow)->flexible_type {
+        [=](const xframe_rows::row& frow,
+            const xframe_rows::row& grow)->flexible_type {
           const auto& f = frow[0];
           const auto& g = grow[0];
           if (f.get_type() == flex_type_enum::UNDEFINED ||
@@ -1700,8 +1700,8 @@ std::shared_ptr<unity_sarray_base> unity_sarray::vector_operator(
   } else if (op == "&" || op == "|") {
     // these do ternary logic
     transform_fn_with_undefined_checking =
-        [=](const sframe_rows::row& frow,
-            const sframe_rows::row& grow)->flexible_type {
+        [=](const xframe_rows::row& frow,
+            const xframe_rows::row& grow)->flexible_type {
           const auto& f = frow[0];
           const auto& g = grow[0];
           return transformfn(f, g);
@@ -1709,8 +1709,8 @@ std::shared_ptr<unity_sarray_base> unity_sarray::vector_operator(
   } else {
     // all others constant propagate
     transform_fn_with_undefined_checking =
-        [=](const sframe_rows::row& frow,
-            const sframe_rows::row& grow)->flexible_type {
+        [=](const xframe_rows::row& frow,
+            const xframe_rows::row& grow)->flexible_type {
           const auto& f = frow[0];
           const auto& g = grow[0];
           if (f.get_type() == flex_type_enum::UNDEFINED ||
@@ -1851,7 +1851,7 @@ std::shared_ptr<unity_sarray_base> unity_sarray::make_exact_uniform_boolean_arra
   // # than a full sort. (O(n) vs O(n log n). But we don't quite have a partial
   // # sort implementation available.
   //
-  // sf = sframe({'shash':shash})
+  // sf = xframe({'shash':shash})
   // sorted_hash = sf.sort('shash')['shash']
   //
   // # slice it at the num_trues index
@@ -1863,7 +1863,7 @@ std::shared_ptr<unity_sarray_base> unity_sarray::make_exact_uniform_boolean_arra
   auto seqhash = std::static_pointer_cast<unity_sarray>(seq->hash(random_seed));
 
   // # sort it
-  std::shared_ptr<unity_sframe> seqsort(new unity_sframe());
+  std::shared_ptr<unity_xframe> seqsort(new unity_xframe());
   seqsort->add_column(seqhash, "shash");
   // yes we can use initializer list here. Like
   // seqsort->sort({"shash"},{1})
@@ -2408,7 +2408,7 @@ std::shared_ptr<unity_sarray_base> unity_sarray::item_length() {
   return transform_lambda(transformfn, flex_type_enum::INTEGER, true, 0);
 }
 
-std::shared_ptr<unity_sframe_base >unity_sarray::unpack_dict(
+std::shared_ptr<unity_xframe_base >unity_sarray::unpack_dict(
   const std::string& column_name_prefix,
   const std::vector<flexible_type>& limit,
   const flexible_type& na_value) {
@@ -2521,7 +2521,7 @@ std::shared_ptr<unity_sframe_base >unity_sarray::unpack_dict(
 
 
 
-std::shared_ptr<unity_sframe_base> unity_sarray::expand(
+std::shared_ptr<unity_xframe_base> unity_sarray::expand(
   const std::string& column_name_prefix,
   const std::vector<flexible_type>& expanded_column_elements,
   const std::vector<flex_type_enum>& expanded_column_types) {
@@ -2572,7 +2572,7 @@ std::shared_ptr<unity_sframe_base> unity_sarray::expand(
   // TODO: Performance, instead of performing a string comparison everywhere,
   // we should use a enum comparison.
   auto transformfn = [date_elements]
-      (const sframe_rows::row& row, sframe_rows::row& ret) {
+      (const xframe_rows::row& row, xframe_rows::row& ret) {
         DASSERT_EQ(ret.size(), date_elements.size());
 
         if (row[0].get_type() == flex_type_enum::UNDEFINED) {
@@ -2636,13 +2636,13 @@ std::shared_ptr<unity_sframe_base> unity_sarray::expand(
                                                   transformfn,
                                                   expanded_column_types);
 
-  std::shared_ptr<unity_sframe> ret (new unity_sframe());
+  std::shared_ptr<unity_xframe> ret (new unity_xframe());
   ret->construct_from_planner_node(ret_node, column_names);
   return ret;
 }
 
 
-std::shared_ptr<unity_sframe_base> unity_sarray::unpack(
+std::shared_ptr<unity_xframe_base> unity_sarray::unpack(
   const std::string& column_name_prefix,
   const std::vector<flexible_type>& unpacked_keys,
   const std::vector<flex_type_enum>& column_types,
@@ -2675,8 +2675,8 @@ std::shared_ptr<unity_sframe_base> unity_sarray::unpack(
     }
   }
   auto coltype = dtype();
-  auto transformfn = [coltype, unpacked_keys, na_value](const sframe_rows::row& row,
-                                                        sframe_rows::row& ret) {
+  auto transformfn = [coltype, unpacked_keys, na_value](const xframe_rows::row& row,
+                                                        xframe_rows::row& ret) {
     const auto& val = row[0];
     if (val.get_type() == flex_type_enum::UNDEFINED) {
       for(size_t i = 0; i < ret.size() ; i++) ret[i] = FLEX_UNDEFINED;
@@ -2717,7 +2717,7 @@ std::shared_ptr<unity_sframe_base> unity_sarray::unpack(
                                                               transformfn,
                                                               column_types);
 
-  std::shared_ptr<unity_sframe> ret (new unity_sframe());
+  std::shared_ptr<unity_xframe> ret (new unity_xframe());
   ret->construct_from_planner_node(ret_node, column_names);
   // do some validation by calling head on it
   ret->head(100);

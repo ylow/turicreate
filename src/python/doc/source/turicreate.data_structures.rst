@@ -16,7 +16,7 @@ Data Structures
   :toctree: generated/
 
   SArray
-  SFrame
+  XFrame
 
 Data Types
 ----------
@@ -36,10 +36,10 @@ Utilities
   :toctree: generated/
 
   SArrayBuilder
-  SFrameBuilder
+  XFrameBuilder
   Sketch
   aggregate
   load_sarray
-  load_sframe
+  load_xframe
   load_audio
   load_images

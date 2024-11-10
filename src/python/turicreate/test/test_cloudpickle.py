@@ -20,7 +20,7 @@ pytestmark = [pytest.mark.minimal]
 class CloudPickleTest(unittest.TestCase):
     def test_pickle_unity_object_exception(self):
         sa = tc.SArray()
-        sf = tc.SFrame()
+        sf = tc.XFrame()
         g = tc.SGraph()
         sk = sa.summary()
         m = tc.pagerank.create(g)

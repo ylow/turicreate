@@ -11,17 +11,17 @@
 
 namespace turi {
 
-class sframe_reader;
-class unity_sframe;
+class xframe_reader;
+class unity_xframe;
 
 namespace visualization {
 
     class WebServer {
     public:
         struct table {
-            table(const std::shared_ptr<unity_sframe>& sf, std::unique_ptr<sframe_reader> reader, const std::string& title);
-            std::shared_ptr<unity_sframe> sf;
-            std::unique_ptr<sframe_reader> reader;
+            table(const std::shared_ptr<unity_xframe>& sf, std::unique_ptr<xframe_reader> reader, const std::string& title);
+            std::shared_ptr<unity_xframe> sf;
+            std::unique_ptr<xframe_reader> reader;
             std::string title;
         };
 
@@ -33,13 +33,13 @@ namespace visualization {
 
         // Returns the ID of the added element
         std::string add_plot(const Plot& plot);
-        std::string add_table(const std::shared_ptr<unity_sframe>& table, const std::string& title);
+        std::string add_table(const std::shared_ptr<unity_xframe>& table, const std::string& title);
 
         // Generates and returns the URL (optionally to a given visualization object).
         // Spins up the web server lazily, if needed.
         static std::string get_base_url();
         static std::string get_url_for_plot(const Plot& plot);
-        static std::string get_url_for_table(const std::shared_ptr<unity_sframe>& table, const std::string& title);
+        static std::string get_url_for_table(const std::shared_ptr<unity_xframe>& table, const std::string& title);
 
     private:
         WebServer();

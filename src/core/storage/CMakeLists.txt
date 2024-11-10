@@ -2,5 +2,5 @@ subdirs(
   fileio
   query_engine
   serialization
-  sframe_data
-  sframe_interface)
+  xframe_data
+  xframe_interface)

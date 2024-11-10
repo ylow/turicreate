@@ -11,7 +11,7 @@
 
 #include <unistd.h>
 
-#include <core/storage/sframe_interface/unity_sarray.hpp>
+#include <core/storage/xframe_interface/unity_sarray.hpp>
 #include <model_server/lib/flex_dict_view.hpp>
 using namespace turi;
 

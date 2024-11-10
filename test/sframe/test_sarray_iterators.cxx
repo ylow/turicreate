@@ -8,7 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include <core/util/cityhash_tc.hpp>
-#include <core/storage/sframe_data/sarray_iterators.hpp>
+#include <core/storage/xframe_data/sarray_iterators.hpp>
 #include <core/parallel/atomic.hpp>
 #include <core/parallel/lambda_omp.hpp>
 #include <iterator>

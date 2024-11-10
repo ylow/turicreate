@@ -34,8 +34,8 @@ RetType extract_field(planner_node_type ptype, CallArgs... call_args) {
       return FieldExtractionVisitor<planner_node_type::RANGE_NODE>::get(call_args...);
     case planner_node_type::SARRAY_SOURCE_NODE:
       return FieldExtractionVisitor<planner_node_type::SARRAY_SOURCE_NODE>::get(call_args...);
-    case planner_node_type::SFRAME_SOURCE_NODE:
-      return FieldExtractionVisitor<planner_node_type::SFRAME_SOURCE_NODE>::get(call_args...);
+    case planner_node_type::XFRAME_SOURCE_NODE:
+      return FieldExtractionVisitor<planner_node_type::XFRAME_SOURCE_NODE>::get(call_args...);
     case planner_node_type::TRANSFORM_NODE:
       return FieldExtractionVisitor<planner_node_type::TRANSFORM_NODE>::get(call_args...);
     case planner_node_type::GENERALIZED_TRANSFORM_NODE:
