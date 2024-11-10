@@ -2,115 +2,75 @@ Quick Links: [Installation](#supported-platforms) | [Documentation](#documentati
 
 [<img align="right" src="https://docs-assets.developer.apple.com/turicreate/turi-dog.svg" alt="Turi Create" width="100">](#)
 
-# Fork
 
-This is a fork of Turi Create to reestablish Mac compilation, clean up and
-remove all neural network stuff (that are much harder to keep working).
+# XFrame
 
-There are many places for improvement:
- - support Python 3 stable ABI (PEP 384) (how?) so we don't need to compile
- a build for every other python version.
- - support fsspec in the filesystem abstraction
- - lambda workers can probably use PyInterpreter in the same process rather
- than subprocess.
- - Vectorized query execution
- - Parquet support
+The XFrame is a scalable column compressed disk-backed dataframe optimized for 
+machine learning and data science needs.  It supports for strictly typed
+columns (int, float, str, datetime), weakly typed columns (schema free lists,
+dictionaries) and has uniform support for missing data.
 
-# Turi Create
+This is a fork of the SFrame project in Turi Create (originally GraphLab
+Create), started by Yucheng Low in the startup GraphLab/Dato/Turi
+between 2013 and 2016. Turi was later acquired by Apple in 2016 where we 
+open-sourced the project in 2016. Efforts we made to keep it compiling for
+several years through heroic efforts by @TobyRoseman, but otherwise minimal 
+investments were made.
 
-Turi Create simplifies the development of custom machine learning models. You
-don't have to be a machine learning expert to add recommendations, object
-detection, image classification, image similarity or activity classification to
-your app.
+However, I strongly believe that this is still one of most performant and 
+useable data manipulation libraries in Python, and I have wanting to resurrect
+this project. However as the name SFrame and Turi Create were taken, we renamed
+it from SFrame to XFrame.
 
-* **Easy-to-use:** Focus on tasks instead of algorithms
-* **Visual:** Built-in, streaming visualizations to explore your data
-* **Flexible:** Supports text, images, audio, video and sensor data
-* **Fast and Scalable:** Work with large datasets on a single machine
-* **Ready To Deploy:** Export models to Core ML for use in iOS, macOS, watchOS, and tvOS apps
+Currently, the fork is in an early stage. What has been done:
 
-With Turi Create, you can accomplish many common ML tasks:
+ - Removed all ML toolkits
+ - Removed the SGraph datastructure
+ - Renamed SFrame to XFrame
+ 
+But there are many many places for improvement and modernization.
 
-| ML Task                 | Description                      |
-|:------------------------:|:--------------------------------:|
-| [Recommender](https://apple.github.io/turicreate/docs/userguide/recommender/)             | Personalize choices for users    |
-| [Activity Classification](https://apple.github.io/turicreate/docs/userguide/activity_classifier/) | Detect an activity using sensors |
-| [Image Similarity](https://apple.github.io/turicreate/docs/userguide/image_similarity/)        | Find similar images              |
-| [Classifiers](https://apple.github.io/turicreate/docs/userguide/supervised-learning/classifier.html)             | Predict a label           |
-| [Regression](https://apple.github.io/turicreate/docs/userguide/supervised-learning/regression.html)              | Predict numeric values           |
-| [Clustering](https://apple.github.io/turicreate/docs/userguide/clustering/)              | Group similar datapoints together|
-| [Text Classifier](https://apple.github.io/turicreate/docs/userguide/text_classifier/)         | Analyze sentiment of messages    |
+There is a significant amount of technical debt which speaks to the
+history of the project. The very original design of the project was a 
+client-server model where the client and the server coupld be located on 
+different machines. After a while we realized that was not particular useful
+and so launched both client and server on the same machine communicating via
+IPC (Interprocess Communication). This is the origin of the whole RPC system
+called "Unity". Eventually IPC became Inproc, then finally removed, but 
+the basic class hierarchy structure remained. 
+
+Following which, there was an effort to build an easy to use C++ interface to
+all the datastructures so that people can write extensions/plugins in C++. As
+these extensions also needed an easy way to export to Python bindings, we
+introduced a whole other class registration mechanism under the "gl_" prefix
+(Ex: gl\_sframe, gl\_sarray, etc).
+
+A lot of this can be aggressively simplified and removed.
+
+# Goals 
+ - Streamline Python <-> C++ bridge. We currently use Cython, and there is a
+ non-trivial amount of Cython. Are there better ways to this today? A way to
+ simplify this to use the stable Python APIs might be nice so that we do not
+ need to do build for every other python version. 
+ - Lambdas currently work by spawning off Python subprocesses and running
+Interprocess communication. We could potentially replace this perhaps with 
+new PyInterpreters in the same process? Or perhaps even multi-thread now that
+Python has a GIL-free interpreter?
+ - Native Parquet support in the query engine would be *really* nice.
+ - There is a lot of performance we are leaving on the table with vectorization.
+We could potentially implement our own, or perhaps consider using Arrow or other
+libraries?
+ - Others?
+
+# Maintainers
+Current maintainers are:
+ - Yucheng Low (https://github.com/ylow)
+ - Jay Gu (https://github.com/haijieg)
 
 
 Supported Platforms
 -------------------
 
-Turi Create supports:
+XFrame current supports only macOS 15+ (Sequoia) because that is what I have.
+Linux and Windows should be supported but untestsed.
 
-* macOS 10.12+
-* Linux (with glibc 2.10+)
-* Windows 10 (via WSL)
-
-System Requirements
--------------------
-
-Turi Create requires:
-
-* Python 2.7, 3.5, 3.6, 3.7, 3.8
-* x86\_64 architecture
-* At least 4 GB of RAM
-
-Installation
-------------
-
-For detailed instructions for different varieties of Linux see [LINUX\_INSTALL.md](LINUX_INSTALL.md).
-For common installation issues see [INSTALL\_ISSUES.md](INSTALL_ISSUES.md).
-
-We recommend using virtualenv to use, install, or build Turi Create. 
-
-```shell
-pip install virtualenv
-```
-
-The method for installing *Turi Create* follows the
-[standard python package installation steps](https://packaging.python.org/installing/).
-To create and activate a Python virtual environment called `venv` follow these steps:
-
-```shell
-# Create a Python virtual environment
-cd ~
-virtualenv venv
-
-# Activate your virtual environment
-source ~/venv/bin/activate
-```
-Alternatively, if you are using [Anaconda](https://www.anaconda.com/what-is-anaconda/), you may use its virtual environment:
-```shell
-conda create -n virtual_environment_name anaconda
-conda activate virtual_environment_name
-```
-
-To install `Turi Create` within your virtual environment:
-```shell
-(venv) pip install -U turicreate
-```
-
-Documentation
--------------
-
-The package [User Guide](https://apple.github.io/turicreate/docs/userguide) and [API Docs](https://apple.github.io/turicreate/docs/api) contain
-more details on how to use Turi Create.
-
-Building From Source
----------------------
-
-If you want to build Turi Create from source, see [BUILD.md](BUILD.md).
-
-Contributing
-------------
-
-Prior to contributing, please review [CONTRIBUTING.md](CONTRIBUTING.md) and do
-not provide any contributions unless you agree with the terms and conditions
-set forth in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-We want the Turi Create community to be as welcoming and inclusive as possible, and have adopted a [Code of Conduct](CODE_OF_CONDUCT.md) that we expect all community members, including contributors, to read and observe.
